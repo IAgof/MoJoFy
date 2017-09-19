@@ -1,0 +1,32 @@
+.card {
+	box-sizing: border-box;
+	box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+	display: inline-block;
+	margin: 8px;
+	position: relative;
+	width: 232px;
+}
+
+	.card * {
+		display: block;
+	}
+
+	.card .card-image {
+		height: 110px;
+		width: 100%;
+	}
+	
+	.card .card-title, 
+	.card .card-description {
+		padding: 4px 12px;
+	}
+	.card .card-title {
+		padding-top: 8px;
+	}
+	.card .card-description {
+		padding-bottom: 8px;
+	}
+
+	/*.card .card-actions {
+		
+	}*/
