@@ -23,7 +23,7 @@ Done? Great! You've got it.
 
 Basically, we have two main folders: `client` and `public`. The first one, have all the source code. The seccond one is generated from the first. To do that, we have two tools: Webpack and Gulp. 
 
-Webpack, basically, takes all the js and put it in one file, resolving all the browser stuff, converting ES6 Syntax into ES5 recognizable for all the browsers. Gulp do something similar with CSS. 
+Webpack, basically, takes all the js and put it in one file, resolving all the browser stuff, converting ES6 Syntax into ES5 recognizable for all the browsers. Gulp do something similar with CSS and HTML. Both let the result files in public folder.
 
 To build, you have to execute:
 ```
@@ -31,16 +31,16 @@ webpack
 ```
 and:
 ```
-gulp styles
+gulp
 ```
 
 You can do it in one only line with (on windows):
 ```
-webpack && gulp styles
+webpack && gulp
 ```
 or (on linux):
 ```
-webpack; gulp styles
+webpack; gulp
 ```
 
 ### Client Folder:
@@ -51,6 +51,17 @@ This have an `index.js`, `app.js`, `index.html`, `index.css` and a folder called
 About components, we have two type of components: Statefull and stateless. Stateless is just "visual stuff", and don't have any state. Statefull are "interactive stuff" who need to have state. 
 
 I will go in depth when I have deeper knoweledge about all this stuff. For the moment, "Card" or "Player" are stateless and "VideoList" and "VideoDetail" are statefull. That's all I know.
+
+## Start the server
+To start the server, just type in the console 
+```
+npm start
+``` 
+or 
+```
+node server.js
+```
+This will start a server on port 3000, so if you go in your browser to http://localhost:3000 you'll find the app running ^^.
 
 # Improve this documentation
 
