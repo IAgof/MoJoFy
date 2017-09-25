@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const jwt = require('express-jwt');
 
 const Config = require('./config');
-const Network = require('./network/routes');
+const Routes = require('./network/routes');
 
 const server = express();
 
@@ -19,9 +19,8 @@ server.use(jwt({
 const port = Config.port;
 
 // Router
-
-Network(server);
-// server = Network(server);
+Routes(server);
+// server = Routes(server);
 
 server.listen(port);
 console.log('Server listening on port ' + port);

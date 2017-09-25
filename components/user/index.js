@@ -1,12 +1,20 @@
 
 const Acl = require('./acl');
+const Store = require('./store');
 
 exports.get = function(id, token, callback) {
-	if(Number(id) === 1234) {
-		callback({user: id, name: 'Good question', bio: 'This data is hardcoded'}, null);
-	} else {
-		callback(null, 'That user does not exist', 404);
-	}
+
+	Store.get(id, function(data) {
+		if(data) {
+
+			delete data.password;
+			delete data.password_hash;
+
+			callback(data, null);
+		} else {
+			callback(null, 'That user does not exist', 404);
+		}
+	});
 };
 
 exports.list = function(token, callback) {
