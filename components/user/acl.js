@@ -11,7 +11,12 @@ exports.middleware = function(req, res, next) {
 		return false;
 	}
 
-	Acl.middleware(req, res, next);
+	Acl.middleware(req, res, function() {
+		
+		// Do more complex stuff here.
+
+		next();
+	});
 
 	return false;
 };

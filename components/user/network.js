@@ -1,5 +1,3 @@
-/* jshint node: true */
-
 const express = require('express');
 const Acl = require('./acl').middleware;
 const Response = require('../../network/response');

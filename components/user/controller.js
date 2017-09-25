@@ -18,6 +18,6 @@ exports.list = function(token, callback) {
 		} else {
 			callback(null, 'You can\'t list users.', 403);
 		}
-	})
+	});
 
 };

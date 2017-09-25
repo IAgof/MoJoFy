@@ -6,7 +6,10 @@ const config = {
 	
 	// JWT
 	jwt_secret: 'secret',
-	jwt_issuer: 'vimojo'
+	jwt_issuer: 'vimojo',
+
+	// Datastore:
+	ds_namespace: 'YOUR_NAMESPACE'
 };
 
 module.exports = config;
