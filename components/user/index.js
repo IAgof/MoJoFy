@@ -1,23 +1,48 @@
 
 const Acl = require('./acl');
+const Model = require('./model');
+const Pass = require('./password');
 const Store = require('./store');
 
-exports.get = function(id, token, callback) {
+// Exposed functions
+
+exports.get = get;
+exports.list = list;
+exports.add = add;
+
+
+// Internal functions
+
+function get(id, token, callback) {
 
 	Store.get(id, function(data) {
 		if(data) {
-
 			delete data.password;
-			delete data.password_hash;
-
 			callback(data, null);
 		} else {
 			callback(null, 'That user does not exist', 404);
 		}
 	});
-};
+}
 
-exports.list = function(token, callback) {
+function add(data, token, callback) {
+
+	prepare(data, function(model) {
+
+		Store.upsert(model, function(result, id) {
+			if(result, id) {
+				model._id = id;
+				delete model.password;
+				callback(model, null, 201);
+			} else {
+				callback(null, 'Unable to add the user', 500);
+			}
+		});
+	});
+
+}
+
+function list(token, callback) {
 
 	Acl.query(token, 'list', function(success) {
 
@@ -28,4 +53,18 @@ exports.list = function(token, callback) {
 		}
 	});
 
-};
+}
+
+function prepare(data, next) {
+	const model = Model.set(data);
+
+	// Check if pasword shall be created
+	if(typeof(data.password) !== 'undefined') {
+		Pass.crypt(data.password, function(err, hash) {
+			model.password = hash;
+			next();
+		});
+	} else {
+		next();
+	}
+}
