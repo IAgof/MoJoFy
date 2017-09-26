@@ -13,7 +13,7 @@ const dataset = gcloud.datastore({
 });
 
 
-function key(kind, id) {
+function Key(kind, id) {
 
 	const path = [kind];
 
@@ -39,7 +39,7 @@ function get(kind, id, cb) {
 		return false;
 	}
 
-	const key = key(kind, id);
+	const key = Key(kind, id);
 
 	dataset.get(key, function(err, entity) {
 
@@ -75,7 +75,7 @@ function upsert(kind, data, id, cb) {
 		return false;
 	}
 
-	const key = key(kind, id);
+	const key = Key(kind, id);
 
 
 	// CHECH IF IS UPSERT. IF SO, GET THE ENTITY AND MERGE CHANGES.
@@ -124,7 +124,7 @@ function remove(kind, id, cb) {
 		return false;
 	}
 
-	const key = key(kind, id);
+	const key = Key(kind, id);
 
 	dataset.delete(key, function(err) {
 		if(err) {
@@ -143,9 +143,10 @@ function remove(kind, id, cb) {
 module.exports = {
 	_ns: namespace,
 	_dataset: dataset,
-	_key: key,
+	_key: Key,
 	get: get,
 	add: upsert,
 	update: upsert,
+	upsert: upsert,
 	remove: remove
 };
