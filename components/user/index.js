@@ -17,6 +17,7 @@ function get(id, token, callback) {
 
 	Store.get(id, function(data) {
 		if(data) {
+			data._id = id;
 			delete data.password;
 			callback(data, null);
 		} else {
@@ -62,9 +63,9 @@ function prepare(data, next) {
 	if(typeof(data.password) !== 'undefined') {
 		Pass.crypt(data.password, function(err, hash) {
 			model.password = hash;
-			next();
+			next(model);
 		});
 	} else {
-		next();
+		next(model);
 	}
 }

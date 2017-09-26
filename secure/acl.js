@@ -17,8 +17,8 @@ const roles = {
 		operations: ['read', 'downloads', 'users']
 	},
 	user: {
-		marketing: ['read', 'list'],
-		operations: ['read', 'update']
+		marketing: ['read', 'add', 'list'],
+		operations: ['read', 'add', 'update']
 	}
 };
 
@@ -65,7 +65,7 @@ function middleware(req, res, next, operation) {
 	// const action = getAction(req, token);
 	const action = operation || actionMethod(req, token);
 
-	console.log('role: ' + role + '; resource: ' + resource + '; action: ' + action + ';');
+	// console.log('role: ' + role + '; resource: ' + resource + '; action: ' + action + ';');
 
 	acl.query(role, resource, action, function(err, allow) {
 

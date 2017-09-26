@@ -1,4 +1,4 @@
-const util = require('../../util');
+const util = require('./util');
 
 var Modelate = function(data, model) {
 
@@ -10,8 +10,6 @@ var Modelate = function(data, model) {
 		} else {
 			delete obj[prop];
 		}
-
-		obj[prop] = null;
 	}
 
 	return obj;

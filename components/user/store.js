@@ -20,13 +20,12 @@ function get(id, callback) {
 }
 
 function upsert(data, callback) {
-
 	const id = data.id || null;
 
 	// Cache.get('user', id, function(data) {
 	// 	if(!data) {
-			Persistent.get('user', id, function(data) {
-				callback(data);
+			Persistent.add('user', data, id, function(result, id) {
+				callback(result, id);
 			});
 	// 	} else {
 	// 		callback(data);

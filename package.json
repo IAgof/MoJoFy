@@ -19,9 +19,11 @@
   "homepage": "https://github.com/IAgof/MoJoFy#readme",
   "dependencies": {
     "axios": "^0.16.2",
+    "bcrypt": "^1.0.3",
     "body-parser": "^1.18.1",
     "express": "^4.15.4",
     "express-jwt": "^5.3.0",
+    "google-cloud": "^0.56.0",
     "react": "^15.5.4",
     "react-dom": "^15.5.4",
     "react-router": "^4.1.1",

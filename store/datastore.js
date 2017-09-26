@@ -6,7 +6,7 @@ const config = require('../config');
 const logger = require('../logs/logger');
 const Util = require('../util');
 
-const namespace = config.namespace;
+const namespace = config.ds_namespace;
 const dataset = gcloud.datastore({
 	projectId: config.ds_projectId,
 	keyFilename: config.ds_keyFilename
@@ -27,6 +27,7 @@ function Key(kind, id) {
 		namespace: namespace,
 		path: path
 	});
+
 }
 
 function get(kind, id, cb) {
@@ -53,7 +54,7 @@ function get(kind, id, cb) {
 		if(typeof(entity) === 'undefined' && typeof(cb) === 'function') {
 			cb(null);
 		} else if(typeof(cb) === 'function') {
-			cb(entity.data);
+			cb(entity);
 		}
 	});
 }
@@ -76,7 +77,6 @@ function upsert(kind, data, id, cb) {
 	}
 
 	const key = Key(kind, id);
-
 
 	// CHECH IF IS UPSERT. IF SO, GET THE ENTITY AND MERGE CHANGES.
 	if(id) {
@@ -101,6 +101,7 @@ function save(key, data, cb) {
         data: data
     },
     function(err) {
+
         if(err) {
         	logger.err('There have been an error upserting the '+ key.path[0] +' '+ key.path[1] +' to datastore');
 			logger.err(err, true);
