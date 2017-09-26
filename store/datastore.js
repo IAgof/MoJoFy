@@ -8,9 +8,9 @@ const Util = require('../util');
 
 const namespace = config.namespace;
 const dataset = gcloud.datastore({
-		projectId: 'GOOGLE-CLOUD-PROJECT-ID',
-		keyFilename: 'datastore-key.json'
-	});
+	projectId: config.ds_projectId,
+	keyFilename: config.ds_keyFilename
+});
 
 
 function key(kind, id) {
