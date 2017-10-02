@@ -140,12 +140,90 @@ function remove(kind, id, cb) {
 
 }
 
+function query(kind, options, cb) {
+
+	if(!kind) {
+		cb(false);
+		return false;
+	}
+
+	const filters = options.filters || null;
+	const groupBy = options.groupBy || null;
+	const limit = options.limit || null;
+	const offset = options.offset || null;
+	const orderBy = options.orderBy || null;
+
+	var query = dataset.createQuery(namespace, kind);
+
+	if(filters) {
+		for(let filter in filters) {
+			query = query.filter(filters[filter].field, filters[filter].operator, filters[filter].value);
+		}
+	}
+
+	if(groupBy && Array.isArray(groupBy) && groupBy.length > 0) {
+		query = query.groupBy(groupBy);
+	}
+
+	if(limit && limit > -1) {
+		query = query.limit(limit);
+	}
+
+	if(offset && offset > -1) {
+		query = query.offset(offset);
+	}
+
+	if(orderBy) {
+		let order = orderBy;
+		let desc = false;
+		if(order.indexOf('-') === 0) {
+			order = order.replace('-', '');
+			desc = true;
+		}
+
+		query = query.order(order, {
+		  descending: desc
+		});
+	}
+
+	query.run(function(err, entities, info) {
+		// We shall do this with this info, to enable cursors...
+		console.log(info);
+		cb(entities.map(fromDatastore));
+	});
+
+}
+
+/** fromDatastore
+ *	Translates from Datastore's entity format to
+ *	the format expected by the application.
+ *
+ *	Datastore format:
+ *	{
+ *		key: [kind, id],
+ *		data: {
+ *			property: value
+ *		}
+ *	}
+ *
+ *	Application format:
+ *	{
+ *		_id: id,
+ *		property: value
+ *	}
+ */
+function fromDatastore (obj) {
+  obj._id = obj[gcloud.datastore.KEY].id;
+  return obj;
+}
+
 
 module.exports = {
 	_ns: namespace,
 	_dataset: dataset,
 	_key: Key,
 	get: get,
+	query: query,
 	add: upsert,
 	update: upsert,
 	upsert: upsert,

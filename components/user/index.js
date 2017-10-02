@@ -45,14 +45,26 @@ function add(data, token, callback) {
 
 function list(token, callback) {
 
-	Acl.query(token, 'list', function(success) {
-
-		if(success) {
-			callback([{user: 1234, name: 'Good question', bio: 'This data is hardcoded'}, {user: 1235, name: 'aGoodUser', bio: 'Yap. This user is also hardcoded...'}], null);
+	Store.list({}, function(result) {
+		if(result) {
+			for (var i = 0; i < result.length; i++) {
+				// result[i]._id = id;
+				delete result[i].password;
+			}
+			callback(result, null, 201);
 		} else {
-			callback(null, 'You can\'t list users.', 403);
+			callback(null, 'Unable to list users', 500);
 		}
 	});
+
+	// Acl.query(token, 'list', function(success) {
+
+	// 	if(success) {
+	// 		callback([{user: 1234, name: 'Good question', bio: 'This data is hardcoded'}, {user: 1235, name: 'aGoodUser', bio: 'Yap. This user is also hardcoded...'}], null);
+	// 	} else {
+	// 		callback(null, 'You can\'t list users.', 403);
+	// 	}
+	// });
 
 }
 
