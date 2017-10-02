@@ -26,6 +26,16 @@ router.post('/', Acl,  function(req, res, next) {
 	});
 });
 
+router.put('/', Acl,  function(req, res, next) {
+	Controller.update(req.body, req.user, function(data, err, code) {
+		if(!err) {
+			Response.success(req, res, next, (code || 200), data);
+		} else {
+			Response.error(req, res, next, (code || 500), err);
+		}
+	});
+});
+
 router.get('/:id', Acl,  function(req, res, next) {
   	Controller.get(req.params.id, req.user, function(data, err, code) {
 		if(!err) {

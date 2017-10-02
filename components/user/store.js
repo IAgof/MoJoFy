@@ -34,7 +34,7 @@ function list(params, callback) {
 }
 
 function upsert(data, callback) {
-	const id = data.id || null;
+	const id = data.id || data._id || null;
 
 	// Cache.get('user', id, function(data) {
 	// 	if(!data) {

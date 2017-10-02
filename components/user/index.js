@@ -9,6 +9,7 @@ const Store = require('./store');
 exports.get = get;
 exports.list = list;
 exports.add = add;
+exports.update = update;
 
 
 // Internal functions
@@ -37,6 +38,29 @@ function add(data, token, callback) {
 				callback(model, null, 201);
 			} else {
 				callback(null, 'Unable to add the user', 500);
+			}
+		});
+	});
+
+}
+
+function update(data, token, callback) {
+
+	if(!data.id && !data._id) {
+		callback(null, 'No user id provided', 400);
+	}
+
+	prepare(data, function(model) {
+
+		model._id = data.id || data._id;
+
+		Store.upsert(model, function(result, id) {
+			if(result, id) {
+				model._id = id;
+				delete model.password;
+				callback(model, null, 201);
+			} else {
+				callback(null, 'Unable to update the user', 500);
 			}
 		});
 	});
