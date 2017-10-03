@@ -1,5 +1,5 @@
 
-const Acl = require('../../secure/acl');
+const Acl = require('../access/acl');
 const Response = require('../../network/response');
 
 

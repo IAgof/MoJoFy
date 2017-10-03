@@ -1,7 +1,7 @@
 
-const Acl = require('./acl');
+// const Acl = require('./acl');
 const Model = require('./model');
-const Pass = require('./password');
+const Pass = require('../access/password');
 const Store = require('./store');
 
 // Exposed functions
@@ -10,16 +10,19 @@ exports.get = get;
 exports.list = list;
 exports.add = add;
 exports.update = update;
+exports.query = query;
 
 
 // Internal functions
 
-function get(id, token, callback) {
+function get(id, token, callback, includePass) {
 
 	Store.get(id, function(data) {
 		if(data) {
 			data._id = id;
-			delete data.password;
+			if(!includePass) {
+				delete data.password;
+			}
 			callback(data, null);
 		} else {
 			callback(null, 'That user does not exist', 404);
@@ -68,28 +71,26 @@ function update(data, token, callback) {
 }
 
 function list(token, callback) {
+	query({}, token, callback);
+}
 
-	Store.list({}, function(result) {
-		if(result) {
-			for (var i = 0; i < result.length; i++) {
-				// result[i]._id = id;
-				delete result[i].password;
-			}
-			callback(result, null, 201);
-		} else {
-			callback(null, 'Unable to list users', 500);
-		}
-	});
+function query(params, token, callback, includePass) {
 
 	// Acl.query(token, 'list', function(success) {
-
-	// 	if(success) {
-	// 		callback([{user: 1234, name: 'Good question', bio: 'This data is hardcoded'}, {user: 1235, name: 'aGoodUser', bio: 'Yap. This user is also hardcoded...'}], null);
-	// 	} else {
-	// 		callback(null, 'You can\'t list users.', 403);
-	// 	}
+		Store.list(params, function(result) {
+			if(result) {
+				for (var i = 0; i < result.length; i++) {
+					// result[i]._id = id;
+					if(!includePass) {
+						delete result[i].password;
+					}
+				}
+				callback(result, null, 201);
+			} else {
+				callback(null, 'Unable to list users', 500);
+			}
+		});
 	// });
-
 }
 
 function prepare(data, next) {

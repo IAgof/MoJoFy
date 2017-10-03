@@ -2,7 +2,7 @@
 const Acl = require('virgen-acl').Acl;
 const acl = new Acl();
 
-const Response = require('../network/response');
+const Response = require('../../network/response');
 
 exports.acl = acl;
 exports.middleware = middleware;
