@@ -2,7 +2,7 @@
 const Persistent = require('../../store/datastore');
 // const Cache = require('../../store/redis');
 
-const type = 'user';
+const type = 'video';
 
 exports.get = get;
 exports.list = list;
