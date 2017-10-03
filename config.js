@@ -6,7 +6,8 @@ const config = {
 	
 	// JWT
 	jwt_secret: 'secret',
-	jwt_issuer: 'vimojo',
+	jwt_issuer: 'issuer',
+	jwt_expires: '1y',		// Format guide: https://github.com/zeit/ms
 
 	// Datastore:
 	ds_namespace: 'YOUR_NAMESPACE',

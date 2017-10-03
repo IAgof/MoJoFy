@@ -1,6 +1,5 @@
 
 const Acl = require('./acl');
-// const Model = require('./model');
 const Pass = require('./password');
 const User = require('../user');
 
@@ -47,15 +46,13 @@ function login(data, token, callback) {
 			return false;
 		}
 
-		console.log(users[0].password);
-		console.log(data.password);
-
 		Pass.compare(data.password, users[0].password, function(err, res) {
 			if(err) {
 				console.error(err);
 				callback(null, 'Error checking password', 500);
 			} else if(res === true) {
 				delete users[0].password;
+				users[0].token = Acl.token(users[0]);
 				callback(users[0], null);
 			} else {
 				callback(null, 'Password does not match', 401);

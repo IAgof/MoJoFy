@@ -2,10 +2,15 @@
 const Acl = require('virgen-acl').Acl;
 const acl = new Acl();
 
+const JWT = require('jsonwebtoken');
+
 const Response = require('../../network/response');
+
+const Config = require('../../config');
 
 exports.acl = acl;
 exports.middleware = middleware;
+exports.token = token;
 
 
 // TO_DO: 
@@ -139,4 +144,16 @@ function actionMethod(req) {
 	}
 
 	return action;
+}
+
+function token(user) {
+
+	return JWT.sign({
+		iss: Config.jwt_issuer,
+		sub: user._id,
+		name: user.name,
+		role: user.role || 'guest'
+	}, Config.jwt_secret, { 
+		expiresIn: Config.jwt_expires 
+	});
 }
