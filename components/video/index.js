@@ -1,3 +1,4 @@
+const FileUpload = require('../file');
 
 // const Acl = require('./acl');
 const Model = require('./model');
@@ -28,25 +29,33 @@ function get(id, token, callback) {
 
 function add(data, token, callback) {
 
-	// if(!data.owner) {
-	// 	data.owner = token.sub;
-	// }
+	if(!data.owner) {
+		data.owner = token.sub;
+	}
 
-	console.log(data);
+	if(data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
 
-	// Store file in a proper place ^^
+		// Store file in a proper place ^^
+		FileUpload.move(data.file, function(uploaded) {
+			data.video = uploaded.video;
+			data.poster = uploaded.img;
 
-	const model = Model.set(data);
+			const model = Model.set(data);
 
-	Store.upsert(model, function(result, id) {
-		if(result, id) {
-			model._id = id;
-			delete model.password;
-			callback(model, null, 201);
-		} else {
-			callback(null, 'Unable to add the video', 500);
-		}
-	});
+			Store.upsert(model, function(result, id) {
+				if(result, id) {
+					model._id = id;
+					callback(model, null, 201);
+				} else {
+					callback(null, 'Unable to add the video', 500);
+				}
+			});
+		});
+		
+	} else {
+		callback(null, 'Invalid video sent', 400);
+	}
+
 
 }
 
@@ -63,7 +72,6 @@ function update(data, token, callback) {
 	Store.upsert(model, function(result, id) {
 		if(result, id) {
 			model._id = id;
-			delete model.password;
 			callback(model, null, 201);
 		} else {
 			callback(null, 'Unable to update the video', 500);
@@ -73,7 +81,22 @@ function update(data, token, callback) {
 }
 
 function list(token, callback) {
-	query({}, token, callback);
+
+	const params = {};
+
+	console.log(token);
+
+	if(token && token.role === 'admin')  {
+		console.log('An admin asked for all videos...');
+	} else {
+		params.filters = [{
+			field: 'owner',
+			operator: '=',
+			value: token.sub
+		}];
+	}
+
+	query(params, token, callback);
 }
 
 function query(params, token, callback, includePass) {

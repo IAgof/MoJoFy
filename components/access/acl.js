@@ -17,9 +17,10 @@ exports.token = token;
 // THIS SHALL BE RECOVERED FROM DATABASE.
 const roles = {
 	_roleList: ['admin', 'marketing', 'operations', 'guest'],
-	stat: {
-		marketing: ['read', 'downloads', 'money'],
-		operations: ['read', 'downloads', 'users']
+	video: {
+		guest: ['read', 'add', 'list'],
+		marketing: ['read', 'add', 'list'],
+		operations: ['read', 'list', 'add']
 	},
 	user: {
 		marketing: ['read', 'add', 'list'],

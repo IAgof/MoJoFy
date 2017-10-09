@@ -8,9 +8,8 @@ const model = {
 	// 	minLength: 1
 	// },
 	owner: 'string',
-	video: 'string',
-	poster: 'string',
-	metadata: 'object',
+	url: 'string',
+	// location: 'string',
 	date: 'object'
 };
 
