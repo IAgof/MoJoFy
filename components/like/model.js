@@ -7,13 +7,9 @@ const model = {
 	// 	maxLength: 12,
 	// 	minLength: 1
 	// },
-	owner: 'string',
-	video: 'string',
-	poster: 'string',
-	metadata: 'object',
-	likes: 'number',
-	liked: 'object',
-	date: 'object'
+	from: 'string',
+	entity: 'string',
+	to: 'string'
 };
 
 function set(data) {
