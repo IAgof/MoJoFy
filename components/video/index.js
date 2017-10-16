@@ -4,6 +4,8 @@ const FileUpload = require('../file');
 const Model = require('./model');
 const Store = require('./store');
 
+const Like = require('../like');
+
 // Exposed functions
 
 exports.get = get;
@@ -11,6 +13,7 @@ exports.list = list;
 exports.add = add;
 exports.update = update;
 exports.query = query;
+exports.like = like;
 
 
 // Internal functions
@@ -97,6 +100,17 @@ function list(token, callback) {
 	}
 
 	query(params, token, callback);
+}
+
+function like(id, token, callback) {
+
+	const entity = {
+		from: token.sub,
+		entity: 'video',
+		to: id
+	}
+
+	Like.add(entity, callback);
 }
 
 function query(params, token, callback, includePass) {

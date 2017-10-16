@@ -1,5 +1,4 @@
 
-// const Acl = require('./acl');
 const Model = require('./model');
 const Store = require('./store');
 
@@ -13,7 +12,7 @@ exports.remove = remove;
 
 const likable = ['video'];
 
-function add(data, token, callback) {
+function add(data, callback) {
 
 	var model = Model.set(data);
 
@@ -33,7 +32,7 @@ function add(data, token, callback) {
 
 }
 
-function remove(id, token, callback) {
+function remove(id, callback) {
 	Store.remove(id, function(data) {
 		if(data) {
 			callback({removed: true}, null, 200);
