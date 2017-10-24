@@ -42,7 +42,6 @@ router.get('/user/:id', Acl,  function(req, res, next) {
 
 router.post('/', Upload.single('file'), function(req, res, next) {
 // router.post('/', Acl, Upload.single('file'), function(req, res, next) {
-
 	req.body.file = req.file;
 
 	Controller.add(req.body, req.user, function(data, err, code) {

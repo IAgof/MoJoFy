@@ -2,10 +2,11 @@
 const Persistent = require('../../store/datastore');
 // const Cache = require('../../store/redis');
 
-const type = 'achievement';
+const type = 'like';
 
 exports.upsert = upsert;
 exports.remove = remove;
+exports.addQueue = addQueue;
 
 
 function upsert(data, callback) {
@@ -20,4 +21,11 @@ function remove(id, callback) {
 	Persistent.get(type, id, function(data) {
 		callback(data);
 	});
+}
+
+function addQueue(id, from, callback) {
+	// Cache.addList(type, id, from, function(data) {
+	// 	callback(data);
+	// });
+	callback({});
 }

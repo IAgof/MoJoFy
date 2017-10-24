@@ -20,7 +20,7 @@ class VideoList extends Component {
 
       <div className="error">
         <h1>Error 404</h1>
-        No hemos encontrado lo que buscabas. 
+        No hemos encontrado lo que buscabas. <a href="#/login">Login</a>
       </div>
 
     );
