@@ -13344,12 +13344,7 @@ var VideoDetail = function (_Component) {
 
       if (confirm('¿Seguro que quieres eliminar el video? Esta acción es permanente.')) {
         _axios2.default.delete('http://localhost:3000/video/' + this.props.match.params.id).then(function (res) {
-          var results = res.data;
-
-          self.setState({
-            isLoading: false,
-            video: results
-          });
+          document.location.hash = '#/';
         }).catch(function (error) {
           console.error(error);
           this.setState({
@@ -13524,8 +13519,8 @@ var VideoList = function (_Component) {
         for (var i = 0; i < data.length; i++) {
           rows.push(_react2.default.createElement(
             'a',
-            { href: '#/video/' + data[i]._id },
-            _react2.default.createElement(_Card2.default, { key: i, title: data[i].title, description: data[i].description, img: data[i].poster, id: data[i]._id })
+            { key: data[i]._id, href: '#/video/' + data[i]._id },
+            _react2.default.createElement(_Card2.default, { title: data[i].title, description: data[i].description, img: data[i].poster, id: data[i]._id })
           ));
         }
 

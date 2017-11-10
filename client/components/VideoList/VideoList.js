@@ -89,7 +89,7 @@ class VideoList extends Component {
       let rows = [];
       
       for (let i=0; i < data.length; i++) {
-          rows.push(<a href={'#/video/' + data[i]._id}><Card key={i} title={data[i].title} description={data[i].description} img={data[i].poster} id={data[i]._id} /></a>);
+          rows.push(<a key={data[i]._id} href={'#/video/' + data[i]._id}><Card title={data[i].title} description={data[i].description} img={data[i].poster} id={data[i]._id} /></a>);
       }
 
       return <div className="video-list-cards">{rows}</div>;

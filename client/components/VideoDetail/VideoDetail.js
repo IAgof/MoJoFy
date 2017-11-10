@@ -54,12 +54,7 @@ class VideoDetail extends Component {
     if(confirm('¿Seguro que quieres eliminar el video? Esta acción es permanente.')) {
       axios.delete('http://localhost:3000/video/' + this.props.match.params.id)
         .then(function(res) {
-          var results = res.data;
-
-          self.setState({
-            isLoading: false,
-            video: results
-          });
+          document.location.hash = '#/';
         })
         .catch(function(error) {
           console.error(error);
