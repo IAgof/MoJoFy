@@ -7,6 +7,7 @@ const type = 'video';
 exports.get = get;
 exports.list = list;
 exports.upsert = upsert;
+exports.remove = remove;
 
 
 function get(id, callback) {
@@ -47,4 +48,10 @@ function upsert(data, callback) {
 	// 		callback(data);
 	// 	}
 	// });
+}
+
+function remove(id, callback) {
+	Persistent.remove(type, id, function(data) {
+		callback(data);
+	});
 }

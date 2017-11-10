@@ -2,6 +2,8 @@
 const Acl = require('../access/acl');
 const Response = require('../../network/response');
 
+const Store = require('./store');
+
 
 exports.middleware = function(req, res, next) {
 	
@@ -10,12 +12,13 @@ exports.middleware = function(req, res, next) {
 		Response.error(req, res, next, 401, 'Unauthenticated');
 		return false;
 	}
-
+	
 	Acl.middleware(req, res, function() {
-		
-		// Do more complex stuff here.
-
-		next();
+		if(req.method.toUpperCase() === 'DELETE') {
+			remove(req, res, next);
+		} else {
+			next();
+		}
 	});
 
 	return false;
@@ -24,9 +27,33 @@ exports.middleware = function(req, res, next) {
 
 exports.query = function(token, operation, callback) {
 
-	Acl.acl.query(token.role, 'user', operation, function(err, allow) {
+	Acl.acl.query(token.role, 'video', operation, function(err, allow) {
 		callback(allow);
 	});
 	
 	return false;
 };
+
+
+function remove(req, res, next) {
+	
+	var id = req.params.id || req.params._id || null;
+	var action = '';
+
+	Store.get(id, function(data) {		
+		if(data && data.owner === req.user.sub) {
+			action = 'remove_own';
+			console.log('Shall allow, but lets try to forze error...');
+		} else {
+			action = 'remove_other';
+		}
+
+		Acl.acl.query(req.user.role, 'video', action, function(err, allow) {
+			if(allow) {
+				next();
+			} else {
+				Response.error(req, res, next, 403, 'Unauthorized');
+			}
+		});
+	});
+}

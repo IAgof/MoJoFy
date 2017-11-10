@@ -18,7 +18,7 @@ exports.token = token;
 const roles = {
 	_roleList: ['admin', 'marketing', 'operations', 'guest'],
 	video: {
-		guest: ['read', 'add', 'list'],
+		guest: ['read', 'add', 'list', 'delete', 'remove_own'],
 		marketing: ['read', 'add', 'list'],
 		operations: ['read', 'list', 'add']
 	},
@@ -71,7 +71,7 @@ function middleware(req, res, next, operation) {
 	// const action = getAction(req, token);
 	const action = operation || actionMethod(req, token);
 
-	// console.log('role: ' + role + '; resource: ' + resource + '; action: ' + action + ';');
+	console.log('role: ' + role + '; resource: ' + resource + '; action: ' + action + ';');
 
 	acl.query(role, resource, action, function(err, allow) {
 
