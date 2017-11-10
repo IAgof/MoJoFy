@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 
 // Import utils
-// import axios from 'axios';
+import axios from 'axios';
 
 
 // Import components
@@ -16,8 +16,12 @@ class VideoDetail extends Component {
     super(props);
     
     this.state = {
+      isLoading: true,
       video: null
     };
+    
+    this.getVideo = this.getVideo.bind(this);
+    this.removeVideo = this.removeVideo.bind(this);
   }
 
   componentDidMount() {
@@ -25,68 +29,45 @@ class VideoDetail extends Component {
   }
 
   getVideo() {
-    
-    // axios.get('https://api.themoviedb.org/3/movie/popular?api_key=fcc3e3e91b7cc38185ef902ca797ee11&page=1')
-    //   .then(({ data: { result }}) => {
-    //     console.log('Respuesta:', result);
-    //     this.setState({
-    //       isLoading: false,
-    //       video: result
-    //     });
-    //   })
-    //   .catch(error => {
-    //     console.log(error);
-    //     this.setState({
-    //       isLoading: false
-    //     });
-    //   });
+    var self = this;
 
-    console.log(this.props.match);
+    axios.get('http://localhost:3000/video/' + this.props.match.params.id)
+      .then(function(res) {
+        var results = res.data;
 
-    this.setState({
-      video: this.findVideo(this.props.match.params.id)
-    });
+        self.setState({
+          isLoading: false,
+          video: results
+        });
+      })
+      .catch(function(error) {
+        console.error(error);
+        this.setState({
+          isLoading: false
+        });
+      });
   }
 
-  findVideo(id, callback) {
-    const videos = [
-      {
-        id: '12341',
-        title: 'Video sin título 1',
-        description: '',
-        img: 'https://storage.googleapis.com/mojotest/poster/e8/d4/e8d40b27f59ce35936ba511440bc8f5e.png',
-      },
-      {
-        id: '12342',
-        title: 'Video sin título 2',
-        description: '',
-        img: 'https://storage.googleapis.com/mojotest/poster/e8/d4/e8d40b27f59ce35936ba511440bc8f5e.png',
-      },
-      {
-        id: '12343',
-        title: 'Video sin título 3',
-        description: '',
-        img: 'https://storage.googleapis.com/mojotest/poster/e8/d4/e8d40b27f59ce35936ba511440bc8f5e.png',
-      },
-      {
-        id: '12344',
-        title: 'Video sin título 4',
-        description: '',
-        img: 'https://storage.googleapis.com/mojotest/poster/e8/d4/e8d40b27f59ce35936ba511440bc8f5e.png',
-      },
-      {
-        id: '12345',
-        title: 'Video sin título 5',
-        description: '',
-        img: 'https://storage.googleapis.com/mojotest/poster/e8/d4/e8d40b27f59ce35936ba511440bc8f5e.png',
-      }
-    ];
+  removeVideo() {
+    var self = this;
 
-    for (var i = videos.length - 1; i >= 0; i--) {
-      if(videos[i].id == id) {
-        return videos[i];
-      }
-    };
+    if(confirm('¿Seguro que quieres eliminar el video? Esta acción es permanente.')) {
+      axios.delete('http://localhost:3000/video/' + this.props.match.params.id)
+        .then(function(res) {
+          var results = res.data;
+
+          self.setState({
+            isLoading: false,
+            video: results
+          });
+        })
+        .catch(function(error) {
+          console.error(error);
+          this.setState({
+            isLoading: false
+          });
+        });
+    }
   }
 
 
@@ -96,10 +77,13 @@ class VideoDetail extends Component {
       <div>
       { this.state.video &&
         <div className="video-detail">
-          <h2>{this.state.video.title}</h2>
-          <div>{this.state.video.description}</div>
+          <h2>{this.state.video.title || 'Video sin título'}</h2>
+          <div>{this.state.video.description || ''}</div>
+          <div>
+            <a onClick={this.removeVideo}>Eliminar video</a>
+          </div>
 
-          <Player img={this.state.video.img} />
+          <Player img={this.state.video.poster} />
         </div>
       }
       </div>

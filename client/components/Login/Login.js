@@ -15,6 +15,20 @@ class Login extends Component {
 		super(props);
 
 		this.login = this.login.bind(this);
+
+		// Check if is logged, and decide if load the component or go to other place.
+		var storedState = localStorage.getItem('state');
+		if(storedState) {
+			storedState = JSON.parse(storedState);
+		}
+
+		if(storedState && storedState.auth && storedState.auth.isLogged) {
+			console.log('Was logged. Redirecting to app...');
+			document.location.hash = '#/';
+		}
+
+		// What about logout?
+		console.log(this.props.match.params)
 	}
 
 	login(event) {

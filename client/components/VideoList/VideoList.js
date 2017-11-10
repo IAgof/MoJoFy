@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 
 // Import utils
-// import axios from 'axios';
+import axios from 'axios';
 
 
 // Import components
@@ -15,8 +15,11 @@ class VideoList extends Component {
     super(props);
     
     this.state = {
+      isLoading: true,
       videos: []
     };
+
+    this.getVideos = this.getVideos.bind(this);
   }
 
   componentDidMount() {
@@ -24,23 +27,25 @@ class VideoList extends Component {
   }
 
   getVideos() {
-    
-    // axios.get('https://api.themoviedb.org/3/movie/popular?api_key=fcc3e3e91b7cc38185ef902ca797ee11&page=1')
-    //   .then(({ data: { results }}) => {
-    //     console.log('resultados:', results);
-    //     this.setState({
-    //       isLoading: false,
-    //       videos: results
-    //     });
-    //   })
-    //   .catch(error => {
-    //     console.log(error);
-    //     this.setState({
-    //       isLoading: false
-    //     });
-    //   });
+    var self = this;
 
-    this.setState({
+    axios.get('http://localhost:3000/video')
+      .then(function(res) {
+        var results = res.data;
+
+        self.setState({
+          isLoading: false,
+          videos: results
+        });
+      })
+      .catch(function(error) {
+        console.error(error);
+        this.setState({
+          isLoading: false
+        });
+      });
+
+   /* this.setState({
       videos: [
         {
           id: '12341',
@@ -73,7 +78,7 @@ class VideoList extends Component {
           img: 'https://storage.googleapis.com/mojotest/poster/e8/d4/e8d40b27f59ce35936ba511440bc8f5e.png',
         }
       ]
-    });
+    });*/
 
   }
 
@@ -84,7 +89,7 @@ class VideoList extends Component {
       let rows = [];
       
       for (let i=0; i < data.length; i++) {
-          rows.push(<a href={'#/video/' + data[i].id}><Card key={i} title={data[i].title} description={data[i].description} img={data[i].img} id={data[i].id} /></a>);
+          rows.push(<a href={'#/video/' + data[i]._id}><Card key={i} title={data[i].title} description={data[i].description} img={data[i].poster} id={data[i]._id} /></a>);
       }
 
       return <div className="video-list-cards">{rows}</div>;

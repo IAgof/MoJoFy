@@ -66,7 +66,7 @@ class App extends Component {
             <h1>Vimojo cloud backup</h1>
 
             <Switch>
-              <Route exact path="/login" component={Login} />
+              <Route exact path="/login/:redirect?" component={Login} />
               <PrivateRoute exact path="/video/:id" component={VideoDetail} />
               <PrivateRoute exact path="/" component={VideoList} />
               <Route component={Error404}/>

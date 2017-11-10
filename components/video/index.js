@@ -12,6 +12,7 @@ exports.get = get;
 exports.list = list;
 exports.add = add;
 exports.update = update;
+exports.remove = remove;
 exports.query = query;
 exports.like = like;
 
@@ -108,7 +109,7 @@ function like(id, token, callback) {
 		from: token.sub,
 		entity: 'video',
 		to: id
-	}
+	};
 
 	Like.add(entity, callback);
 }
@@ -124,10 +125,22 @@ function query(params, token, callback, includePass) {
 						delete result[i].password;
 					}
 				}
-				callback(result, null, 201);
+				callback(result, null, 200);
 			} else {
 				callback(null, 'Unable to list videos', 500);
 			}
 		});
 	// });
+}
+
+function remove(id, token, callback) {
+
+	Store.remove(id, function(data) {
+		if(data) {
+			data._id = id;
+			callback(data, null);
+		} else {
+			callback(null, 'That video does not exist', 404);
+		}
+	});
 }
