@@ -11,6 +11,7 @@ import createHashHistory from 'history/createHashHistory';
 import Login from './components/Login/Login';
 import VideoList from './components/VideoList/VideoList';
 import VideoDetail from './components/VideoDetail/VideoDetail';
+import VideoEdit from './components/VideoEdit/VideoEdit';
 import Error404 from './components/Error404/Error404';
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
@@ -68,6 +69,7 @@ class App extends Component {
             <Switch>
               <Route exact path="/login/:redirect?" component={Login} />
               <PrivateRoute exact path="/video/:id" component={VideoDetail} />
+              <PrivateRoute exact path="/video/:id/edit" component={VideoEdit} />
               <PrivateRoute exact path="/" component={VideoList} />
               <Route component={Error404}/>
             </Switch>

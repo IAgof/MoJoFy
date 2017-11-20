@@ -4,6 +4,8 @@ const CloudStorage = require('cloud-storage');
 
 const config = require('../../config');
 
+const Integrity = require('./integrity');
+
 const storage = new CloudStorage({
 	accessId: config.storage_accessId,
 	privateKey: config.storage_keyFilename
@@ -12,12 +14,13 @@ const storage = new CloudStorage({
 
 /* Exposed functions */
 
-exports.move = move;
+exports.move = uploadFile;
 
 
 /* Internal functions */
 
-function move(file, callback) {
+function uploadFile(file, callback) {
+	
 	if(typeof(file) === 'undefined') {
 		console.error('Undefined file');
 		callback('error');
@@ -29,18 +32,54 @@ function move(file, callback) {
 	const fileExtension = fileDot[fileDot.length - 1].toLowerCase();
 	const filetype = file.mimetype.split('/')[0];
 
+	const fileData = {
+		file: file,
+		path: path,	
+		extension: fileExtension,
+		type: filetype 
+	};
+
 	const response = {
+		originalname: file.originalname,
 		type: filetype,
+		hash: null,
 		img: null,
 		video: null
 	};
-	
-	const bucket = 'gs://'+ config.storage_bucket +'/'+ config.storage_folder[filetype] +'/'+ file.filename.substring(0, 2) +'/'+ file.filename.substring(2, 4) +'/'+ file.filename +'.'+ fileExtension;
-	// var bucket = 'gs://'+ config.storage_bucket +'/'+ file.filename +'.'+ fileExtension;
-	// console.log(bucket);
 
-	storage.copy('./'+ path, bucket, function(err, url) {
-		
+	var ops = 2;
+	var responses = 0;
+
+	if(filetype === 'video') {
+		ops = 3;
+		screenshots(fileData, response, function() {
+			if(++responses === ops) {
+				end(path, response, callback);
+			}
+		});	
+	}
+
+	move(fileData, response, function() {
+		if(++responses === ops) {
+			end(path, response, callback);
+		}
+	});
+
+	hash(fileData, response, function() {
+		if(++responses === ops) {
+			end(path, response, callback);
+		}
+	});
+}
+
+
+function move(fileData, response, callback) {
+
+	const bucket = 'gs://'+ config.storage_bucket +'/'+ config.storage_folder[fileData.type] +'/'+ fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'+ fileData.file.filename +'.'+ fileData.extension;
+
+	console.log('Moving to google cloud', bucket);
+
+	storage.copy('./'+ fileData.path, bucket, function(err, url) {
 		if(err) {
 			console.error('Error copying image file:');
 			console.error(err);
@@ -48,32 +87,24 @@ function move(file, callback) {
 			return false;
 		}
 
-		// public url for your file 
-		// console.log(url);
+		console.log('file uploaded');
 
-		if(filetype === 'video') {
+		if(fileData.type === 'video') {
 			response.video = url;
-			response.img = url;
-
-			screenshots(file.filename, path, response, callback);
 		} else {
 			response.img = url;
-			unlink(path);
-			callback(response);
 		}
 
+		callback(response);
 	});
 }
 
-function screenshots(filename, path, response, callback) {
+function screenshots(fileData, response, callback) {
 
-	new ffmpeg('./' + path)
-		// .on('filenames', function(filenames) {
-		// 	console.log('Will generate ' + filenames.join(', '));
-		// })
+	new ffmpeg('./' + fileData.path)
 		.on('end', function() {
-
-			storage.copy('./uploads/'+ filename +'.png', 'gs://'+ config.storage_bucket +'/poster/'+ filename.substring(0, 2) +'/'+ filename.substring(2, 4) +'/'+ filename +'.png', function(err, url) {
+			console.log('screenshots taken');
+			storage.copy('./uploads/'+ fileData.file.filename +'.png', 'gs://'+ config.storage_bucket +'/poster/'+ fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'+ fileData.file.filename +'.png', function(err, url) {
 				if(err) {
 					console.error('Error copying poster file:');
 					console.error(err);
@@ -81,22 +112,24 @@ function screenshots(filename, path, response, callback) {
 					return false;
 				}
 
-				// public url for your poster 
-				// console.log(url);
+				console.log('screenshots uploaded');
 
 				response.img = url;
-
-				unlink(path);
-				unlink('uploads/'+ filename +'.png');
-				
 				callback(response);
 			});
 		})
 		.screenshots({
 			count: 1,
-			filename: filename + '.png',
+			filename: fileData.file.filename + '.png',
 			folder: './uploads'
 		});
+}
+
+function hash(fileData, response, callback) {
+	Integrity.hash(fileData.path, function(hash) {
+		response.hash = hash;
+		callback(response);
+	});
 }
 
 function unlink(path) {
@@ -106,4 +139,9 @@ function unlink(path) {
 			console.error(fserr);
 		}
 	});
+}
+
+function end(path, response, callback) {
+	unlink(path);
+	callback(response);
 }

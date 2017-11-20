@@ -75,10 +75,11 @@ class VideoDetail extends Component {
           <h2>{this.state.video.title || 'Video sin título'}</h2>
           <div>{this.state.video.description || ''}</div>
           <div>
-            <a onClick={this.removeVideo}>Eliminar video</a>
+            <a onClick={this.removeVideo}>Eliminar</a>
+            <a href={'#/video/'+ this.state.video._id + '/edit'}>Editar</a>
           </div>
 
-          <Player img={this.state.video.poster} />
+          <Player img={this.state.video.poster} video={this.state.video.video} />
         </div>
       }
       </div>

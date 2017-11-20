@@ -7,9 +7,7 @@ import Player from '../Player/Player';
 
 const Card = ({className, title, description, img, id}) => (
 	<div className={ 'card card-' + (className || 'small') }>
-		<div className="card-image">
-			<Player img={img} />
-		</div>
+		<div className="card-image" style={{backgroundSize: 'cover', backgroundImage: 'url('+ img +')'}}></div>
 		<strong className="card-title">{title}</strong>
 		<span className="card-description">{description}</span>
 	</div>

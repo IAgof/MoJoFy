@@ -46,6 +46,8 @@ function add(data, token, callback) {
 
 			const model = Model.set(data);
 
+			console.log(model);
+
 			Store.upsert(model, function(result, id) {
 				if(result, id) {
 					model._id = id;
@@ -76,7 +78,7 @@ function update(data, token, callback) {
 	Store.upsert(model, function(result, id) {
 		if(result, id) {
 			model._id = id;
-			callback(model, null, 201);
+			callback(model, null, 200);
 		} else {
 			callback(null, 'Unable to update the video', 500);
 		}

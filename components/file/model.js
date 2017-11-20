@@ -10,7 +10,8 @@ const model = {
 	owner: 'string',
 	url: 'string',
 	// location: 'string',
-	date: 'object'
+	date: 'object',
+	hash: 'string'
 };
 
 function set(data) {

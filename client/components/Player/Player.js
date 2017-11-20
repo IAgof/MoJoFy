@@ -2,9 +2,11 @@
 import React from 'react';
 
 
-const Player = ({img}) => (
+const Player = ({img, video}) => (
 	<div className="player">
-		<div style={{backgroundSize: 'cover', backgroundImage: 'url('+ img +')'}} />
+		<video controls="controls">
+			<source src={video} type="video/mp4" />
+		</video>
 		<span className="player-play"></span>
 	</div>
 );

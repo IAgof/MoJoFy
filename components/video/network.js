@@ -53,6 +53,19 @@ router.post('/', Upload.single('file'), function(req, res, next) {
 	});
 });
 
+// router.put('/', Upload.single('file'), function(req, res, next) {
+router.put('/', Acl, Upload.single('file'), function(req, res, next) {
+	req.body.file = req.file;
+
+	Controller.update(req.body, req.user, function(data, err, code) {
+		if(!err) {
+			Response.success(req, res, next, (code || 200), data);
+		} else {
+			Response.error(req, res, next, (code || 500), err);
+		}
+	});
+});
+
 // router.post('/:id/like', function(req, res, next) {
 router.post('/:id/like', Acl, function(req, res, next) {
 	Controller.like(req.params.id, req.user, function(data, err, code) {
