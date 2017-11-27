@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 // Import utils
 import axios from 'axios';
 
+import config from '../../config';
 
 // Import components
 // import Card from '../Card/Card';
@@ -37,7 +38,7 @@ class Login extends Component {
 		let pass = document.getElementById('login-pass').value;
 		console.log(user, pass);
 
-		axios.post('login', {name: user, password: pass})
+		axios.post(config + '/login', {name: user, password: pass})
 			.then(function(res) {
 				console.log('done!!!');
 				console.log(res);

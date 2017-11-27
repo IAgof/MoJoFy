@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 // Import utils
 import axios from 'axios';
 
+import config from '../../config';
 
 // Import components
 import Player from '../Player/Player';
@@ -31,7 +32,7 @@ class VideoDetail extends Component {
   getVideo() {
     var self = this;
 
-    axios.get('http://localhost:3000/video/' + this.props.match.params.id)
+    axios.get(config.api_url + '/video/' + this.props.match.params.id)
       .then(function(res) {
         var results = res.data;
 

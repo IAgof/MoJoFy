@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 // Import utils
 import axios from 'axios';
 
+import config from '../../config';
 
 // Import components
 import Player from '../Player/Player';
@@ -36,7 +37,7 @@ class VideoEdit extends Component {
   getVideo() {
     var self = this;
 
-    axios.get('http://localhost:3000/video/' + this.props.match.params.id)
+    axios.get(config.api_url + '/video/' + this.props.match.params.id)
       .then(function(res) {
         var results = res.data;
 
@@ -59,7 +60,7 @@ class VideoEdit extends Component {
     console.log(self.state.video);
 
     // if(confirm('¿Seguro que quieres eliminar el video? Esta acción es permanente.')) {
-      axios.put('http://localhost:3000/video', self.state.video)
+      axios.put(config.api_url + '/video', self.state.video)
       // axios.put('http://localhost:3000/video/' + this.props.match.params.id, self.state.video)
         .then(function(res) {
           console.log(res);
