@@ -38,7 +38,7 @@ class Login extends Component {
 		let pass = document.getElementById('login-pass').value;
 		console.log(user, pass);
 
-		axios.post(config + '/login', {name: user, password: pass})
+		axios.post(config.api_url + '/login', {name: user, password: pass})
 			.then(function(res) {
 				console.log('done!!!');
 				console.log(res);

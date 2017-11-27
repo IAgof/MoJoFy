@@ -13239,7 +13239,7 @@ var Login = function (_Component) {
 			var pass = document.getElementById('login-pass').value;
 			console.log(user, pass);
 
-			_axios2.default.post(_config2.default + '/login', { name: user, password: pass }).then(function (res) {
+			_axios2.default.post(_config2.default.api_url + '/login', { name: user, password: pass }).then(function (res) {
 				console.log('done!!!');
 				console.log(res);
 				console.log(res.data);
