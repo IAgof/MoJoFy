@@ -45,6 +45,7 @@ class Login extends Component {
 				console.log(res.data);
 				res.data.isLogged = true;
 				localStorage.setItem('state', JSON.stringify({auth: res.data}));
+				document.location.hash = '#/';
 			})
 			.catch(function(err) {
 				console.error('Error on login request:');
