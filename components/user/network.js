@@ -16,7 +16,8 @@ router.get('/', Acl,  function(req, res, next) {
 	});
 });
 
-router.post('/', Acl,  function(req, res, next) {
+// router.post('/', Acl,  function(req, res, next) {
+router.post('/',  function(req, res, next) {
 	Controller.add(req.body, req.user, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);

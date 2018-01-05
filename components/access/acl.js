@@ -60,6 +60,7 @@ if(roles._roleList) {
 function middleware(req, res, next, operation) {
 
 	if(!req.headers.authorization) {
+		console.error(' -- No authorization header present -- ');
 		Response.error(req, res, next, 401);
 		return false;
 	}
