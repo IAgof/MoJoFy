@@ -32,17 +32,47 @@ function get(id, token, callback, includePass) {
 
 function add(data, token, callback) {
 
-	prepare(data, function(model) {
+	var params = {
+		filters: [],
+		limit: 1
+	};
 
-		Store.upsert(model, function(result, id) {
-			if(result, id) {
-				model._id = id;
-				delete model.password;
-				callback(model, null, 201);
-			} else {
-				callback(null, 'Unable to add the user', 500);
-			}
+	if(typeof data.name === 'string' && data.name !== '') {
+		params.filters.push({
+			field: 'name', 
+			operator: '=', 
+			value: data.name
 		});
+	} else if(typeof data.email === 'string' && data.email !== '') {
+		params.filters.push({
+			field: 'email', 
+			operator: '=', 
+			value: data.email
+		});
+	} else {
+		callback(null, 'Unable to register, no user or email provided', 400);
+		return false;
+	}
+
+	query(params, token, function(found, error, code) {
+		if(found && found.length > 0) {
+			callback(null, 'User already exists', 400);
+			return false;
+		}
+		
+		// Execute all the code;
+		prepare(data, function(model) {
+			Store.upsert(model, function(result, id) {
+				if(result, id) {
+					model._id = id;
+					delete model.password;
+					callback(model, null, 201);
+				} else {
+					callback(null, 'Unable to add the user', 500);
+				}
+			});
+		});
+
 	});
 
 }
@@ -51,6 +81,7 @@ function update(data, token, callback) {
 
 	if(!data.id && !data._id) {
 		callback(null, 'No user id provided', 400);
+		return;
 	}
 
 	prepare(data, function(model) {
