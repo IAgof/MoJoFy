@@ -23,6 +23,7 @@ const roles = {
 		operations: ['read', 'list', 'add']
 	},
 	user: {
+		guest: ['read', 'add', 'edit_own', 'remove_own'],
 		marketing: ['read', 'add', 'list'],
 		operations: ['read', 'add', 'update']
 	}
