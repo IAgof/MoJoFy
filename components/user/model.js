@@ -8,6 +8,7 @@ const model = {
 	// 	minLength: 1
 	// },
 	name: 'string',
+	username: 'string',
 	email: 'string',
 	password: 'string',
 	following: 'number',
