@@ -37,7 +37,7 @@ const model = {
 	}
 };
 
-const Model = Modelate('Video').set(model);
+const Model = new Modelate('Video').set(model);
 
 
 function set(data) {

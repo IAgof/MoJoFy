@@ -19,7 +19,7 @@ const model = {
 	}
 };
 
-const Model = Modelate('File').set(model);
+const Model = new Modelate('File').set(model);
 
 function set(data) {
 	return Model.modelate(data);

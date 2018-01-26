@@ -29,7 +29,7 @@ const model = {
 	}
 };
 
-const Model = Modelate('Achievement').set(model);
+const Model = new Modelate('Achievement').set(model);
 
 function set(data) {
 	return Model.modelate(data);

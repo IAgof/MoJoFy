@@ -40,7 +40,7 @@ const model = {
 	}
 };
 
-const Model = Modelate('User').set(model);
+const Model = new Modelate('User').set(model);
 
 function set(data) {
 	return Model.modelate(data);

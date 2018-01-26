@@ -13,7 +13,7 @@ const model = {
 	}
 };
 
-const Model = Modelate('Like').set(model);
+const Model = new Modelate('Like').set(model);
 
 function set(data) {
 	return Model.modelate(data);
