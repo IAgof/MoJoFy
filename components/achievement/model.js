@@ -1,23 +1,38 @@
 
-const Modelate = require('../../modelate');
+const Modelate = require('modelate');
 
 const model = {
-	// name: {
-	// 	type: 'string',
-	// 	maxLength: 12,
-	// 	minLength: 1
-	// },
-	title: 'string',
-	description: 'string',
-	icon: 'string',
-	creator: 'string',
-	unlocked: 'number',
-	requested: 'number',
-	isLocked: 'boolean'
+	title: {
+		type: 'string',
+		length: {
+			min: 1,
+			max: 64
+		}
+	},
+	description: {
+		type: 'string'
+	},
+	icon: {
+		type: 'string'
+	},
+	creator: {
+		type: 'string'
+	},
+	unlocked: {
+		type: 'number'
+	},
+	requested: {
+		type: 'number'
+	},
+	isLocked: {
+		type: 'boolean'
+	}
 };
 
+const Model = Modelate('Achievement').set(model);
+
 function set(data) {
-	return new Modelate(data, model);
+	return Model.modelate(data);
 }
 
 
