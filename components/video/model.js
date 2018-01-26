@@ -41,7 +41,7 @@ const Model = Modelate('Video').set(model);
 
 
 function set(data) {
-	return new Model.modelate(data);
+	return Model.modelate(data);
 }
 
 
