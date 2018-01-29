@@ -1,21 +1,28 @@
 
-const Modelate = require('../../modelate');
+const Modelate = require('modelate');
 
 const model = {
-	// name: {
-	// 	type: 'string',
-	// 	maxLength: 12,
-	// 	minLength: 1
+	owner: {
+		type: 'string'
+	},
+	url: {
+		type: 'string'
+	},
+	// location: {
+	// 	type: 'object'
 	// },
-	owner: 'string',
-	url: 'string',
-	// location: 'string',
-	date: 'object',
-	hash: 'string'
+	date: {
+		type: 'object'
+	},
+	hash: {
+		type: 'string'
+	}
 };
 
+const Model = new Modelate('File').set(model);
+
 function set(data) {
-	return new Modelate(data, model);
+	return Model.modelate(data);
 }
 
 
