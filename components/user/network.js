@@ -6,10 +6,6 @@ const Controller = require('./');
 const router = express.Router();
 
 
-router.get('/aaa', function(req, res, next) {
-	res.send('bbb');
-});
-
 router.get('/exist', function(req, res, next) {
 // router.get('/exist?:name&:email', Acl,  function(req, res, next) {
 	Controller.exist(req.query, req.user, function(data, err, code) {
