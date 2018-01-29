@@ -9,6 +9,7 @@ const Store = require('./store');
 exports.get = get;
 exports.list = list;
 exports.add = add;
+exports.exist = exist;
 exports.update = update;
 exports.query = query;
 
@@ -32,6 +33,43 @@ function get(id, token, callback, includePass) {
 
 function add(data, token, callback) {
 
+	isUser(data, token, function (exists) {
+
+		if (exists === null) {
+			callback(null, 'Unable to register, no user or email provided', 400);
+			return false;
+		} else if (exists === true) {
+			callback(null, 'User already exists', 400);
+			return false;
+		}
+		
+		// Execute all the code;
+		prepare(data, function(model) {
+			Store.upsert(model, function (result, id) {
+				if (result, id) {
+					model._id = id;
+					delete model.password;
+					callback(model, null, 201);
+				} else {
+					callback(null, 'Unable to add the user', 500);
+				}
+			});
+		});
+	});
+}
+
+function exist(data, token, callback) {
+	isUser(data, token, function (exists) {
+		if (exists === null) {
+			callback(null, 'Unable to register, no user or email provided', 400);
+			return false;
+		}
+
+		callback({exist: exists}, null, 200);
+	});
+}
+
+function isUser(data, token, callback) {
 	var params = {
 		filters: [],
 		limit: 1
@@ -50,31 +88,20 @@ function add(data, token, callback) {
 			value: data.email
 		});
 	} else {
-		callback(null, 'Unable to register, no user or email provided', 400);
-		return false;
+		callback(null);
 	}
 
-	query(params, token, function(found, error, code) {
-		if(found && found.length > 0) {
-			callback(null, 'User already exists', 400);
-			return false;
+	query(params, token, function(found, error) {	//, code) {
+		if(error) {
+			callback(null);
 		}
-		
-		// Execute all the code;
-		prepare(data, function(model) {
-			Store.upsert(model, function(result, id) {
-				if(result, id) {
-					model._id = id;
-					delete model.password;
-					callback(model, null, 201);
-				} else {
-					callback(null, 'Unable to add the user', 500);
-				}
-			});
-		});
 
-	});
-
+		if(found && found.length > 0) {
+			callback(true);
+		} else {
+			callback(false);
+		}
+	}, false);
 }
 
 function update(data, token, callback) {

@@ -6,6 +6,21 @@ const Controller = require('./');
 const router = express.Router();
 
 
+router.get('/aaa', function(req, res, next) {
+	res.send('bbb');
+});
+
+router.get('/exist', function(req, res, next) {
+// router.get('/exist?:name&:email', Acl,  function(req, res, next) {
+	Controller.exist(req.query, req.user, function(data, err, code) {
+		if(!err) {
+			Response.success(req, res, next, (code || 200), data);
+		} else {
+			Response.error(req, res, next, (code || 500), err);
+		}
+	});
+});
+
 router.get('/', Acl,  function(req, res, next) {
 	Controller.list(req.user, function(data, err, code) {
 		if(!err) {
