@@ -6,7 +6,7 @@ exports.isValid = isValid;
 
 // function add() {}
 
-function getVideoCode(id, callback) {
+function getVideoCodes(id, callback) {
 
 	if(!id) {
 		callback(null, 'No video specified', 400);
@@ -17,13 +17,12 @@ function getVideoCode(id, callback) {
 			field: 'video', 
 			operator: '=', 
 			value: id
-		}],
-		limit: 1
+		}]
 	};
 
 	Store.query(params, function(list) {
 		if(list && list.length > 0) {
-			callback(list[0], null);
+			callback(list, null);
 		} else {
 			callback(null, 'That video does not have any code', 404);
 		}
@@ -31,11 +30,15 @@ function getVideoCode(id, callback) {
 }
 
 function isValid(video, code, callback) {
-	getVideoCode(video, function (data) {
-		if(data && data.code === code) {
-			callback(true);
-		} else {
-			callback(false);
+	getVideoCodes(video, function (data) {
+		let result = [];
+
+		if(data) {
+			result = data.filter(function (elem) {
+				return (elem.code === code);
+			});
 		}
+
+		callback(result.length > 0);
 	});
 }
