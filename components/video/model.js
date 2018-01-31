@@ -8,7 +8,7 @@ const model = {
 	video: {
 		type: 'string'
 	},
-	preview: {
+	original: {
 		type: 'string'
 	},
 	verified: {

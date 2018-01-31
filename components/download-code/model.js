@@ -15,7 +15,7 @@ const model = {
 		type: 'object',
 		date: true
 	},
-	validUntil: {
+	expires: {
 		type: 'object',
 		date: true
 	},

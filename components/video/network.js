@@ -1,3 +1,4 @@
+const http = require('https');
 const express = require('express');
 const multer  = require('multer');
 const Acl = require('./acl').middleware;
@@ -10,8 +11,8 @@ const Upload = multer({ dest: Config.upload_folder });
 const router = express.Router();
 
 
-router.get('/:id', Acl,  function(req, res, next) {
-  	Controller.get(req.params.id, req.user, function(data, err, code) {
+router.get('/:id', Acl, function(req, res, next) {
+  	Controller.get(req.params.id, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
@@ -20,7 +21,7 @@ router.get('/:id', Acl,  function(req, res, next) {
 	});
 });
 
-router.get('/', Acl,  function(req, res, next) {
+router.get('/', Acl, function(req, res, next) {
 	Controller.list(req.user, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
@@ -30,7 +31,23 @@ router.get('/', Acl,  function(req, res, next) {
 	});
 });
 
-router.get('/user/:id', Acl,  function(req, res, next) {
+router.get('/:id/original', Acl, function(req, res, next) {
+	const code = req.query.code || null;
+
+	Controller.download(req.params.id, code, function(data, err, code) {
+		if(!err) {
+			const splitUrl = data.split('/');
+			res.setHeader('Content-disposition', 'attachment; filename=' + splitUrl[splitUrl.length - 1]);
+			http.get(data, function(file) {
+				file.pipe(res);
+			});
+		} else {
+			Response.error(req, res, next, (code || 500), err);
+		}
+	});
+});
+
+router.get('/user/:id', Acl, function(req, res, next) {
 	Controller.query({filters: [{field: 'owner', operator: '=', value: req.params.id}]}, req.user, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
