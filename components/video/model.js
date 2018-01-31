@@ -20,6 +20,9 @@ const model = {
 	title: {
 		type: 'string'
 	},
+	productType: {
+		type: 'object'
+	},
 	description: {
 		type: 'string'
 	},
@@ -33,7 +36,8 @@ const model = {
 		type: 'object'
 	},
 	date: {
-		type: 'object'
+		type: 'object',
+		date: true
 	}
 };
 
