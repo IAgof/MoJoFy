@@ -42,7 +42,10 @@ function add(data, token, callback) {
 		// Store file in a proper place ^^
 		FileUpload.move(data.file, function(uploaded) {
 			data.video = uploaded.video;
+			data.preview = uploaded.video;
 			data.poster = uploaded.img;
+
+			data.date = new Date();
 
 			const model = Model.set(data);
 

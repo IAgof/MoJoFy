@@ -8,6 +8,12 @@ const model = {
 	video: {
 		type: 'string'
 	},
+	preview: {
+		type: 'string'
+	},
+	verified: {
+		type: 'boolean'
+	},
 	poster: {
 		type: 'string'
 	},
@@ -24,12 +30,6 @@ const model = {
 		type: 'string'
 	},
 	metadata: {
-		type: 'object'
-	},
-	likes: {
-		type: 'number'
-	},
-	liked: {
 		type: 'object'
 	},
 	date: {
