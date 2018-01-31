@@ -11,6 +11,8 @@ exports.addQueue = addQueue;
 
 function upsert(data, callback) {
 	const id = data.id || data._id || null;
+	delete data.id;
+	delete data._id;
 
 	Persistent.add(type, data, id, function(result, id) {
 		callback(result, id);
