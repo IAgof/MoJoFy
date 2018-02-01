@@ -1,6 +1,7 @@
 const http = require('https');
 const express = require('express');
 const multer  = require('multer');
+const mime = require('mime');
 const Acl = require('./acl').middleware;
 const Config = require('../../config');
 const Response = require('../../network/response');
@@ -37,7 +38,13 @@ router.get('/:id/original', Acl, function(req, res, next) {
 	Controller.download(req.params.id, code, function(data, err, code) {
 		if(!err) {
 			const splitUrl = data.split('/');
-			res.setHeader('Content-disposition', 'attachment; filename=' + splitUrl[splitUrl.length - 1]);
+			const filename = splitUrl[splitUrl.length - 1];
+			const type = mime.getType(filename);
+			res.setHeader('Content-disposition', 'attachment; filename=' + filename);
+			res.setHeader('content-type', type);
+			res.setHeader('x-filename', filename);
+			res.setHeader('access-control-expose-headers', 'x-filename, content-type');
+
 			http.get(data, function(file) {
 				file.pipe(res);
 			});
