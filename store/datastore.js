@@ -3,7 +3,7 @@
 const gcloud = require('google-cloud');
 
 const config = require('../config');
-const logger = require('../logs/logger');
+const logger = require('../logger');
 const Util = require('../util');
 
 const namespace = config.ds_namespace;
