@@ -18,6 +18,8 @@ exports.query = query;
 exports.like = like;
 exports.download = download;
 
+const DEFAULT_CODES = 5;
+
 
 // Internal functions
 
@@ -60,6 +62,7 @@ function add(data, token, callback) {
 			Store.upsert(model, function(result, id) {
 				if(result, id) {
 					model._id = id;
+					DownloadCode.add(id, DEFAULT_CODES);
 					callback(model, null, 201);
 				} else {
 					callback(null, 'Unable to add the video', 500);
