@@ -43,7 +43,7 @@ function remove(req, res, next) {
 	Store.get(id, function(data) {		
 		if(data && data.owner === req.user.sub) {
 			action = 'remove_own';
-			console.log('Shall allow, but lets try to forze error...');
+			console.log('Shall allow, but lets try to force error...');
 		} else {
 			action = 'remove_other';
 		}
