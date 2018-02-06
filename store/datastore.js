@@ -2,7 +2,7 @@
 
 const gcloud = require('google-cloud');
 
-const config = require('../config');
+const config = require('../config/config');
 const logger = require('../logger');
 const Util = require('../util');
 
