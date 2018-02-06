@@ -5,6 +5,9 @@ const config = {
 	port: process.env.PORT || 3000,
 
 	//
+	logLevel: String(process.env.BACKEND_WINSTON_LOG_LEVEL) || info,
+
+	//
 	upload_folder: 'uploads/',
 	
 	// JWT
@@ -13,8 +16,9 @@ const config = {
 	jwt_expires: '1y',		// Format guide: https://github.com/zeit/ms
 
 	// Datastore:
-	ds_namespace: 'YOUR-NAMESPACE',
-	ds_projectId: 'GOOGLE-CLOUD-PROJECT-ID',
+	ds_emulator_host: process.env.DATASTORE_EMULATOR_HOST,
+	ds_namespace: process.env.BACKEND_DATASTORE_NAMESPACE,
+	ds_projectId: process.env.BACKEND_GOOGLE_CLOUD_PROJECT_ID,
 	ds_keyFilename: 'datastore-key.json',
 
 	// Cloud Storage:

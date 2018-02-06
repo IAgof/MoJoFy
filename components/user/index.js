@@ -3,6 +3,7 @@
 const Model = require('./model');
 const Pass = require('../access/password');
 const Store = require('./store');
+const logger = require('../../logger');
 
 // Exposed functions
 
@@ -32,9 +33,8 @@ function get(id, token, callback, includePass) {
 }
 
 function add(data, token, callback) {
-
+	logger.debug("user.add mehod, data - ", data);
 	isUser(data, token, function (exists) {
-
 		if (exists === null) {
 			callback(null, 'Unable to register, no user or email provided', 400);
 			return false;
@@ -90,6 +90,7 @@ function isUser(data, token, callback) {
 	} else {
 		callback(null);
 	}
+	logger.debug("querying with params ", params);
 
 	query(params, token, function(found, error) {	//, code) {
 		if(error) {
@@ -133,8 +134,8 @@ function list(token, callback) {
 }
 
 function query(params, token, callback, includePass) {
-
 	// Acl.query(token, 'list', function(success) {
+
 		Store.list(params, function(result) {
 			if(result) {
 				for (var i = 0; i < result.length; i++) {
