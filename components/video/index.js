@@ -62,7 +62,9 @@ function add(data, token, callback) {
 			Store.upsert(model, function(result, id) {
 				if(result, id) {
 					model._id = id;
-					DownloadCode.add(id, DEFAULT_CODES);
+					DownloadCode.add(id, DEFAULT_CODES, function(codes) {
+						console.log('codes generated:', codes);
+					});
 					callback(model, null, 201);
 				} else {
 					callback(null, 'Unable to add the video', 500);

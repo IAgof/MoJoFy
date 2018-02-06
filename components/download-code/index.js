@@ -16,6 +16,7 @@ function addCodes(videoId, codes, callback) {
 
 	if(!codes || codes > MAX_CODES_PER_REQUEST) {
 		callback(null, 'Impossible to generate that ammount of download codes', 400);
+		return false;
 	}
 
 	const generated = [];
@@ -36,11 +37,12 @@ function addCodes(videoId, codes, callback) {
 	function addedCode(result) {
 		if(!result) {
 			callback(null, 'Error generating download codes', 500);
+			return false;
 		}
 		generated.push(result);
 
 		if(generated.length === count) {
-			callback(generated, null);
+			callback(generated.length, null);
 		}
 	}
 }
