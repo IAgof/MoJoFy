@@ -1,14 +1,54 @@
-// const Model = require('./model');
+const Model = require('./model');
 const Store = require('./store');
 
+// Define a maximum number of codes that can a single request generate.
+const MAX_CODES_PER_REQUEST = 50;
+
+exports.add = addCodes;
 exports.isValid = isValid;
 
+function addCodes(videoId, codes, callback) {
+	if(!videoId) {
+		callback(null, 'No video specified', 400);
+	}
 
-// function add() {}
+	const count = isNaN(Number(codes)) ? 0 : Number(codes);
 
-function getVideoCodes(id, callback) {
+	if(!codes || codes > MAX_CODES_PER_REQUEST) {
+		callback(null, 'Impossible to generate that ammount of download codes', 400);
+		return false;
+	}
 
-	if(!id) {
+	const generated = [];
+
+	for (var i = 0; i < count; i++) {
+		// const code = new Model.set()
+		const code = {
+			video: videoId,
+			code: Math.random().toString(36).substr(2, 6),
+			added: new Date(),
+			used: 0
+		};
+
+		const model = Model.set(code);
+		Store.upsert(model, addedCode);
+	}
+
+	function addedCode(result) {
+		if(!result) {
+			callback(null, 'Error generating download codes', 500);
+			return false;
+		}
+		generated.push(result);
+
+		if(generated.length === count) {
+			callback(generated.length, null);
+		}
+	}
+}
+
+function getVideoCodes(videoId, callback) {
+	if(!videoId) {
 		callback(null, 'No video specified', 400);
 	}
 
@@ -16,7 +56,7 @@ function getVideoCodes(id, callback) {
 		filters: [{
 			field: 'video', 
 			operator: '=', 
-			value: id
+			value: videoId
 		}]
 	};
 
@@ -29,8 +69,8 @@ function getVideoCodes(id, callback) {
 	});
 }
 
-function isValid(video, code, callback) {
-	getVideoCodes(video, function (data) {
+function isValid(videoId, code, callback) {
+	getVideoCodes(videoId, function (data) {
 		let result = [];
 
 		if(data) {
