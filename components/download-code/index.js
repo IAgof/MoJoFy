@@ -48,7 +48,7 @@ function addCodes(videoId, codes, callback) {
 }
 
 function getVideoCodes(videoId, callback) {
-	if(!video) {
+	if(!videoId) {
 		callback(null, 'No video specified', 400);
 	}
 
