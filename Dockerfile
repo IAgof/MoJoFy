@@ -1,5 +1,10 @@
 # vim:set ft=dockerfile:
 FROM node:7
+RUN echo "deb http://ftp.uk.debian.org/debian jessie-backports main" >> /etc/apt/sources.list
+RUN set -ex; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        ffmpeg
 RUN mkdir -p /app/src
 WORKDIR /app
 # Install app dependencies
