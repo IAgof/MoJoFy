@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('express-jwt');
 
-const Config = require('./config/config');
+const Config = require('./config');
 const Routes = require('./network/routes');
 
 const server = express();

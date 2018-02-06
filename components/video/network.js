@@ -3,7 +3,7 @@ const express = require('express');
 const multer  = require('multer');
 const mime = require('mime');
 const Acl = require('./acl').middleware;
-const Config = require('../../config/config');
+const Config = require('../../config');
 const Response = require('../../network/response');
 const Controller = require('./');
 

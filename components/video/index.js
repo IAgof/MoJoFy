@@ -3,9 +3,11 @@ const FileUpload = require('../file');
 // const Acl = require('./acl');
 const Model = require('./model');
 const Store = require('./store');
+const logger = require('../../logger');
 
 const Like = require('../like');
 const DownloadCode = require('../download-code');
+const Notifications = require('../email_notifications');
 
 // Exposed functions
 
@@ -24,7 +26,6 @@ const DEFAULT_CODES = 5;
 // Internal functions
 
 function get(id, callback, includeOriginal) {
-
 	Store.get(id, function(data) {
 		if(data) {
 			data._id = id;
@@ -39,32 +40,37 @@ function get(id, callback, includeOriginal) {
 	});
 }
 
-function add(data, token, callback) {
+function generate_download_codes(id) {
+    DownloadCode.add(id, DEFAULT_CODES, function (codes) {
+        logger.info('codes generated:', codes);
+    });
+}
 
+function notify_video_upload(video) {
+	Notifications.notifyVideoUploaded(video);
+}
+
+function add(data, token, callback) {
 	if(!data.owner) {
 		data.owner = token.sub;
 	}
 
 	if(data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
-
 		// Store file in a proper place ^^
 		FileUpload.move(data.file, function(uploaded) {
 			data.video = uploaded.video;
 			data.original = uploaded.video;
 			data.poster = uploaded.img;
-
 			data.date = new Date();
 
 			const model = Model.set(data);
-
-			console.log(model);
+			logger.debug(model);
 
 			Store.upsert(model, function(result, id) {
-				if(result, id) {
+				if (result, id) {
 					model._id = id;
-					DownloadCode.add(id, DEFAULT_CODES, function(codes) {
-						console.log('codes generated:', codes);
-					});
+					generate_download_codes(id);
+					notify_video_upload(data);
 					callback(model, null, 201);
 				} else {
 					callback(null, 'Unable to add the video', 500);

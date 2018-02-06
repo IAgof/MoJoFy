@@ -2,8 +2,8 @@ const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
 const CloudStorage = require('cloud-storage');
 
-const config = require('../../config/config');
-
+const config = require('../../config');
+const logger = require('../../logger');
 const Integrity = require('./integrity');
 
 const storage = new CloudStorage({
@@ -20,9 +20,8 @@ exports.move = uploadFile;
 /* Internal functions */
 
 function uploadFile(file, callback) {
-	
-	if(typeof(file) === 'undefined') {
-		console.error('Undefined file');
+	if (typeof(file) === 'undefined') {
+		logger.error('Undefined file');
 		callback('error');
 		return false;
 	}
@@ -50,22 +49,33 @@ function uploadFile(file, callback) {
 	var ops = 2;
 	var responses = 0;
 
-	if(filetype === 'video') {
+	if (filetype === 'video') {
 		ops = 3;
-		screenshots(fileData, response, function() {
+		makeScreenshots(fileData, function(url) {
+			if (url) {
+				response.img = url;
+			}
 			if(++responses === ops) {
 				end(path, response, callback);
 			}
 		});	
 	}
 
-	move(fileData, response, function() {
+	moveToGCloudStorage(fileData, function(url) {
+        if (fileData.type === 'video') {
+            response.video = url;
+        } else {
+            response.img = url;
+        }
 		if(++responses === ops) {
 			end(path, response, callback);
 		}
 	});
 
-	hash(fileData, response, function() {
+	generateHash(fileData, function(hash) {
+		if (hash) {
+            response.hash = hash;
+        }
 		if(++responses === ops) {
 			end(path, response, callback);
 		}
@@ -73,50 +83,53 @@ function uploadFile(file, callback) {
 }
 
 
-function move(fileData, response, callback) {
+function moveToGCloudStorage(fileData, callback) {
+    const localVideoPath = './'+ fileData.path;
+	if (config.cloud_storage === 'gcloud') {
+        const bucket = 'gs://'+ config.storage_bucket +'/'+ config.storage_folder[fileData.type] +'/'
+			+ fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'
+			+ fileData.file.filename +'.'+ fileData.extension;
+        logger.debug('Moving to google cloud', bucket);
 
-	const bucket = 'gs://'+ config.storage_bucket +'/'+ config.storage_folder[fileData.type] +'/'+ fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'+ fileData.file.filename +'.'+ fileData.extension;
-
-	console.log('Moving to google cloud', bucket);
-
-	storage.copy('./'+ fileData.path, bucket, function(err, url) {
-		if(err) {
-			console.error('Error copying image file:');
-			console.error(err);
-			callback('error');
-			return false;
-		}
-
-		console.log('file uploaded');
-
-		if(fileData.type === 'video') {
-			response.video = url;
-		} else {
-			response.img = url;
-		}
-
-		callback(response);
-	});
+        storage.copy(localVideoPath, bucket, function(err, url) {
+            if (err) {
+                logger.error('Error copying image file:');
+                logger.error(err);
+                callback();
+                return false;
+            }
+            logger.info('file uploaded');
+            callback(url);
+        });
+	} else {
+		// TODO(jliarte): generate backend uri
+		callback(localVideoPath);
+	}
 }
 
-function screenshots(fileData, response, callback) {
-
+function makeScreenshots(fileData, callback) {
 	new ffmpeg('./' + fileData.path)
 		.on('end', function() {
-			console.log('screenshots taken');
-			storage.copy('./uploads/'+ fileData.file.filename +'.png', 'gs://'+ config.storage_bucket +'/poster/'+ fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'+ fileData.file.filename +'.png', function(err, url) {
-				if(err) {
-					console.error('Error copying poster file:');
-					console.error(err);
-					callback('error');
-					return false;
-				}
-
-				console.log('screenshots uploaded');
-
-				response.img = url;
-				callback(response);
-			});
+			logger.info('screenshots taken');
+            const localVideoScreenshotPath = './uploads/'+ fileData.file.filename +'.png';
+            if (config.cloud_storage === 'gcloud') {
+                var bucket = 'gs://'+ config.storage_bucket +'/poster/'+
+                    fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'+
+                    fileData.file.filename +'.png';
+                storage.copy(localVideoScreenshotPath, bucket, function(err, url) {
+                    if(err) {
+                        logger.error('Error copying poster file:');
+                        logger.error(err);
+                        callback(null);
+                        return false;
+                    }
+                    logger.info('screenshots uploaded');
+                    callback(url);
+                });
+            } else {
+                // TODO(jliarte): generate backend uri
+				callback(localVideoScreenshotPath);
+			}
 		})
 		.screenshots({
 			count: 1,
@@ -125,10 +138,9 @@ function screenshots(fileData, response, callback) {
 		});
 }
 
-function hash(fileData, response, callback) {
+function generateHash(fileData, callback) {
 	Integrity.hash(fileData.path, function(hash) {
-		response.hash = hash;
-		callback(response);
+		callback(hash);
 	});
 }
 

@@ -22,13 +22,21 @@ const config = {
 	ds_keyFilename: 'datastore-key.json',
 
 	// Cloud Storage:
+	cloud_storage: process.env.BACKEND_CLOUD_STORAGE_TYPE,
 	storage_accessId: 'YOUR-CLIENT-ACCESS-ID@developer.gserviceaccount.com',
 	storage_keyFilename: './cloud-storage-key.pem',
 	storage_bucket: 'YOUR-BUCKET-NAME',
 	storage_folder: {
 		image: 'image',
 		video: 'video'
-	}
+	},
+
+	// Sendgrid
+	sendgridApiKey: process.env.SENDGRID_API_KEY,
+
+	// Email notifications:
+	emailNotificationsRecipient: process.env.BACKEND_EMAIL_NOTIFICATIONS_RECEIVER,
+	emailNotificationsSender: process.env.BACKEND_EMAIL_NOTIFICATIONS_SENDER,
 };
 
 module.exports = config;
