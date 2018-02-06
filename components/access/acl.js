@@ -6,7 +6,7 @@ const JWT = require('jsonwebtoken');
 
 const Response = require('../../network/response');
 
-const Config = require('../../config');
+const Config = require('../../config/config');
 
 exports.acl = acl;
 exports.middleware = middleware;
