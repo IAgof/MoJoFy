@@ -30,6 +30,11 @@ const config = {
 		image: 'image',
 		video: 'video'
 	},
+	
+	frontend_url: process.env.FRONTEND_URL,
+	
+	// LocalCloudStorage
+	local_cloud_storage_host: process.env.LOCAL_CLOUD_STORAGE_HOST,
 
 	// Sendgrid
 	sendgridApiKey: process.env.SENDGRID_API_KEY,

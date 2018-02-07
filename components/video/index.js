@@ -70,7 +70,7 @@ function add(data, token, callback) {
 				if (result, id) {
 					model._id = id;
 					generate_download_codes(id);
-					notify_video_upload(data);
+					notify_video_upload(model);
 					callback(model, null, 201);
 				} else {
 					callback(null, 'Unable to add the video', 500);

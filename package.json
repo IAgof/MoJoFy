@@ -37,7 +37,11 @@
     "modelate": "^0.2.2",
     "multer": "1.3.0",
     "virgen-acl": "0.0.22",
-    "winston": "^2.4.0"
+    "winston": "^2.4.0",
+		"@sendgrid/mail": "6.2.1",
+		"bluebird": "^3.5.0",
+		"fs": "0.0.1-security",
+		"handlebars": "^4.0.10"
   },
   "devDependencies": {
     "nodemon": "^1.14.12"
