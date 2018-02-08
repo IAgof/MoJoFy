@@ -11,9 +11,9 @@ const config = {
 	upload_folder: 'uploads/',
 	
 	// JWT
-	jwt_secret: 'secret',
-	jwt_issuer: 'issuer',
-	jwt_expires: '1y',		// Format guide: https://github.com/zeit/ms
+	jwt_secret: process.env.JWT_SECRET,
+	jwt_issuer: process.env.JWT_ISSUER,
+	jwt_expires: process.env.JWT_TOKEN_EXPIRATION,		// Format guide: https://github.com/zeit/ms
 
 	// Datastore:
 	ds_emulator_host: process.env.DATASTORE_EMULATOR_HOST,
