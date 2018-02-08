@@ -84,14 +84,14 @@ function uploadFile(file, callback) {
 
 
 function moveToGCloudStorage(fileData, callback) {
-    const localVideoPath = fileData.path;
+    const localPath = fileData.path;
 	if (config.cloud_storage === 'gcloud') {
         const bucket = 'gs://'+ config.storage_bucket +'/'+ config.storage_folder[fileData.type] +'/'
 			+ fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'
 			+ fileData.file.filename +'.'+ fileData.extension;
         logger.debug('Moving to google cloud', bucket);
 
-        storage.copy('./' + localVideoPath, bucket, function(err, url) {
+        storage.copy('./' + localPath, bucket, function(err, url) {
             if (err) {
                 logger.error('Error copying image file:');
                 logger.error(err);
@@ -102,7 +102,7 @@ function moveToGCloudStorage(fileData, callback) {
             callback(url);
         });
 	} else {
-		callback(config.local_cloud_storage_host + localVideoPath);
+		callback(config.local_cloud_storage_host + localPath);
 	}
 }
 
@@ -112,9 +112,9 @@ function makeScreenshots(fileData, callback) {
 			logger.info('screenshots taken');
 			const localVideoScreenshotPath = 'uploads/' + fileData.file.filename + '.png';
 			if (config.cloud_storage === 'gcloud') {
-				var bucket = 'gs://' + config.storage_bucket + '/poster/' +
-					fileData.file.filename.substring(0, 2) + '/' + fileData.file.filename.substring(2, 4) + '/' +
-					fileData.file.filename + '.png';
+				var bucket = 'gs://' + config.storage_bucket + '/poster/'
+					+ fileData.file.filename.substring(0, 2) + '/' + fileData.file.filename.substring(2, 4) + '/'
+					+ fileData.file.filename + '.png';
 				storage.copy('./' + localVideoScreenshotPath, bucket, function (err, url) {
 					if (err) {
 						logger.error('Error copying poster file:');
