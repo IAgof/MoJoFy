@@ -17,6 +17,9 @@ function getTemplate (path, mapObj) {
 };
 
 function sendNotificationVideoUploadedMail(user, video) {
+	if (!config.emailNotificationsRecipient) {
+		return;
+	}
 	// TODO: Keep an eye on i18n
 	var subject = 'Se ha subido un nuevo vídeo a Vimojo.';
 	if (user) {
@@ -38,7 +41,8 @@ function sendNotificationVideoUploadedMail(user, video) {
 		platform_url: 'http://vimojo.co',
 		poster: video.poster,
 	}).then(data => {
-		msg.html = data;
+        logger.debug("Sending notification of uploaded video ", video);
+        msg.html = data;
 		sendgridMail.send(msg);
 	}).catch(e => {
 		logger.error(e);
@@ -47,7 +51,6 @@ function sendNotificationVideoUploadedMail(user, video) {
 }
 
 function notifyVideoUploaded(video) {
-	logger.debug("Notification of uploaded video ", video);
 	user.get(video.owner, null, function (user) {
 		sendNotificationVideoUploadedMail(user, video);
 	});
