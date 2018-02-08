@@ -1,53 +1,25 @@
+const winston = require('winston');
+const Config = require('./config');
 // Logger
 
-const self = {
-	log: log,
-	warn: warning,
-	warning: warning,
-	error: error,
-	err: error
-};
+const tsFormat = () => (new Date()).toLocaleTimeString();
+const logLevel = Config.logLevel;
 
-function error(data, silentDate) {
-	
-	if(!silentDate) {
-		common('error');
-	}
+const logger = new winston.Logger({
+    level: logLevel,
+    transports: [
+        //
+        // - Write to all logs with level `info` and below to `combined.log`
+        // - Write all logs error (and below) to `error.log`.
+        //
+        new (winston.transports.Console)({
+            timestamp: tsFormat,
+            colorize: true,
+        }),
+        // new (winston.transports.File)({ filename: 'winston.log' })
+    ]
+});
+logger.logLevel = logLevel;
+console.log("instantiated winston with level ", logger.logLevel);
 
-	console.error(data);
-}
-
-function warning(data, silentDate) {
-	
-	if(!silentDate) {
-		common('error');
-	}
-
-	console.warn(data);
-}
-
-function log(data, silentDate) {
-	
-	if(!silentDate) {
-		common('error');
-	}
-
-	console.log(data);
-}
-
-
-function common(level, data) {
-
-	const d = new Date();
-	const s = '['+ d.getFullYear() +'-'+ (d.getMonth() + 1) +'-'+ d.getDate() +']';
-
-	if(typeof(data) === 'string') {
-		self[level](s + ' ' + data, true);
-	} else {
-		self[level](s, true);
-		self[level](data, true);
-	}
-}
-
-
-module.exports = self;
+module.exports = logger;

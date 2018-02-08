@@ -1,3 +1,6 @@
+# idea config dir
+.idea
+
 # Logs
 logs
 *.log
