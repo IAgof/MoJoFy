@@ -95,7 +95,11 @@ function moveToCloudStorage(fileData, storageFolder) {
 					resolve(url)
 				});
 			} else {
-				resolve(config.local_cloud_storage_host + '/' + fileData.path);
+				fs.rename(fileData.path, fileData.path + '.' + fileData.extension, function (err) {
+					if (!err) {
+						resolve(config.local_cloud_storage_host + '/' + fileData.path + '.' + fileData.extension);
+					}
+				})
 			}
 		}
 	});

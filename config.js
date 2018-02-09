@@ -12,7 +12,7 @@ const config = {
 	
 	// JWT
 	jwt_secret: process.env.JWT_SECRET,
-	jwt_issuer: process.env.JWT_ISSUER,
+	//jwt_issuer: process.env.JWT_ISSUER,
 	jwt_expires: process.env.JWT_TOKEN_EXPIRATION,		// Format guide: https://github.com/zeit/ms
 
 	// Datastore:
