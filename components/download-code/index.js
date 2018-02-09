@@ -1,5 +1,6 @@
 const Model = require('./model');
 const Store = require('./store');
+const logger = require('../../logger');
 
 // Define a maximum number of codes that can a single request generate.
 const MAX_CODES_PER_REQUEST = 50;
@@ -19,7 +20,8 @@ function addCodes(videoId, codes, callback) {
 		return false;
 	}
 
-	const generated = [];
+	// const generated = [];
+	const generatedCodes = [];
 
 	for (var i = 0; i < count; i++) {
 		// const code = new Model.set()
@@ -31,20 +33,29 @@ function addCodes(videoId, codes, callback) {
 		};
 
 		const model = Model.set(code);
-		Store.upsert(model, addedCode);
+		generatedCodes.push(model);
+		// logger.debug("code to generate: ", code);
+		Store.upsert(model, function (result) {
+			if(!result) {
+				callback(null, 'Error generating download codes', 500);
+				return false;
+			}
+			generatedCodes.push(model);
+		});
 	}
+	callback(generatedCodes);
 
-	function addedCode(result) {
-		if(!result) {
-			callback(null, 'Error generating download codes', 500);
-			return false;
-		}
-		generated.push(result);
-
-		if(generated.length === count) {
-			callback(generated.length, null);
-		}
-	}
+	// function addedCode(result) {
+	// 	if(!result) {
+	// 		callback(null, 'Error generating download codes', 500);
+	// 		return false;
+	// 	}
+	// 	generated.push(result);
+	//
+	// 	if(generated.length === count) {
+	// 		callback(generated, null);
+	// 	}
+	// }
 }
 
 function getVideoCodes(videoId, callback) {

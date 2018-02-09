@@ -43,6 +43,7 @@ function get(id, callback, includeOriginal) {
 function generate_download_codes(id) {
     DownloadCode.add(id, DEFAULT_CODES, function (codes) {
         logger.info('codes generated:', codes);
+        Notifications.notifyVideoCodesGenerated(id, codes);
     });
 }
 
