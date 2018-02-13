@@ -3,7 +3,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const CloudStorage = require('cloud-storage');
 
 const config = require('../../config');
-
+const logger = require('../../logger');
 const Integrity = require('./integrity');
 
 const storage = new CloudStorage({
@@ -11,137 +11,154 @@ const storage = new CloudStorage({
 	privateKey: config.storage_keyFilename
 });
 
+const thumbType = 'png';
+
 
 /* Exposed functions */
 
 exports.move = uploadFile;
 
-
 /* Internal functions */
 
 function uploadFile(file, callback) {
-	
-	if(typeof(file) === 'undefined') {
-		console.error('Undefined file');
-		callback('error');
+	if (typeof(file) === 'undefined') {
+		logger.error('Undefined file');
+		callback('error, unrecognized file type.');
 		return false;
 	}
 
-	const path = file.path.replace('\\', '/');	// Clean extrange bars in file path
-	const fileDot = file.originalname.split('.');
-	const fileExtension = fileDot[fileDot.length - 1].toLowerCase();
-	const filetype = file.mimetype.split('/')[0];
-
-	const fileData = {
-		file: file,
-		path: path,	
-		extension: fileExtension,
-		type: filetype 
-	};
-
+	const originalFileData = getFileData(file);
 	const response = {
 		originalname: file.originalname,
-		type: filetype,
+		type: originalFileData.type,
 		hash: null,
 		img: null,
 		video: null
 	};
 
-	var ops = 2;
-	var responses = 0;
-
-	if(filetype === 'video') {
-		ops = 3;
-		screenshots(fileData, response, function() {
-			if(++responses === ops) {
-				end(path, response, callback);
+	Promise.all([makeScreenshots(originalFileData), generateHash(originalFileData)])
+		.then(values => {
+			let [screenShotFileData, hash] = values;
+			if (hash) {
+				response.hash = hash;
 			}
-		});	
-	}
-
-	move(fileData, response, function() {
-		if(++responses === ops) {
-			end(path, response, callback);
-		}
-	});
-
-	hash(fileData, response, function() {
-		if(++responses === ops) {
-			end(path, response, callback);
-		}
-	});
-}
-
-
-function move(fileData, response, callback) {
-
-	const bucket = 'gs://'+ config.storage_bucket +'/'+ config.storage_folder[fileData.type] +'/'+ fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'+ fileData.file.filename +'.'+ fileData.extension;
-
-	console.log('Moving to google cloud', bucket);
-
-	storage.copy('./'+ fileData.path, bucket, function(err, url) {
-		if(err) {
-			console.error('Error copying image file:');
-			console.error(err);
-			callback('error');
-			return false;
-		}
-
-		console.log('file uploaded');
-
-		if(fileData.type === 'video') {
-			response.video = url;
-		} else {
-			response.img = url;
-		}
-
-		callback(response);
-	});
-}
-
-function screenshots(fileData, response, callback) {
-
-	new ffmpeg('./' + fileData.path)
-		.on('end', function() {
-			console.log('screenshots taken');
-			storage.copy('./uploads/'+ fileData.file.filename +'.png', 'gs://'+ config.storage_bucket +'/poster/'+ fileData.file.filename.substring(0, 2) +'/'+ fileData.file.filename.substring(2, 4) +'/'+ fileData.file.filename +'.png', function(err, url) {
-				if(err) {
-					console.error('Error copying poster file:');
-					console.error(err);
-					callback('error');
-					return false;
-				}
-
-				console.log('screenshots uploaded');
-
-				response.img = url;
-				callback(response);
-			});
-		})
-		.screenshots({
-			count: 1,
-			filename: fileData.file.filename + '.png',
-			folder: './uploads'
+			Promise.all([
+				moveToCloudStorage(screenShotFileData).then(screenShotURL => {
+					if (screenShotURL) {
+						response.img = screenShotURL;
+					}
+				}),
+				moveToCloudStorage(originalFileData).then(url => {
+					if (originalFileData.type === 'video') {
+						response.video = url;
+					} else {
+						response.img = url;
+					}
+				})])
+				.then(values => {
+					end(response, callback);
+				})
+				.catch(reason => {
+					logger.error("Error moving to cloud storage", reason);
+				})
 		});
 }
 
-function hash(fileData, response, callback) {
-	Integrity.hash(fileData.path, function(hash) {
-		response.hash = hash;
-		callback(response);
+class FileData {
+	constructor(filename, path, extension, type) {
+		this.filename = filename;
+		this.path = path;
+		this.extension = extension;
+		this.type = type;
+	}
+}
+
+function getFileData(file) {
+	const path = file.path.replace('\\', '/');	// Clean strange bars in file path
+	const fileDot = file.originalname.split('.');
+	const fileExtension = fileDot[fileDot.length - 1].toLowerCase();
+	const filetype = file.mimetype.split('/')[0];
+
+	return new FileData(file.filename, path, fileExtension, filetype);
+}
+
+function moveToCloudStorage(fileData, storageFolder) {
+	return new Promise(resolve => {
+		if (fileData) {
+			logger.debug("Move to cloud storage filedata: ", fileData);
+			if (config.cloud_storage === 'gcloud') {
+				let remotePath = '/' + storageFolder + '/'
+					+ fileData.filename.substring(0, 2) + '/' + fileData.filename.substring(2, 4) + '/'
+					+ fileData.filename + '.' + fileData.extension;
+				copyToGCloudStorage(remotePath, fileData.path, callback).then(url => {
+					unlink(url.path);
+					resolve(url)
+				});
+			} else {
+				fs.rename(fileData.path, fileData.path + '.' + fileData.extension, function (err) {
+					if (!err) {
+						resolve(config.local_cloud_storage_host + '/' + fileData.path + '.' + fileData.extension);
+					}
+				})
+			}
+		}
 	});
 }
 
+function copyToGCloudStorage(remotePath, localPath) {
+	return new Promise((resolve, reject) => {
+		const bucket = 'gs://' + config.storage_bucket + remotePath;
+		storage.copy('./' + localPath, bucket, function (err, url) {
+			if (err) {
+				logger.error('Error copying file:');
+				logger.error(err);
+				reject();
+			}
+			logger.info('file uploaded');
+			resolve(url);
+		});
+	})
+
+}
+
+function makeScreenshots(fileData, callback) {
+	return new Promise(resolve => {
+		if (fileData.type == 'video') {
+			let thumbFileName = fileData.filename + '.' + thumbType;
+			new ffmpeg('./' + fileData.path)
+				.screenshots({
+					count: 1,
+					filename: thumbFileName,
+					folder: './uploads'
+				})
+				.on('end', function () {
+					logger.info('screenshots taken');
+					resolve(new FileData(thumbFileName, fileData.path + '.' + thumbType, thumbType, fileData.type));
+				});
+		}
+	});
+}
+
+function generateHash(fileData) {
+	return new Promise(resolve => {
+		Integrity.hash(fileData.path, function (hash) {
+			logger.debug("Hash generated");
+			resolve(hash);
+		});
+	})
+
+}
+
 function unlink(path) {
-	fs.unlink('./' + path, function(fserr) {
-		if(fserr) {
+	logger.debug("Removing file: " + path);
+	fs.unlink('./' + path, function (fserr) {
+		if (fserr) {
 			console.error('Remove image error:');
 			console.error(fserr);
 		}
 	});
 }
 
-function end(path, response, callback) {
-	unlink(path);
+function end(response, callback) {
 	callback(response);
 }
