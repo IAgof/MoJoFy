@@ -12,7 +12,7 @@ const Upload = multer({ dest: Config.upload_folder });
 const router = express.Router();
 
 
-router.get('/:id', Acl, function(req, res, next) {
+router.get('/:id', function(req, res, next) {
   	Controller.get(req.params.id, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
@@ -32,7 +32,7 @@ router.get('/', Acl, function(req, res, next) {
 	});
 });
 
-router.get('/:id/original', Acl, function(req, res, next) {
+router.get('/:id/original', function(req, res, next) {
 	const code = req.query.code || null;
 
 	Controller.download(req.params.id, code, function(data, err, code) {
