@@ -11,9 +11,9 @@ const config = {
 	upload_folder: 'uploads/',
 	
 	// JWT
-	jwt_secret: 'secret',
-	jwt_issuer: 'issuer',
-	jwt_expires: '1y',		// Format guide: https://github.com/zeit/ms
+	jwt_secret: process.env.JWT_SECRET,
+	//jwt_issuer: process.env.JWT_ISSUER,
+	jwt_expires: process.env.JWT_TOKEN_EXPIRATION,		// Format guide: https://github.com/zeit/ms
 
 	// Datastore:
 	ds_emulator_host: process.env.DATASTORE_EMULATOR_HOST,
@@ -22,13 +22,26 @@ const config = {
 	ds_keyFilename: 'datastore-key.json',
 
 	// Cloud Storage:
+	cloud_storage: process.env.BACKEND_CLOUD_STORAGE_TYPE,
 	storage_accessId: 'YOUR-CLIENT-ACCESS-ID@developer.gserviceaccount.com',
 	storage_keyFilename: './cloud-storage-key.pem',
 	storage_bucket: 'YOUR-BUCKET-NAME',
 	storage_folder: {
 		image: 'image',
 		video: 'video'
-	}
+	},
+	
+	frontend_url: process.env.FRONTEND_URL,
+	
+	// LocalCloudStorage
+	local_cloud_storage_host: process.env.LOCAL_CLOUD_STORAGE_HOST,
+
+	// Sendgrid
+	sendgridApiKey: process.env.SENDGRID_API_KEY,
+
+	// Email notifications:
+	emailNotificationsRecipient: process.env.BACKEND_EMAIL_NOTIFICATIONS_RECEIVER,
+	emailNotificationsSender: process.env.BACKEND_EMAIL_NOTIFICATIONS_SENDER,
 };
 
 module.exports = config;

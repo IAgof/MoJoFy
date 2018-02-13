@@ -1,4 +1,5 @@
-const http = require('https');
+const http = require('http');
+const https = require('https');
 const express = require('express');
 const multer  = require('multer');
 const mime = require('mime');
@@ -45,7 +46,11 @@ router.get('/:id/original', function(req, res, next) {
 			res.setHeader('x-filename', filename);
 			res.setHeader('access-control-expose-headers', 'x-filename, content-type');
 
-			http.get(data, function(file) {
+			let transport = http;
+			if (data.startsWith('https')) {
+				transport = https;
+			}
+			transport.get(data, function(file) {
 				file.pipe(res);
 			});
 		} else {
