@@ -107,13 +107,47 @@ function update(data, token, callback) {
 
 }
 
-function list(token, callback) {
+function list(token, callback, query) {
 
 	const params = {};
 
+	if (query && typeof query === 'object') {
+
+		if (query.limit && typeof query.limit === 'number' && query.limit >= 0) {
+			params.limit = query.limit;
+		}
+
+		if (query.offset && typeof query.offset === 'number' && query.offset >= 0) {
+			params.offset = query.offset;
+		}
+
+		if (query.tag && typeof query.tag === 'string') {
+			if(!params.filters) {
+				params.filters = [];
+			}
+			params.filters.push({
+				field: 'tags',
+				operator: '=',
+				value: query.tag
+			});
+		}
+
+		if (query.exludeTag && typeof query.exludeTag === 'string') {
+			if(!params.filters) {
+				params.filters = [];
+			}
+
+			params.filters.push({
+				field: 'tags',
+				operator: '!=',
+				value: query.exludeTag
+			});
+		}
+	}
+
 	console.log(token);
 
-	if(token && token.role === 'admin')  {
+	if (token && token.role === 'admin')  {
 		console.log('An admin asked for all videos...');
 	} else {
 		params.filters = [{
