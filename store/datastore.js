@@ -14,7 +14,6 @@ const dataset = gcloud.datastore({
 
 
 function Key(kind, id) {
-
 	const path = [kind];
 
 	if(id && !isNaN(Number(id))) {
@@ -30,8 +29,10 @@ function Key(kind, id) {
 
 }
 
+/**
+ *	 
+ */
 function get(kind, id, cb) {
-
 	if(!cb && typeof(id) === 'function') {
 		cb = id;
 		cb(null);
@@ -59,8 +60,10 @@ function get(kind, id, cb) {
 	});
 }
 
+/**
+ *	 
+ */
 function upsert(kind, data, id, cb) {
-
 	if(!cb && typeof(id) === 'function') {
 		cb = id;
 		id = null;
@@ -94,8 +97,10 @@ function upsert(kind, data, id, cb) {
 	}
 }
 
+/**
+ *	 [internal]
+ */
 function save(key, data, cb) {
-
 	dataset.save({
         key: key,
         data: data
@@ -105,19 +110,23 @@ function save(key, data, cb) {
         if(err) {
         	logger.err('There have been an error upserting the '+ key.path[0] +' '+ key.path[1] +' to datastore');
 			logger.err(err, true);
-			cb(false, null);
+			if(cb && typeof cb === 'function') {
+				cb(false, null);
+			}
 			return false;
         }
 
-        if(typeof(cb) === 'function') {
+        if(cb && typeof(cb) === 'function') {
 			cb(true, key.path[1]);
         }
     });
 
 }
 
+/**
+ *	 
+ */
 function remove(kind, id, cb) {
-
 	if(!cb && typeof(id) === 'function') {
 		cb = id;
 		id = null;
@@ -131,15 +140,20 @@ function remove(kind, id, cb) {
 		if(err) {
 			logger.err('There have been an error removing the '+ kind +' to datastore');
 			logger.err(err, true);
-			cb(false);
+			if(cb && typeof(cb) === 'function') {
+				cb(false);
+			}
 		}
-		if(typeof(cb) === 'function') {
+		if(cb && typeof(cb) === 'function') {
 			cb(true);
         }
 	});
 
 }
 
+/**
+ *	 
+ */
 function query(kind, options, cb) {
 
 	if(!kind) {
