@@ -21,6 +21,14 @@ const config = {
 	ds_projectId: process.env.BACKEND_GOOGLE_CLOUD_PROJECT_ID,
 	ds_keyFilename: 'datastore-key.json',
 
+	// 'Elsasticsearch'
+	elastic_index: process.env.ELASTIC_INDEX || 'test',
+	elastic_user: process.env.ELASTIC_USER || null,
+	elastic_pass: process.env.ELASTIC_PASS || null,
+	elastic_host: process.env.ELASTIC_HOST || 'localhost',
+	elastic_port: process.env.ELASTIC_PORT || '9200',
+	elastic_log: process.env.ELASTIC_LOG || ['error', 'info'], //['error', 'debug', 'info'],
+
 	// Cloud Storage:
 	cloud_storage: process.env.BACKEND_CLOUD_STORAGE_TYPE,
 	storage_accessId: 'YOUR-CLIENT-ACCESS-ID@developer.gserviceaccount.com',
