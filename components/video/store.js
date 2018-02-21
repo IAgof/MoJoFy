@@ -1,5 +1,6 @@
 
 const Persistent = require('../../store/datastore');
+const Search = require('../../store/elasticsearch');
 // const Cache = require('../../store/redis');
 
 const type = 'video';
@@ -27,7 +28,7 @@ function list(params, callback) {
 
 	// Cache.get(type, id, function(data) {
 	// 	if(!data) {
-			Persistent.query(type, params, function(data) {
+			Search.query(type, params, function(data) {
 				callback(data);
 			});
 	// 	} else {

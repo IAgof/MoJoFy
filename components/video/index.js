@@ -147,23 +147,26 @@ function list(token, callback, query) {
 
 	console.log(token);
 
-	// if (token && token.role === 'admin')  {
-	// 	console.log('An admin asked for all videos...');
-	// } else {
-	// 	var onlyMine = {
-	// 		field: 'owner',
-	// 		operator: '=',
-	// 		value: token.sub
-	// 	};
-
-	// 	if(!params.filters) {
-	// 		params.filters = [onlyMine];
-	// 	} else {
-	// 		params.filters.push(onlyMine);
-	// 	}
-	// }
-
 	query(params, token, callback);
+
+	/*
+	// Token check for only mine... Deprecated?
+	if (token && token.role === 'admin')  {
+		console.log('An admin asked for all videos...');
+	} else {
+		var onlyMine = {
+			field: 'owner',
+			operator: '=',
+			value: token.sub
+		};
+
+		if(!params.filters) {
+			params.filters = [onlyMine];
+		} else {
+			params.filters.push(onlyMine);
+		}
+	}
+	/**/
 }
 
 function like(id, token, callback) {
