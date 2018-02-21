@@ -62,3 +62,11 @@ typings/
 
 # Config files
 config/
+
+# Custom git ignore prefixes
+*_ignore*
+*_gitignore*
+*_gi*
+*ignore_*
+*gitignore_*
+*gi_*
