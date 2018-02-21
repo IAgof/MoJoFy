@@ -44,6 +44,9 @@ function upsert(data, callback) {
 
 	Persistent.add(type, data, id, function(result, id) {
 		callback(result, id);
+		Search.add(type, data, id, function(resultSearch, idSearch) {
+			console.log(resultSearch);
+		}
 	});
 
 }
@@ -51,5 +54,8 @@ function upsert(data, callback) {
 function remove(id, callback) {
 	Persistent.remove(type, id, function(data) {
 		callback(data);
+	});
+	Search.remove(type, id, function(data) {
+		console.log(data);
 	});
 }
