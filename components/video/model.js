@@ -37,7 +37,7 @@ const model = {
 	},
 	tag: {
 		type: 'object'
-	}
+	},
 	date: {
 		type: 'object',
 		date: true
