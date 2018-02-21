@@ -1,24 +1,15 @@
-
 /*
-
-BE CAREFUL! Work in progress! This still unstable and unfinished!
-
 TO DO:
-
- - Document all the functions (jsdocs)
- - Create the search model converter
- - Standarize callbacks (see datastore.js)
-
+ - Add Group By to search model
 */
-
-console.warn('[store/elasticsearch.js] BE CAREFUL! Work in progress! This still unstable and unfinished!');
+console.warn('[store/elasticsearch.js] Elasticsearch Query grouBy not implemented.');
 
 const elasticsearch = require('elasticsearch');
 const config = require('../config');
 const logger = require('../logger');
 
 const INDEX = config.elastic_index;
-var login = config.elastic_user ? ( config.elastic_pass ? config.elastic_user + ':' + config.elastic_pass + '@' : config.elastic_user + '@' ) : '';
+const login = config.elastic_user ? ( config.elastic_pass ? config.elastic_user + ':' + config.elastic_pass + '@' : config.elastic_user + '@' ) : '';
 
 // connect elasticsearch
 var client = new elasticsearch.Client({
@@ -131,7 +122,7 @@ function upsert(type, data, id, cb) {
  *
  * @param {string} type	Document type (sql "table")
  * @param {string} id	Document ID (sql "primary key")
- * @param {elasticUpsertCallback} cb Callback on remove (or error)
+ * @param {elasticRemoveCallback} cb Callback on remove (or error)
  */
 function remove(type, id, cb) {
 	if(!type || !id) {
@@ -149,19 +140,19 @@ function remove(type, id, cb) {
 		if(error) {
 			logger.error('Have been an error removing from ElasticSearch!!');
 			logger.error(error);
-			cb(error);
-		} else {
-			logger.log('Removed achievement in Elastic');
+			cb(false);
+			return false;
 		}
 
-		cb(response);
+		logger.log('Removed achievement in Elastic');
+		cb(true);
 	});
 }
 
 /**
  * Callback for elastic query function.
  * 
- * @callback elasticRemoveCallback
+ * @callback elasticQueryCallback
  * @param {array} results List of entities matching query
  */
 /**
@@ -169,7 +160,7 @@ function remove(type, id, cb) {
  *
  * @param {string} type	Document type (sql "table")
  * @param {object} options	Query options
- * @param {elasticUpsertCallback} cb Callback on remove (or error)
+ * @param {elasticQueryCallback} cb Callback on query results (or error)
  */
 function query(type, options, cb) {
 	if(!type || !options) {
@@ -179,46 +170,19 @@ function query(type, options, cb) {
 		return false;
 	}
 
-	var body = options;
+	const body = {};
 
 	if(typeof options === 'function' && !cb) {
+		// !options. Match all.
+		body.query = {"match_all": {}}
 		cb = options;
-		body = {}
-	} 
-	
-
-	// TODO:
-	// Convert our query model to elastic model
-	if (options.filters) {
-		body.query = {bool: { must: [] }}; 
-
-		for(let filter in option filters) {
-			console.log(filters[filter]);
-		}
+	} else {
+		filters(body, options);
+		limits(body, options);
+		order(body, options);
+		// TODO:
+		// groupBy(body, options);
 	}
-
-	body = {
-		query: {
-			bool: {
-				must: [
-					{ match: { type: 'create' } }
-				]
-			}
-		},
-		sort: {
-			added: { order: "desc" }
-		},
-		size: 3
-	}
-
-	const filters = options.filters || null;
-	const groupBy = options.groupBy || null;
-	const limit = options.limit || null;
-	const offset = options.offset || null;
-	const orderBy = options.orderBy || null;
-
-	// --------------- 
-
 
 	client.search({
 		index: INDEX,
@@ -240,7 +204,7 @@ function query(type, options, cb) {
 		var searchArray = [];
 
 		for(var i = 0; i < response.hits.hits.length; i++) {
-			response.hits.hits[i]._source.pid = response.hits.hits[i]._id;
+			response.hits.hits[i]._source._id = response.hits.hits[i]._id;
 			searchArray.push(response.hits.hits[i]._source);
 		}
 
@@ -251,7 +215,13 @@ function query(type, options, cb) {
 	});
 }
 
-/* [internal] parse filters to elasticsearch query syntax */
+/**
+ * [internal] Parse filters to elasticsearch query syntax 
+ *
+ * @param {object} body ElasticSearch search request body *WILL BE MODIFIED*
+ * @param {object} options Filters to add
+ * @return {object} body ElasticSearch constructed search request body
+ */
 function filters(body, options) {
 	if (options.filters) {
 		body.query = { bool: {} };
@@ -305,6 +275,60 @@ function filters(body, options) {
 
 		}
 	}
+
+	return body;
+}
+
+/**
+ * [internal] Parse limits (from, offset) to elasticsearch query syntax 
+ *
+ * @param {object} body ElasticSearch search request body *WILL BE MODIFIED*
+ * @param {object} options Limits to add
+ * @return {object} body ElasticSearch constructed search request body
+ */
+function limits(body, options) {
+	if (!body) { 
+		body = {};
+	}
+
+	if (options.limit && typeof !isNaN(Number(options.limit))) {
+		body.size = Number(options.limit);
+	}
+
+	if (options.offset && typeof !isNaN(Number(options.offset))) {
+		body.from = Number(options.offset);
+	}
+
+	return body;
+}
+
+/**
+ * [internal] Parse order to elasticsearch query syntax 
+ *
+ * @param {object} body ElasticSearch search request body *WILL BE MODIFIED*
+ * @param {object} options Order to add
+ * @return {object} body ElasticSearch constructed search request body
+ */
+function order(body, options) {
+	if (!body) { 
+		body = {};
+	}
+
+	if (options.orderBy) {
+		const sort = {}
+		let field = orderBy;
+		let order = 'asc';
+
+		if(field.indexOf('-') === 0) {
+			field = field.replace('-', '');
+			order = 'desc';
+		}
+
+		sort[field] = order;
+		body.sort = [sort];
+	}
+
+	return body;
 }
 
 module.exports = {
