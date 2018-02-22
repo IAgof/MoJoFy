@@ -46,7 +46,7 @@ function upsert(data, callback) {
 		callback(result, id);
 		Search.add(type, data, id, function(resultSearch, idSearch) {
 			console.log(resultSearch);
-		}
+		});
 	});
 
 }

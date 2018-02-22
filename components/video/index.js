@@ -107,21 +107,21 @@ function update(data, token, callback) {
 
 }
 
-function list(token, callback, query) {
+function list(token, callback, props) {
 
 	const params = {};
 
-	if (query && typeof query === 'object') {
+	if (props && typeof props === 'object') {
 
-		if (query.limit && typeof query.limit === 'number' && query.limit >= 0) {
-			params.limit = query.limit;
+		if (props.limit && typeof props.limit === 'number' && props.limit >= 0) {
+			params.limit = props.limit;
 		}
 
-		if (query.offset && typeof query.offset === 'number' && query.offset >= 0) {
-			params.offset = query.offset;
+		if (props.offset && typeof props.offset === 'number' && props.offset >= 0) {
+			params.offset = props.offset;
 		}
 
-		if (query.tag && typeof query.tag === 'string') {
+		if (props.tag && typeof props.tag === 'string') {
 			if(!params.filters) {
 				params.filters = [];
 			}
@@ -132,7 +132,7 @@ function list(token, callback, query) {
 			});
 		}
 
-		if (query.exludeTag && typeof query.exludeTag === 'string') {
+		if (props.exludeTag && typeof props.exludeTag === 'string') {
 			if(!params.filters) {
 				params.filters = [];
 			}
@@ -140,7 +140,7 @@ function list(token, callback, query) {
 			params.filters.push({
 				field: 'tags',
 				operator: '!=',
-				value: query.exludeTag
+				value: props.exludeTag
 			});
 		}
 	}

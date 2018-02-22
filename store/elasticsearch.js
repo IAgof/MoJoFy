@@ -194,6 +194,7 @@ function query(type, options, cb) {
 		if(error) {
 			console.log(error);
 			cb(null);
+			return false;
 		}
 
 		// Parse possible errors
@@ -330,6 +331,7 @@ function order(body, options) {
 
 	return body;
 }
+
 
 module.exports = {
 	get: get,
