@@ -81,6 +81,10 @@ function upsert(type, data, id, cb) {
 		}
 		return false;
 	}
+	
+	if (typeof data._id !== 'undefined') {
+		delete data._id;
+	}
 
 	const options = {
 		index: INDEX,
