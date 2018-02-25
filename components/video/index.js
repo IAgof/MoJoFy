@@ -126,7 +126,7 @@ function list(token, callback, props) {
 				params.filters = [];
 			}
 			params.filters.push({
-				field: 'tags',
+				field: 'tag',
 				operator: '=',
 				value: props.tag
 			});
@@ -136,15 +136,15 @@ function list(token, callback, props) {
 			console.log('_______');
 		}
 
-		if (props.exludeTag && typeof props.exludeTag === 'string') {
+		if (props.excludeTag && typeof props.excludeTag === 'string') {
 			if(!params.filters) {
 				params.filters = [];
 			}
 
 			params.filters.push({
-				field: 'tags',
+				field: 'tag',
 				operator: '!=',
-				value: props.exludeTag
+				value: props.excludeTag
 			});
 		}
 	}
