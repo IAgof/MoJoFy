@@ -2,7 +2,7 @@
 TO DO:
  - Add Group By to search model
 */
-console.warn('[store/elasticsearch.js] Elasticsearch Query grouBy not implemented.');
+console.warn('[store/elasticsearch.js] Elasticsearch Query groupBy not implemented.');
 
 const elasticsearch = require('elasticsearch');
 const config = require('../config');

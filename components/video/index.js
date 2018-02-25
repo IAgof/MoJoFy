@@ -128,8 +128,12 @@ function list(token, callback, props) {
 			params.filters.push({
 				field: 'tags',
 				operator: '=',
-				value: query.tag
+				value: props.tag
 			});
+
+			console.log('-------');
+			console.log(params.filters);
+			console.log('_______');
 		}
 
 		if (props.exludeTag && typeof props.exludeTag === 'string') {
