@@ -28,8 +28,8 @@ router.get('/', function(req, res, next) {
 	var query;
 	if (req.query && typeof req.query === 'object') {
 		query = {};
-		query.limit = req.query.limit || 20;
-		query.offset = req.query.offset || 0;
+		query.limit = Number(req.query.limit) || 20;
+		query.offset = Number(req.query.offset) || 0;
 		query.order = req.query.order || 'date';
 		query.tag = req.query.tag || undefined;
 		query.excludeTag = req.query.excludeTag || undefined;
