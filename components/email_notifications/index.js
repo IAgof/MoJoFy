@@ -33,7 +33,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 		subject: subject,
 		html: '',
 	};
-	getTemplate(templatePath + '/notifyVideoUploaded.hbs', {
+	getTemplate(templatePath + '/notify-video-uploaded.hbs', {
 		title: video.title,
 		description: video.description,
 		date: video.date,
@@ -73,7 +73,7 @@ function notifyVideoCodesGenerated(videoId, codes) {
 		let generatedCodesString = "Los códigos generados son: " + codes.map(elem => {
 			return elem.code;
 		}).join(", ");
-		getTemplate(templatePath + '/notifyVideoCodesGenerated.hbs', {
+		getTemplate(templatePath + '/notify-video-codes-generated.hbs', {
 			title: "Se han generado " + codes.length + " códigos de descarga",
 			description: generatedCodesString,
 			url: config.frontend_url + '/download/' + videoId,
