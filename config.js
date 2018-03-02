@@ -39,6 +39,9 @@ const config = {
 	// Sendgrid
 	sendgridApiKey: process.env.SENDGRID_API_KEY,
 
+	// Flavour
+	flavour: process.env.FLAVOUR || 'vimojo',
+
 	// Email notifications:
 	emailNotificationsRecipient: process.env.BACKEND_EMAIL_NOTIFICATIONS_RECEIVER,
 	emailNotificationsSender: process.env.BACKEND_EMAIL_NOTIFICATIONS_SENDER,
