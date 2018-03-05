@@ -338,7 +338,7 @@ function order(body, options) {
 
 
 module.exports = {
-	__client__: client,
+	_client: client,
 	get: get,
 	query: query,
 	add: upsert,

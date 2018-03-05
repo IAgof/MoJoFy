@@ -11,11 +11,11 @@ function createIndex() {
 			return Promise.resolve();
 		} else {
 			console.log("Creating index %s", config.elastic_index);
-			return elastic.__client__.indices.create({ index: config.elastic_index })
+			return elastic._client.indices.create({ index: config.elastic_index })
 		}
 	}
 
-	return elastic.__client__.indices.exists({ index: config.elastic_index })
+	return elastic._client.indices.exists({ index: config.elastic_index })
 		.then(extracted);
 }
 
@@ -39,7 +39,38 @@ function populateElasticWithVideos() {
 	});
 }
 
+function updateLocalCloudVideoIP(video, oldIP, newIp) {
+	video.poster = video.poster.replace(oldIP, newIp);
+	video.original = video.original.replace(oldIP, newIp);
+	video.video = video.video.replace(oldIP, newIp);
+	// console.log(video)
+	videoStore.upsert(video, data => console.log("Updated video"));
+}
+
+function updateLocalCloudIP(oldIP, newIp) {
+	return new Promise(resolve => {
+		videoStore.listPersistence({}, (videos => {
+			console.log("Updating localcloud ip from %s to %s to %d videos", oldIP, newIp, videos.length);
+			videos.forEach(video => updateLocalCloudVideoIP(video, oldIP, newIp));
+			resolve();
+		}));
+	});
+}
+
+function featureVideo(videoId) {
+	return new Promise(resolve => {
+		videoStore.get(videoId, (video => {
+			console.log("Featuring video %d", videoId);
+			video.tag = 'featured';
+			delete video.date;
+			resolve(videoStore.upsert(video, data => console.log("done!")));
+		}));
+	});
+}
+
 module.exports = {
 	populateElasticWithVideos,
-	createIndex
+	createIndex,
+	updateLocalCloudIP,
+	featureVideo
 };
