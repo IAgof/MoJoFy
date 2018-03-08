@@ -121,6 +121,10 @@ function list(token, callback, props) {
 			params.offset = props.offset;
 		}
 
+		if (props.order && typeof props.order === 'string') {
+			params.orderBy = props.order;
+		}
+
 		if (props.tag && typeof props.tag === 'string') {
 			if(!params.filters) {
 				params.filters = [];
@@ -149,7 +153,7 @@ function list(token, callback, props) {
 		}
 	}
 
-	console.log(token);
+	console.log(params);
 
 	query(params, token, callback);
 

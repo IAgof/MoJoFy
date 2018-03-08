@@ -321,7 +321,7 @@ function order(body, options) {
 
 	if (options.orderBy) {
 		const sort = {}
-		let field = orderBy;
+		let field = options.orderBy;
 		let order = 'asc';
 
 		if(field.indexOf('-') === 0) {
