@@ -69,10 +69,11 @@ function add(data, token, callback) {
 
 			Store.upsert(model, function(result, id) {
 				if (result, id) {
-					model._id = id;
+					const video = Object.assign({}, model)
+					video._id = id;
 					generate_download_codes(id);
-					notify_video_upload(model);
-					callback(model, null, 201);
+					notify_video_upload(video);
+					callback(video, null, 201);
 				} else {
 					callback(null, 'Unable to add the video', 500);
 				}
@@ -134,10 +135,6 @@ function list(token, callback, props) {
 				operator: '=',
 				value: props.tag
 			});
-
-			console.log('-------');
-			console.log(params.filters);
-			console.log('_______');
 		}
 
 		if (props.excludeTag && typeof props.excludeTag === 'string') {
@@ -152,8 +149,6 @@ function list(token, callback, props) {
 			});
 		}
 	}
-
-	console.log(params);
 
 	query(params, token, callback);
 
