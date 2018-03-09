@@ -35,6 +35,9 @@ const model = {
 	metadata: {
 		type: 'object'
 	},
+	tag: {
+		type: 'string'
+	},
 	date: {
 		type: 'object',
 		date: true

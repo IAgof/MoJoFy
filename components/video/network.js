@@ -23,14 +23,25 @@ router.get('/:id', function(req, res, next) {
 	});
 });
 
-router.get('/', Acl, function(req, res, next) {
+router.get('/', function(req, res, next) {
+
+	var query;
+	if (req.query && typeof req.query === 'object') {
+		query = {};
+		query.limit = Number(req.query.limit) || 20;
+		query.offset = Number(req.query.offset) || 0;
+		query.order = req.query.order || 'date';
+		query.tag = req.query.tag || undefined;
+		query.excludeTag = req.query.excludeTag || undefined;
+	}
+
 	Controller.list(req.user, function(data, err, code) {
-		if(!err) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
 		}
-	});
+	}, query);
 });
 
 router.get('/:id/original', function(req, res, next) {

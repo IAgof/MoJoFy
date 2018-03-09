@@ -25,7 +25,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 	// TODO: Keep an eye on i18n
 	var subject = 'Se ha subido un nuevo vídeo a Vimojo.';
 	if (user) {
-		subject = user.name + ' ha subido un nuevo vídeo a Vimojo.';
+		subject = (user.username || 'Se') + ' ha subido un nuevo vídeo a Vimojo.';
 	}
 	const msg = {
 		to: config.emailNotificationsRecipient,

@@ -11,15 +11,23 @@ const config = {
 	upload_folder: 'uploads/',
 	
 	// JWT
-	jwt_secret: process.env.JWT_SECRET,
+	jwt_secret: process.env.JWT_SECRET || 'secret',
 	//jwt_issuer: process.env.JWT_ISSUER,
-	jwt_expires: process.env.JWT_TOKEN_EXPIRATION,		// Format guide: https://github.com/zeit/ms
+	jwt_expires: process.env.JWT_TOKEN_EXPIRATION || '1y',		// Format guide: https://github.com/zeit/ms
 
 	// Datastore:
 	ds_emulator_host: process.env.DATASTORE_EMULATOR_HOST,
 	ds_namespace: process.env.BACKEND_DATASTORE_NAMESPACE,
 	ds_projectId: process.env.BACKEND_GOOGLE_CLOUD_PROJECT_ID,
 	ds_keyFilename: 'datastore-key.json',
+
+	// 'Elsasticsearch'
+	elastic_index: process.env.ELASTIC_INDEX || 'test',
+	elastic_user: process.env.ELASTIC_USER || null,
+	elastic_pass: process.env.ELASTIC_PASS || null,
+	elastic_host: process.env.ELASTIC_HOST || 'localhost',
+	elastic_port: process.env.ELASTIC_PORT || '9200',
+	elastic_log: process.env.ELASTIC_LOG || ['error', 'info'],
 
 	// Cloud Storage:
 	cloud_storage: process.env.BACKEND_CLOUD_STORAGE_TYPE,

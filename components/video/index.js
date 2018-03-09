@@ -69,10 +69,11 @@ function add(data, token, callback) {
 
 			Store.upsert(model, function(result, id) {
 				if (result, id) {
-					model._id = id;
+					const video = Object.assign({}, model)
+					video._id = id;
 					generate_download_codes(id);
-					notify_video_upload(model);
-					callback(model, null, 201);
+					notify_video_upload(video);
+					callback(video, null, 201);
 				} else {
 					callback(null, 'Unable to add the video', 500);
 				}
@@ -107,23 +108,68 @@ function update(data, token, callback) {
 
 }
 
-function list(token, callback) {
+function list(token, callback, props) {
 
 	const params = {};
 
-	console.log(token);
+	if (props && typeof props === 'object') {
 
-	if(token && token.role === 'admin')  {
-		console.log('An admin asked for all videos...');
-	} else {
-		params.filters = [{
-			field: 'owner',
-			operator: '=',
-			value: token.sub
-		}];
+		if (props.limit && typeof props.limit === 'number' && props.limit >= 0) {
+			params.limit = props.limit;
+		}
+
+		if (props.offset && typeof props.offset === 'number' && props.offset >= 0) {
+			params.offset = props.offset;
+		}
+
+		if (props.order && typeof props.order === 'string') {
+			params.orderBy = props.order;
+		}
+
+		if (props.tag && typeof props.tag === 'string') {
+			if(!params.filters) {
+				params.filters = [];
+			}
+			params.filters.push({
+				field: 'tag',
+				operator: '=',
+				value: props.tag
+			});
+		}
+
+		if (props.excludeTag && typeof props.excludeTag === 'string') {
+			if(!params.filters) {
+				params.filters = [];
+			}
+
+			params.filters.push({
+				field: 'tag',
+				operator: '!=',
+				value: props.excludeTag
+			});
+		}
 	}
 
 	query(params, token, callback);
+
+	/*
+	// Token check for only mine... Deprecated?
+	if (token && token.role === 'admin')  {
+		console.log('An admin asked for all videos...');
+	} else {
+		var onlyMine = {
+			field: 'owner',
+			operator: '=',
+			value: token.sub
+		};
+
+		if(!params.filters) {
+			params.filters = [onlyMine];
+		} else {
+			params.filters.push(onlyMine);
+		}
+	}
+	/**/
 }
 
 function like(id, token, callback) {
