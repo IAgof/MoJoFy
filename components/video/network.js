@@ -10,7 +10,7 @@ const Controller = require('./');
 
 const Upload = multer({ dest: Config.upload_folder });
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 
 router.get('/:id', function(req, res, next) {
@@ -24,7 +24,6 @@ router.get('/:id', function(req, res, next) {
 });
 
 router.get('/', function(req, res, next) {
-
 	var query;
 	if (req.query && typeof req.query === 'object') {
 		query = {};
@@ -33,6 +32,7 @@ router.get('/', function(req, res, next) {
 		query.order = req.query.order || 'date';
 		query.tag = req.query.tag || undefined;
 		query.excludeTag = req.query.excludeTag || undefined;
+		query.user = Number(req.params.userId) || undefined;
 	}
 
 	Controller.list(req.user, function(data, err, code) {
