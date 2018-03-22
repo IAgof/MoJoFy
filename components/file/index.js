@@ -60,7 +60,6 @@ function uploadFile(file, callback) {
 					}
 				})])
 				.then(values => {
-					//end(response, callback);
 					callback(response, metadata);
 				})
 				.catch(reason => {
@@ -176,8 +175,4 @@ function unlink(path) {
 			console.error(fserr);
 		}
 	});
-}
-
-function end(response, callback) {
-	callback(response);
 }
