@@ -58,11 +58,13 @@ function add(data, token, callback) {
 
 	if(data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
 		// Store file in a proper place ^^
-		FileUpload.move(data.file, function(uploaded) {
+		FileUpload.move(data.file, function(uploaded, metadata) {
 			data.video = uploaded.video;
 			data.original = uploaded.video;
 			data.poster = uploaded.img;
 			data.date = new Date();
+
+			setMetadata(data, metadata);
 
 			const model = Model.set(data);
 			logger.debug(model);
@@ -234,4 +236,18 @@ function download(id, code, callback) {
 			callback(null, 'You are not allowed to download that video', 403);
 		}
 	});
+}
+
+function setMetadata(data, metadata) {
+	if (!data || !metadata) {
+		return false;
+	}
+
+	data.length = metadata.format.duration;
+	data.size = metadata.format.size;
+	data.format = metadata.streams[0].codec_name;
+	data.dimensions = metadata.streams[0].width + 'x' + metadata.streams[0].height;
+	data.ration = metadata.streams[0].display_aspect_ratio;
+
+	return data;
 }

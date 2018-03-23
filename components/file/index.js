@@ -36,9 +36,13 @@ function uploadFile(file, callback) {
 		video: null
 	};
 
-	Promise.all([makeScreenshots(originalFileData), generateHash(originalFileData)])
+	Promise.all([
+			makeScreenshots(originalFileData), 
+			generateHash(originalFileData),
+			getMetadata(originalFileData)
+		])
 		.then(values => {
-			let [screenShotFileData, hash] = values;
+			let [screenShotFileData, hash, metadata] = values;
 			if (hash) {
 				response.hash = hash;
 			}
@@ -56,7 +60,7 @@ function uploadFile(file, callback) {
 					}
 				})])
 				.then(values => {
-					end(response, callback);
+					callback(response, metadata);
 				})
 				.catch(reason => {
 					logger.error("Error moving to cloud storage", reason);
@@ -145,8 +149,22 @@ function generateHash(fileData) {
 			logger.debug("Hash generated");
 			resolve(hash);
 		});
-	})
+	});
+}
 
+function getMetadata(fileData, callback) {
+	return new Promise((resolve, reject) => {
+		if (fileData.type == 'video') {
+			new ffmpeg.ffprobe('./' + fileData.path, function(err, metadata) {
+				if (err) {
+					reject(err);
+				}
+				logger.info('Metadata gotten');
+				logger.info(metadata);
+				resolve(metadata);
+			});
+		}
+	});
 }
 
 function unlink(path) {
@@ -157,8 +175,4 @@ function unlink(path) {
 			console.error(fserr);
 		}
 	});
-}
-
-function end(response, callback) {
-	callback(response);
 }
