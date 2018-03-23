@@ -21,7 +21,7 @@ const model = {
 		type: 'string'
 	},
 	productType: {
-		type: 'object'
+		type: 'string'
 	},
 	description: {
 		type: 'string'
