@@ -235,7 +235,7 @@ function setMetadata(data, metadata) {
 	data.size = metadata.format.size;
 	data.format = metadata.streams[0].codec_name;
 	data.dimensions = metadata.streams[0].width + 'x' + metadata.streams[0].height;
-	data.ration = metadata.streams[0].display_aspect_ratio;
+	data.ratio = metadata.streams[0].display_aspect_ratio;
 
 	return data;
 }
