@@ -1,4 +1,4 @@
-
+const logger = require('../../logger');
 const Persistent = require('../../store/datastore');
 const Search = require('../../store/elasticsearch');
 // const Cache = require('../../store/redis');
@@ -7,6 +7,7 @@ const type = 'video';
 
 exports.get = get;
 exports.list = list;
+exports.listPersistence = listPersistence;
 exports.upsert = upsert;
 exports.remove = remove;
 
@@ -25,8 +26,13 @@ function get(id, callback) {
 }
 
 function list(params, callback) {
-
 	Search.query(type, params, function(data) {
+		callback(data);
+	});
+}
+
+function listPersistence(params, callback) {
+	Persistent.query(type, params, function(data) {
 		callback(data);
 	});
 }
@@ -40,7 +46,7 @@ function upsert(data, callback) {
 		callback(result, id);
 		if (result) {
 			Search.add(type, data, id, function(resultSearch, idSearch) {
-				console.log(resultSearch);
+				logger.log(resultSearch);
 			});
 		}
 	});
@@ -51,6 +57,6 @@ function remove(id, callback) {
 		callback(data);
 	});
 	Search.remove(type, id, function(data) {
-		console.log(data);
+		logger.log(data);
 	});
 }
