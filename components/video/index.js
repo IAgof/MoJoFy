@@ -109,7 +109,7 @@ function update(data, token, callback) {
 }
 
 function list(token, callback, props) {
-
+	logger.debug("Querying video list...");
 	const params = {};
 
 	if (props && typeof props === 'object') {
@@ -148,8 +148,20 @@ function list(token, callback, props) {
 				value: props.excludeTag
 			});
 		}
-	}
 
+		if (props.user && typeof props.user === 'number' && props.user >= 0) {
+			logger.debug("...for user ", props.user);
+			if(!params.filters) {
+				params.filters = [];
+			}
+			params.filters.push({
+				field: 'owner',
+				operator: '=',
+				value: props.user
+			});
+		}
+
+	}
 	query(params, token, callback);
 
 	/*

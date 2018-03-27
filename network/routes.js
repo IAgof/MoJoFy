@@ -12,6 +12,9 @@ const routes = function(server) {
 	server.use('/video', require(component('video')));
 	// server.use('/resource', require('../components/resource/network'));
 
+	// nested routes
+	require(component('user')).use('/:userId/video', require(component('video')));
+
 	return server;
 };	
 
