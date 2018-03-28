@@ -5,6 +5,8 @@ const Pass = require('../access/password');
 const Store = require('./store');
 const logger = require('../../logger');
 
+const Video = require('../video');
+
 // Exposed functions
 
 exports.get = get;
@@ -13,6 +15,7 @@ exports.add = add;
 exports.exist = exist;
 exports.update = update;
 exports.query = query;
+exports.updateVideoCounter = updateVideoCounter;
 
 
 // Internal functions
@@ -25,7 +28,15 @@ function get(id, token, callback, includePass) {
 			if(!includePass) {
 				delete data.password;
 			}
-			callback(data, null);
+
+			if(!data.videoCount) {
+				setVideoCounter(id, function(data) {
+					callback(data, null);
+				})
+			} else {
+				callback(data, null);
+			}
+
 		} else {
 			callback(null, 'That user does not exist', 404);
 		}
@@ -150,6 +161,59 @@ function query(params, token, callback, includePass) {
 			}
 		});
 	// });
+}
+
+function updateVideoCounter(userId, callback) {
+	if(!userId) {
+		return false;
+	}
+
+	Store.get(userId, function(data) {
+		if (data && data.videoCount) {
+			data._id = userId;
+			data.videoCount = Number(data.videoCount) + 1;
+			update(data, null, function (updatedData, err) {
+				if (err) {
+					logger.error(err);
+				}
+			});
+		} else if (data) {
+			data._id = userId;
+			setVideoCounter(data, callback);
+		} else {
+			logger.error('Error updating user video counter: That user does not exist');
+		}
+	}, true);
+}
+
+function setVideoCounter(data, callback) {
+	if(!data) {
+		callback(null);
+		return false;
+	} else if(typeof data !== 'object') {
+		return updateVideoCounter(data, callback);
+	}
+
+	const userId = data.id || data._id;
+
+	Video.count({
+		filters: [{
+			field: 'owner',
+			operator: '=',
+			value: userId
+		}]
+	}, function(userVideos) {
+		data.videoCount = userVideos || 0;
+		update(data, null, function (data, err) {
+			if (err) {
+				logger.error(err);
+			} else {
+				logger.log('Video counter setted for user ' + userId);
+			}
+
+			callback(data);
+		});
+	});
 }
 
 function prepare(data, next) {

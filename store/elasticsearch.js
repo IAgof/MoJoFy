@@ -154,19 +154,74 @@ function remove(type, id, cb) {
 }
 
 /**
- * Callback for elastic query function.
+ * Callback for elastic search function.
+ * 
+ * @callback elasticSearchCallback
+ * @param {array} results List of entities matching query
+ */
+/**
+ * Search data in elasticseatch by query
+ *
+ * @param {string} type	Document type (sql "table")
+ * @param {object} options	Query options
+ * @param {elasticSearchCallback} cb Callback on query results (or error)
+ */
+function search(type, options, cb) {
+	return query(type, 'search', options, function (response) {
+		// Parse possible errors
+		if(typeof(response.hits) == 'undefined') {
+			response.hits = [];
+		}
+
+		var searchArray = [];
+
+		for(var i = 0; i < response.hits.hits.length; i++) {
+			response.hits.hits[i]._source._id = response.hits.hits[i]._id;
+			searchArray.push(response.hits.hits[i]._source);
+		}
+
+		if(cb && typeof cb) {
+			cb(searchArray);
+		}
+	});
+}
+
+/**
+ * Callback for elastic count function.
+ * 
+ * @callback elasticCountCallback
+ * @param {array} results List of entities matching query
+ */
+/**
+ * Count data in elasticseatch by query
+ *
+ * @param {string} type	Document type (sql "table")
+ * @param {object} options	Query options
+ * @param {elasticCountCallback} cb Callback with count (or error)
+ */
+function count(type, options, cb) {
+	return query(type, 'count', options, function (response) {
+		const result = response.count || null
+		cb(result);
+	});
+}
+
+// 
+/**
+ * Callback for elastic search function.
  * 
  * @callback elasticQueryCallback
  * @param {array} results List of entities matching query
  */
 /**
- * Query data in elasticseatch by ID
+ * [internal] Query data to elasticseatch
  *
  * @param {string} type	Document type (sql "table")
+ * @param {string} operation	Type of operation to perform (count, search...) 
  * @param {object} options	Query options
  * @param {elasticQueryCallback} cb Callback on query results (or error)
  */
-function query(type, options, cb) {
+function query(type, operation, options, cb) {
 	if(!type || !options) {
 		if(cb && typeof cb) {
 			cb();
@@ -188,7 +243,7 @@ function query(type, options, cb) {
 		// groupBy(body, options);
 	}
 
-	client.search({
+	client[operation]({
 		index: INDEX,
 		type: type,
 		body: body
@@ -196,27 +251,12 @@ function query(type, options, cb) {
 		
 		// Log errors
 		if(error) {
-			console.log(error);
+			logger.log(error);
 			cb(null);
 			return false;
 		}
 
-		// Parse possible errors
-		if(typeof(response.hits) == 'undefined') {
-			response.hits = [];
-		}
-
-		var searchArray = [];
-
-		for(var i = 0; i < response.hits.hits.length; i++) {
-			response.hits.hits[i]._source._id = response.hits.hits[i]._id;
-			searchArray.push(response.hits.hits[i]._source);
-		}
-
-		if(cb && typeof cb) {
-			cb(searchArray);
-		}
-
+		cb(response);
 	});
 }
 
@@ -339,7 +379,8 @@ function order(body, options) {
 
 module.exports = {
 	get: get,
-	query: query,
+	query: search,
+	count: count,
 	add: upsert,
 	update: upsert,
 	upsert: upsert,

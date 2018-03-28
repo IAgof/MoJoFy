@@ -23,8 +23,8 @@ const config = {
 
 	// 'Elsasticsearch'
 	elastic_index: process.env.ELASTIC_INDEX || 'test',
-	elastic_user: process.env.ELASTIC_USER || null,
-	elastic_pass: process.env.ELASTIC_PASS || null,
+	elastic_user: process.env.ELASTIC_USER || 'elastic',
+	elastic_pass: process.env.ELASTIC_PASS || 'changeme',
 	elastic_host: process.env.ELASTIC_HOST || 'localhost',
 	elastic_port: process.env.ELASTIC_PORT || '9200',
 	elastic_log: process.env.ELASTIC_LOG || ['error', 'info'],

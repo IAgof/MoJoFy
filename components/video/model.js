@@ -21,7 +21,7 @@ const model = {
 		type: 'string'
 	},
 	productType: {
-		type: 'object'
+		type: 'string'
 	},
 	description: {
 		type: 'string'
@@ -37,6 +37,30 @@ const model = {
 	},
 	tag: {
 		type: 'string'
+	},
+	length: {
+		type: 'number'
+	},
+	size: {
+		type: 'number'
+	},
+	format: {
+		type: 'string'
+	},
+	dimensions: {
+		type: 'string'
+	},
+	ratio: {
+		type: 'string'
+	},
+	language: {
+		type: 'string'
+	},
+	quality: {
+		type: 'number'
+	},
+	credibility: {
+		type: 'number'
 	},
 	date: {
 		type: 'object',

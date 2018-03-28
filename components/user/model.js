@@ -37,6 +37,9 @@ const model = {
 	},
 	theme_options: {
 		type: 'object'
+	},
+	videoCount: {
+		type: 'number'
 	}
 };
 
