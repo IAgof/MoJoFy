@@ -1,2 +1,5 @@
+v0.2.0
+- Add user/:id/video nested routes for supporting user galleries
+
 v0.1.0
 - Initial version of platform
