@@ -94,7 +94,7 @@ function moveToCloudStorage(fileData, storageFolder) {
 				let remotePath = '/' + storageFolder + '/'
 					+ fileData.filename.substring(0, 2) + '/' + fileData.filename.substring(2, 4) + '/'
 					+ fileData.filename + '.' + fileData.extension;
-				copyToGCloudStorage(remotePath, fileData.path, callback).then(url => {
+				copyToGCloudStorage(remotePath, fileData.path).then(url => {
 					unlink(url.path);
 					resolve(url)
 				});

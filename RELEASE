@@ -1,0 +1,2 @@
+v0.2.0
+- Add user/:id/video nested routes for supporting user galleries
