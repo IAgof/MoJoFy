@@ -9,6 +9,7 @@ exports.get = get;
 exports.list = list;
 exports.upsert = upsert;
 exports.remove = remove;
+exports.count = count;
 
 
 function get(id, callback) {
@@ -43,6 +44,12 @@ function upsert(data, callback) {
 				console.log(resultSearch);
 			});
 		}
+	});
+}
+
+function count(query, callback) {
+	Search.count(type, query, function(data) {
+		callback(data);
 	});
 }
 

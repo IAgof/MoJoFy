@@ -6,6 +6,7 @@ const Store = require('./store');
 const logger = require('../../logger');
 
 const Like = require('../like');
+const User = require('../user');
 const DownloadCode = require('../download-code');
 const Notifications = require('../email_notifications');
 
@@ -17,6 +18,7 @@ exports.add = add;
 exports.update = update;
 exports.remove = remove;
 exports.query = query;
+exports.count = count;
 exports.like = like;
 exports.download = download;
 
@@ -75,6 +77,7 @@ function add(data, token, callback) {
 					video._id = id;
 					generate_download_codes(id);
 					notify_video_upload(video);
+					User.updateVideoCounter(video.owner);
 					callback(video, null, 201);
 				} else {
 					callback(null, 'Unable to add the video', 500);
@@ -238,4 +241,8 @@ function setMetadata(data, metadata) {
 	data.ratio = metadata.streams[0].display_aspect_ratio;
 
 	return data;
+}
+
+function count(query, callback) {
+	Store.count(query, callback);
 }
