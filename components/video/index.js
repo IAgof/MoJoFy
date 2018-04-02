@@ -246,11 +246,21 @@ function setMetadata(data, metadata) {
 		return false;
 	}
 
+	let videoStream = -1;
+	for (var i = 0; i < metadata.streams.length; i++) {
+		if(metadata.streams[i].codec_type === 'video') {
+			videoStream = i;
+			break;
+		}
+	}
+
 	data.length = metadata.format.duration;
 	data.size = metadata.format.size;
-	data.format = metadata.streams[0].codec_name;
-	data.dimensions = metadata.streams[0].width + 'x' + metadata.streams[0].height;
-	data.ratio = metadata.streams[0].display_aspect_ratio;
+	if(videoStream > -1) {
+		data.format = metadata.streams[videoStream].codec_name;
+		data.dimensions = metadata.streams[videoStream].width + 'x' + metadata.streams[videoStream].height;
+		data.ratio = metadata.streams[videoStream].display_aspect_ratio;
+	}
 
 	return data;
 }
