@@ -13,7 +13,7 @@ const Upload = multer({ dest: Config.upload_folder });
 const router = express.Router({ mergeParams: true });
 
 
-router.get('/:id', function(req, res, next) {
+router.get('/:id(\\d+)/', function(req, res, next) {
   	Controller.get(req.params.id, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);

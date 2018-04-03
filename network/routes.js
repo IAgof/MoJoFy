@@ -14,8 +14,10 @@ const routes = function(server) {
 
 	// nested routes
 	require(component('user')).use('/:userId/video', require(component('video')));
+	require(component('video')).use('/product_type', require(component('product_type')));
+	require(component('video')).use('/lang', require(component('video_lang')));
 
 	return server;
-};	
+};
 
 module.exports = routes;
