@@ -1,3 +1,2 @@
-v0.3.0
-- Increase the video model
-- Add user's video counting
+v0.3.1
+- Update metadata retieving to get always the video info
