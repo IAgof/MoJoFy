@@ -6,6 +6,7 @@ const mime = require('mime');
 const Acl = require('./acl').middleware;
 const Config = require('../../config');
 const Response = require('../../network/response');
+const logger = require('../../logger');
 const Controller = require('./');
 
 const Upload = multer({ dest: Config.upload_folder });
@@ -95,6 +96,7 @@ router.post('/', Upload.single('file'), function(req, res, next) {
 
 // router.put('/', Upload.single('file'), function(req, res, next) {
 router.put('/', Acl, Upload.single('file'), function(req, res, next) {
+	logger.debug("Handle Video put");
 	req.body.file = req.file;
 
 	Controller.update(req.body, req.user, function(data, err, code) {

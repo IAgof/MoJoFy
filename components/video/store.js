@@ -1,3 +1,4 @@
+const logger = require('../../logger');
 
 const Persistent = require('../../store/datastore');
 const Search = require('../../store/elasticsearch');
@@ -33,6 +34,7 @@ function list(params, callback) {
 }
 
 function upsert(data, callback) {
+	logger.debug("store upsert video with data ", data);
 	const id = data.id || data._id || null;
 	delete data.id;
 	delete data._id;

@@ -93,12 +93,14 @@ function add(data, token, callback) {
 }
 
 function update(data, token, callback) {
-
+	logger.debug("Updating video with data ", data);
 	if(!data.id && !data._id) {
 		callback(null, 'No video id provided', 400);
 	}
+	data.quality = Number(data.quality);
 
 	const model = Model.set(data);
+	logger.debug("returned data by modelate ", model);
 
 	model._id = data.id || data._id;
 
