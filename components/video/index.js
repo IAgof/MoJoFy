@@ -166,7 +166,21 @@ function list(token, callback, props) {
 			});
 		}
 
+		if (props.q) {
+			const fieldsToQuery = ['title', 'description', 'productType', 'tag'];
+			params.query = [];
+
+			for (var i = 0; i < fieldsToQuery.length; i++) {
+				const q = {
+					field: fieldsToQuery[i],
+					value: props.q
+				}; 
+
+				params.query.push(q);
+			}
+		}
 	}
+
 	query(params, token, callback);
 
 	/*

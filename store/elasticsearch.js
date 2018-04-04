@@ -237,6 +237,7 @@ function query(type, operation, options, cb) {
 		cb = options;
 	} else {
 		filters(body, options);
+		queryFilters(body, options);
 		limits(body, options);
 		order(body, options);
 		// TODO:
@@ -269,7 +270,10 @@ function query(type, operation, options, cb) {
  */
 function filters(body, options) {
 	if (options.filters) {
-		body.query = { bool: {} };
+		if( !body.query) {
+			body.query = { bool: {} };
+		}
+
 		for(var filter in options.filters) {
 			var f = options.filters[filter];
 			var e = {};
@@ -376,6 +380,41 @@ function order(body, options) {
 	return body;
 }
 
+/**
+ * [internal] Parse query to elasticsearch query syntax 
+ *
+ * @param {object} body ElasticSearch search request body *WILL BE MODIFIED*
+ * @param {object} options Query to add
+ * @return {object} body ElasticSearch constructed search request body
+ */
+function queryFilters(body, options) {
+	if (!body) { 
+		body = {};
+	}
+
+	if (options.query && Array.isArray(options.query)) {
+		if (!body.query || !body.query.bool) {
+			body.query = { bool: {} };
+		}
+
+		if (!body.query.bool.should) {
+			body.query.bool.should = [];
+		}
+
+		for (var i = 0; i < options.query.length; i++) {
+			const match = { match: {} };
+			match.match[options.query[i].field] = options.query[i].value;
+
+			const prefix = { prefix: {} };
+			prefix.prefix[options.query[i].field] = options.query[i].value;
+
+			body.query.bool.should.push(match);
+			body.query.bool.should.push(prefix);
+		}
+	}
+
+	return body;
+}
 
 module.exports = {
 	get: get,

@@ -33,6 +33,7 @@ router.get('/', function(req, res, next) {
 		query.tag = req.query.tag || undefined;
 		query.excludeTag = req.query.excludeTag || undefined;
 		query.user = Number(req.params.userId) || undefined;
+		query.q = req.query.q || undefined;
 	}
 
 	Controller.list(req.user, function(data, err, code) {
