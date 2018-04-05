@@ -65,6 +65,9 @@ const model = {
 	date: {
 		type: 'object',
 		date: true
+	},
+	featured: {
+		type: 'boolean'
 	}
 };
 
