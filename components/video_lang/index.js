@@ -1,12 +1,13 @@
 const Model = require('./model');
 
 const videoLangs = [
-	Model.set({lang: 'es_es'}),
-	Model.set({lang: 'en_en'}),
-	Model.set({lang: 'es_gl'}),
-	Model.set({lang: 'es_cat'}),
-	Model.set({lang: 'es_'}),
-	Model.set({lang: 'PIECE'})
+	Model.set({lang: 'es-es'}),
+	Model.set({lang: 'en-en'}),
+	Model.set({lang: 'gl-es'}),
+	Model.set({lang: 'ca-es'}),
+	Model.set({lang: 'eu-es'}),
+	Model.set({lang: 'ambient'}),
+	Model.set({lang: 'other'})
 ];
 
 function list() {
