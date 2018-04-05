@@ -167,6 +167,17 @@ function list(token, callback, props) {
 			});
 		}
 
+		if (props.featured && typeof props.featured === 'boolean') {
+			if(!params.filters) {
+				params.filters = [];
+			}
+			params.filters.push({
+				field: 'featured',
+				operator: '=',
+				value: props.featured
+			});
+		}
+
 	}
 	query(params, token, callback);
 

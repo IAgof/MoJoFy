@@ -33,6 +33,7 @@ router.get('/', function(req, res, next) {
 		query.order = req.query.order || 'date';
 		query.tag = req.query.tag || undefined;
 		query.excludeTag = req.query.excludeTag || undefined;
+		query.featured = Boolean(req.query.featured) || undefined;
 		query.user = Number(req.params.userId) || undefined;
 	}
 
