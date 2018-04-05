@@ -23,6 +23,9 @@ const model = {
 	productType: {
 		type: 'string'
 	},
+	categories: {
+		type: 'string'
+	},
 	description: {
 		type: 'string'
 	},
@@ -65,6 +68,21 @@ const model = {
 	date: {
 		type: 'object',
 		date: true
+	},
+	priceStd: {
+		type: 'number'
+	},
+	priceCountry: {
+		type: 'number'
+	},
+	priceContinent: {
+		type: 'number'
+	},
+	priceWorld: {
+		type: 'number'
+	},
+	notes: {
+		type: 'string'
 	}
 };
 
