@@ -40,6 +40,9 @@ const model = {
 	},
 	videoCount: {
 		type: 'number'
+	},
+	role: {
+		type: 'string'
 	}
 };
 

@@ -1,9 +1,9 @@
+const logger = require('../../logger');
 
 const Acl = require('../access/acl');
 const Response = require('../../network/response');
 
 const Store = require('./store');
-
 
 exports.middleware = function(req, res, next) {
 	
@@ -14,9 +14,15 @@ exports.middleware = function(req, res, next) {
 	}
 	
 	Acl.middleware(req, res, function() {
+		logger.debug("video ACL method is ", req.method.toUpperCase());
 		if(req.method.toUpperCase() === 'DELETE') {
+			logger.debug("video ACL for DELETE method");
 			remove(req, res, next);
+		} else if (req.method.toUpperCase() === 'PUT') {
+			logger.debug("video ACL for PUT method");
+			put(req, res, next);
 		} else {
+			logger.debug("video ACL next");
 			next();
 		}
 	});
@@ -34,16 +40,52 @@ exports.query = function(token, operation, callback) {
 	return false;
 };
 
+function put(req, res, next) {
+	var id = req.body.id || req.body._id || null;
+	var action = '';
+
+	Store.get(id, function(data) {
+		if (data && data.owner === req.user.sub) {
+			action = 'update_own';
+		} else {
+			action = 'update_other';
+		}
+		logger.debug("video ACL action is ", action);
+
+		Acl.acl.query(req.user.role, 'video', action, function(err, allow) {
+			if (allow) {
+				removePrivilegedFilds(req, res, next);
+			} else {
+				Response.error(req, res, next, 403, 'Unauthorized');
+			}
+		});
+	});
+
+}
+
+function removePrivilegedFilds(req, res, next) {
+	Acl.acl.query(req.user.role, 'video', 'update_privileged_fields', function(err, allow) {
+		if (!allow) {
+			delete req.body.featured;
+			delete req.body.verified;
+			delete req.body.credibility;
+			delete req.body.quality;
+			delete req.body.priceStd;
+			delete req.body.priceCountry;
+			delete req.body.priceContinent;
+			delete req.body.priceWorld;
+		}
+		next();
+	});
+}
 
 function remove(req, res, next) {
-	
 	var id = req.params.id || req.params._id || null;
 	var action = '';
 
 	Store.get(id, function(data) {		
 		if(data && data.owner === req.user.sub) {
 			action = 'remove_own';
-			console.log('Shall allow, but lets try to force error...');
 		} else {
 			action = 'remove_other';
 		}
