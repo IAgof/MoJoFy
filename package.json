@@ -42,6 +42,7 @@
     "mime": "^2.2.0",
     "modelate": "0.2.6",
     "multer": "1.3.0",
+    "util-merge": "^1.0.0",
     "virgen-acl": "0.0.22",
     "winston": "^2.4.1"
   },
