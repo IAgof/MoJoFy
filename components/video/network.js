@@ -95,9 +95,10 @@ router.post('/', Upload.single('file'), function(req, res, next) {
 });
 
 // router.put('/', Upload.single('file'), function(req, res, next) {
-router.put('/', Acl, Upload.single('file'), function(req, res, next) {
-	logger.debug("Handle Video put");
-	req.body.file = req.file;
+router.put('/:id(\\d+)/', Acl, Upload.any(), function(req, res, next) {
+	req.body.files = req.files;
+	req.body.id = req.params.id;
+	logger.info("Handling video " + req.params.id + " put");
 
 	Controller.update(req.body, req.user, function(data, err, code) {
 		if(!err) {

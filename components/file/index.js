@@ -16,11 +16,13 @@ const thumbType = 'png';
 
 /* Exposed functions */
 
-exports.move = uploadFile;
+exports.processUploadedVideo = processUploadedVideo;
+exports.moveUpladedFile = moveUploadedFile;
+exports.removeFromCloudStorage = removeFromCloudStorage;
 
 /* Internal functions */
 
-function uploadFile(file, callback) {
+function processUploadedVideo(file, callback) {
 	if (typeof(file) === 'undefined') {
 		logger.error('Undefined file');
 		callback('error, unrecognized file type.');
@@ -37,7 +39,7 @@ function uploadFile(file, callback) {
 	};
 
 	Promise.all([
-			makeScreenshots(originalFileData), 
+			makeScreenshots(originalFileData),
 			generateHash(originalFileData),
 			getMetadata(originalFileData)
 		])
@@ -66,6 +68,20 @@ function uploadFile(file, callback) {
 					logger.error("Error moving to cloud storage", reason);
 				})
 		});
+}
+
+function moveUploadedFile(fileUpload) {
+	let fileData = getFileData(fileUpload);
+	return moveToCloudStorage(fileData);
+}
+
+function removeFromCloudStorage(url) {
+	if (config.cloud_storage === 'gcloud') {
+		// TODO(jliarte): remove from cloud
+	} else {
+		let localFilePath = url.replace(config.local_cloud_storage_host + '/', '');
+		logger.debug("local path is ", localFilePath);
+	}
 }
 
 class FileData {
@@ -171,8 +187,8 @@ function unlink(path) {
 	logger.debug("Removing file: " + path);
 	fs.unlink('./' + path, function (fserr) {
 		if (fserr) {
-			console.error('Remove image error:');
-			console.error(fserr);
+			logger.error('Remove image error:');
+			logger.error(fserr);
 		}
 	});
 }
