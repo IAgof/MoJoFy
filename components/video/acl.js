@@ -14,15 +14,11 @@ exports.middleware = function(req, res, next) {
 	}
 	
 	Acl.middleware(req, res, function() {
-		logger.debug("video ACL method is ", req.method.toUpperCase());
 		if(req.method.toUpperCase() === 'DELETE') {
-			logger.debug("video ACL for DELETE method");
 			remove(req, res, next);
 		} else if (req.method.toUpperCase() === 'PUT') {
-			logger.debug("video ACL for PUT method");
 			put(req, res, next);
 		} else {
-			logger.debug("video ACL next");
 			next();
 		}
 	});
@@ -41,18 +37,22 @@ exports.query = function(token, operation, callback) {
 };
 
 function put(req, res, next) {
-	var id = req.body.id || req.body._id || null;
+	var id = req.params.id || req.params._id || null;
 	var action = '';
 
-	Store.get(id, function(data) {
-		if (data && data.owner === req.user.sub) {
+	Store.get(id, function(video) {
+		if (!video) {
+			// TODO(jliarte): improve this error handling!
+			return Response.error(req, res, next, 404, 'Video id not found');
+		}
+		if (video && video.owner === req.user.sub) {
 			action = 'update_own';
 		} else {
 			action = 'update_other';
 		}
 		logger.debug("video ACL action is ", action);
 
-		Acl.acl.query(req.user.role, 'video', action, function(err, allow) {
+		Acl.acl.query(req.user.role, 'video', action, function (err, allow) {
 			if (allow) {
 				removePrivilegedFilds(req, res, next);
 			} else {
@@ -64,7 +64,7 @@ function put(req, res, next) {
 }
 
 function removePrivilegedFilds(req, res, next) {
-	Acl.acl.query(req.user.role, 'video', 'update_privileged_fields', function(err, allow) {
+	Acl.acl.query(req.user.role, 'video', 'update_privileged_fields', function (err, allow) {
 		if (!allow) {
 			delete req.body.featured;
 			delete req.body.verified;

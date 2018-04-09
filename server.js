@@ -8,7 +8,7 @@ const Routes = require('./network/routes');
 
 const server = express();
 
-server.use(cors())
+server.use(cors());
 
 server.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Origin', '*');

@@ -34,7 +34,6 @@ function list(params, callback) {
 }
 
 function upsert(data, callback) {
-	logger.debug("store upsert video with data ", data);
 	const id = data.id || data._id || null;
 	delete data.id;
 	delete data._id;
@@ -43,7 +42,7 @@ function upsert(data, callback) {
 		callback(result, id);
 		if (result) {
 			Search.add(type, data, id, function(resultSearch, idSearch) {
-				console.log(resultSearch);
+				logger.debug(resultSearch);
 			});
 		}
 	});
@@ -60,6 +59,6 @@ function remove(id, callback) {
 		callback(data);
 	});
 	Search.remove(type, id, function(data) {
-		console.log(data);
+		logger.debug(data);
 	});
 }
