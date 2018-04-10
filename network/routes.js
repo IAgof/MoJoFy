@@ -16,6 +16,7 @@ const routes = function(server) {
 	require(component('user')).use('/:userId/video', require(component('video')));
 	require(component('video')).use('/product_type', require(component('product_type')));
 	require(component('video')).use('/lang', require(component('video_lang')));
+	require(component('video')).use('/category', require(component('video_category')));
 
 	return server;
 };
