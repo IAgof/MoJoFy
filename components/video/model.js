@@ -69,6 +69,9 @@ const model = {
 		type: 'object',
 		date: true
 	},
+	featured: {
+		type: 'boolean'
+  },
 	priceStd: {
 		type: 'number'
 	},
