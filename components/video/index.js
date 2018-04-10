@@ -104,13 +104,15 @@ function update(data, token, callback) {
 	}
 
 	const model = Model.set(data);
-	// TODO - FIXME (jliarte): modelate errors with booleans!!
+	// // TODO - FIXME (jliarte): modelate errors with booleans!!
+	logger.error("model is ", model);
 	if (data.verified !== undefined) {
 		model.verified = (data.verified == 'true');
 	}
 	if (data.featured !== undefined) {
 		model.featured = (data.featured == 'true');
 	}
+	logger.error("model after fix is ", model);
 	const videoId = data.id || data._id;
 	model._id = data.id || data._id;
 
