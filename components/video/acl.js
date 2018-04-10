@@ -1,6 +1,7 @@
 
 const Acl = require('../access/acl');
 const Response = require('../../network/response');
+const logger = require('../../logger');
 
 const Store = require('./store');
 
@@ -14,8 +15,11 @@ exports.middleware = function(req, res, next) {
 	}
 	
 	Acl.middleware(req, res, function() {
-		if(req.method.toUpperCase() === 'DELETE') {
+		const method = req.method.toUpperCase();
+		if(method === 'DELETE') {
 			remove(req, res, next);
+		} else if (method === 'GET') {
+			download(req, res, next);
 		} else {
 			next();
 		}
@@ -53,6 +57,31 @@ function remove(req, res, next) {
 				next();
 			} else {
 				Response.error(req, res, next, 403, 'Unauthorized');
+			}
+		});
+	});
+}
+
+function download(req, res, next) {
+	var id = req.params.id || req.params._id || null;
+	var action = '';
+
+	Store.get(id, function(data) {		
+		if(data && data.owner === req.user.sub) {
+			action = 'download_own';
+		} else {
+			action = 'download_other';
+		}
+
+		Acl.acl.query(req.user.role, 'video', action, function(err, allow) {
+			if(allow) {
+				logger.info('I am the owner of that video');
+				req.owner = true;
+				next();
+			} else {
+				logger.info('I have the code to download that video');
+				req.query.code = req.query.code || null;
+				next();
 			}
 		});
 	});

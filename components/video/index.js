@@ -238,9 +238,9 @@ function remove(id, token, callback) {
 	});
 }
 
-function download(id, code, callback) {
+function download(id, code, owner, callback) {
 	DownloadCode.isValid(id, code, function (valid) {
-		if (valid) {
+		if (valid || owner) {
 			get(id, function (video, error, code) {
 				let responseUrl = null;
 				if(!error && typeof video === 'object') {

@@ -18,7 +18,7 @@ exports.token = token;
 const roles = {
 	_roleList: ['admin', 'marketing', 'operations', 'guest'],
 	video: {
-		guest: ['read', 'add', 'list', 'update', 'delete', 'remove_own'],
+		guest: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'download_own'],
 		marketing: ['read', 'add', 'list'],
 		operations: ['read', 'list', 'add']
 	},
