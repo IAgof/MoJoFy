@@ -9,7 +9,9 @@ const Response = require('../../network/response');
 const logger = require('../../logger');
 const Controller = require('./');
 
-const Upload = multer({ dest: Config.upload_folder });
+const MAX_UPLOAD_SIZE = Config.max_video_upload_byte_size;
+
+const Upload = multer( { dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE } );
 
 const router = express.Router({ mergeParams: true });
 
