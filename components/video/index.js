@@ -215,7 +215,12 @@ function like(id, token, callback) {
 }
 
 function getVideoOwner(result, token, callback) {
+	if (result.length === 0) {
+		return callback(result, null, 200);
+	}
+	
 	let results = 0;
+	
 	for (var i = 0; i < result.length; i++) {
 		delete result[i].original;
 		const video = result[i];
