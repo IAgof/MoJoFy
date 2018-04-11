@@ -214,13 +214,26 @@ function like(id, token, callback) {
 	Like.add(entity, callback);
 }
 
+function getVideoOwner(result, token, callback) {
+	let results = 0;
+	for (var i = 0; i < result.length; i++) {
+		delete result[i].original;
+		const video = result[i];
+		User.get(video.owner, token, function (data) {
+			if (data) {
+				video.ownerData = data;
+			}
+			if (++results === result.length) {
+				callback(result, null, 200);
+			}
+		});
+	}
+}
+
 function query(params, token, callback) {
 	Store.list(params, function(result) {
 		if(result) {
-			for (var i = 0; i < result.length; i++) {
-				delete result[i].original;
-			}
-			callback(result, null, 200);
+			getVideoOwner(result, token, callback);
 		} else {
 			callback(null, 'Unable to list videos', 500);
 		}
@@ -239,8 +252,22 @@ function remove(id, token, callback) {
 	});
 }
 
-function download(id, code, callback) {
-	DownloadCode.isValid(id, code, function (valid) {
+function isDownloadable(id, code, owner, callback) {
+	if (owner) {
+		callback(true);
+	} else {
+		DownloadCode.isValid(id, code, function (valid) {
+			if (valid) {
+				callback(true);
+			} else {
+				callback(false);
+			}
+		});
+	}
+}
+
+function download(id, code, owner, callback) {
+	isDownloadable(id, code, owner, function (valid) {
 		if (valid) {
 			get(id, function (video, error, code) {
 				let responseUrl = null;
