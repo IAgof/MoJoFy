@@ -166,7 +166,21 @@ function list(token, callback, props) {
 			});
 		}
 
+		if (props.q) {
+			const fieldsToQuery = ['title', 'description', 'productType', 'tag'];
+			params.query = [];
+
+			for (var i = 0; i < fieldsToQuery.length; i++) {
+				const q = {
+					field: fieldsToQuery[i],
+					value: props.q
+				}; 
+
+				params.query.push(q);
+			}
+		}
 	}
+
 	query(params, token, callback);
 
 	/*
@@ -201,7 +215,12 @@ function like(id, token, callback) {
 }
 
 function getVideoOwner(result, token, callback) {
+	if (result.length === 0) {
+		return callback(result, null, 200);
+	}
+	
 	let results = 0;
+	
 	for (var i = 0; i < result.length; i++) {
 		delete result[i].original;
 		const video = result[i];

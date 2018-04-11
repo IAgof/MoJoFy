@@ -1,4 +1,8 @@
-v0.3.1
+v0.4.0
+ - Ability to download a video if you are the owner.
+ - Ability to register being logged in.
+
+ v0.3.1
 - Update metadata retieving to get always the video info
 
 v0.3.0
