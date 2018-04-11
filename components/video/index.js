@@ -238,9 +238,23 @@ function remove(id, token, callback) {
 	});
 }
 
+function isDownloadable(id, code, owner, callback) {
+	if (owner) {
+		callback(true);
+	} else {
+		DownloadCode.isValid(id, code, function (valid) {
+			if (valid) {
+				callback(true);
+			} else {
+				callback(false);
+			}
+		});
+	}
+}
+
 function download(id, code, owner, callback) {
-	DownloadCode.isValid(id, code, function (valid) {
-		if (valid || owner) {
+	isDownloadable(id, code, owner, function (valid) {
+		if (valid) {
 			get(id, function (video, error, code) {
 				let responseUrl = null;
 				if(!error && typeof video === 'object') {
