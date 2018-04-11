@@ -102,6 +102,13 @@ router.put('/:id(\\d+)/', Acl, Upload.any(), function(req, res, next) {
 	req.body.files = req.files;
 	req.body.id = req.params.id;
 	logger.info("Handling video " + req.params.id + " put");
+	if (req.body.location && typeof req.body.location === 'string') {
+		try {
+			req.body.location = JSON.parse(req.body.location);
+		} catch (err) {
+			logger.error("Error parsing location ", req.body.location);
+		}
+	}
 
 	Controller.update(req.body, req.user, function(data, err, code) {
 		if(!err) {

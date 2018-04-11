@@ -86,6 +86,12 @@ const model = {
 	},
 	notes: {
 		type: 'string'
+	},
+	locationName: {
+		type: 'string'
+	},
+	location: {
+		type: 'object'
 	}
 };
 
