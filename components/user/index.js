@@ -171,6 +171,7 @@ function updateVideoCounter(userId, callback) {
 	Store.get(userId, function(data) {
 		if (data && data.videoCount) {
 			data._id = userId;
+			delete data.password;
 			data.videoCount = Number(data.videoCount) + 1;
 			update(data, null, function (updatedData, err) {
 				if (err) {
