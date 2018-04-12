@@ -1,4 +1,4 @@
-
+const logger = require('../../logger');
 const Acl = require('virgen-acl').Acl;
 const acl = new Acl();
 
@@ -21,7 +21,6 @@ const roles = {
 		guest: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'update_own', 'download_own'],
 		editor: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'remove_other', 'update_own', 'update_other', 'download_own', 'download_other',
 			'update_privileged_fields'],
-		guest: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'download_own'],
 		marketing: ['read', 'add', 'list'],
 		operations: ['read', 'list', 'add']
 	},
@@ -57,26 +56,27 @@ if(roles._roleList) {
 	}
 
 } else {
-	console.warn('There are no role list in your role system. Only users with role admin are allowed to access the resources');
+	logger.warn('There are no role list in your role system. Only users with role admin are allowed to access the resources');
 }
 
 
 function middleware(req, res, next, operation) {
 
 	if(!req.headers.authorization) {
-		console.error(' -- No authorization header present -- ');
+		logger.error(' -- No authorization header present -- ');
 		Response.error(req, res, next, 401);
 		return false;
 	}
 
 	const token = req.user;
+	logger.debug("req user = token is ", req.user);
 
 	const role = token.role || 'guest';
 	const resource = req.baseUrl.split('/')[1].toLowerCase();
 	// const action = getAction(req, token);
 	const action = operation || actionMethod(req, token);
 
-	console.log('role: ' + role + '; resource: ' + resource + '; action: ' + action + ';');
+	logger.debug('role: ' + role + '; resource: ' + resource + '; action: ' + action + ';');
 
 	acl.query(role, resource, action, function(err, allow) {
 
