@@ -1,0 +1,16 @@
+v0.4.0
+ - Ability to download a video if you are the owner.
+ - Ability to register being logged in.
+
+ v0.3.1
+- Update metadata retieving to get always the video info
+
+v0.3.0
+- Increase the video model
+- Add user's video counting
+
+v0.2.0
+- Add user/:id/video nested routes for supporting user galleries
+
+v0.1.0
+- Initial version of platform

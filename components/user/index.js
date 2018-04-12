@@ -3,14 +3,19 @@
 const Model = require('./model');
 const Pass = require('../access/password');
 const Store = require('./store');
+const logger = require('../../logger');
+
+const Video = require('../video');
 
 // Exposed functions
 
 exports.get = get;
 exports.list = list;
 exports.add = add;
+exports.exist = exist;
 exports.update = update;
 exports.query = query;
+exports.updateVideoCounter = updateVideoCounter;
 
 
 // Internal functions
@@ -23,7 +28,15 @@ function get(id, token, callback, includePass) {
 			if(!includePass) {
 				delete data.password;
 			}
-			callback(data, null);
+
+			if(!data.videoCount) {
+				setVideoCounter(id, function(data) {
+					callback(data, null);
+				})
+			} else {
+				callback(data, null);
+			}
+
 		} else {
 			callback(null, 'That user does not exist', 404);
 		}
@@ -31,7 +44,43 @@ function get(id, token, callback, includePass) {
 }
 
 function add(data, token, callback) {
+	logger.debug("user.add mehod, data - ", data);
+	isUser(data, token, function (exists) {
+		if (exists === null) {
+			callback(null, 'Unable to register, no user or email provided', 400);
+			return false;
+		} else if (exists === true) {
+			callback(null, 'User already exists', 400);
+			return false;
+		}
+		
+		// Execute all the code;
+		prepare(data, function(model) {
+			Store.upsert(model, function (result, id) {
+				if (result, id) {
+					model._id = id;
+					delete model.password;
+					callback(model, null, 201);
+				} else {
+					callback(null, 'Unable to add the user', 500);
+				}
+			});
+		});
+	});
+}
 
+function exist(data, token, callback) {
+	isUser(data, token, function (exists) {
+		if (exists === null) {
+			callback(null, 'Unable to register, no user or email provided', 400);
+			return false;
+		}
+
+		callback({exist: exists}, null, 200);
+	});
+}
+
+function isUser(data, token, callback) {
 	var params = {
 		filters: [],
 		limit: 1
@@ -50,31 +99,21 @@ function add(data, token, callback) {
 			value: data.email
 		});
 	} else {
-		callback(null, 'Unable to register, no user or email provided', 400);
-		return false;
+		callback(null);
 	}
+	logger.debug("querying with params ", params);
 
-	query(params, token, function(found, error, code) {
-		if(found && found.length > 0) {
-			callback(null, 'User already exists', 400);
-			return false;
+	query(params, token, function(found, error) {	//, code) {
+		if(error) {
+			callback(null);
 		}
-		
-		// Execute all the code;
-		prepare(data, function(model) {
-			Store.upsert(model, function(result, id) {
-				if(result, id) {
-					model._id = id;
-					delete model.password;
-					callback(model, null, 201);
-				} else {
-					callback(null, 'Unable to add the user', 500);
-				}
-			});
-		});
 
-	});
-
+		if(found && found.length > 0) {
+			callback(true);
+		} else {
+			callback(false);
+		}
+	}, false);
 }
 
 function update(data, token, callback) {
@@ -106,8 +145,8 @@ function list(token, callback) {
 }
 
 function query(params, token, callback, includePass) {
-
 	// Acl.query(token, 'list', function(success) {
+
 		Store.list(params, function(result) {
 			if(result) {
 				for (var i = 0; i < result.length; i++) {
@@ -122,6 +161,59 @@ function query(params, token, callback, includePass) {
 			}
 		});
 	// });
+}
+
+function updateVideoCounter(userId, callback) {
+	if(!userId) {
+		return false;
+	}
+
+	Store.get(userId, function(data) {
+		if (data && data.videoCount) {
+			data._id = userId;
+			data.videoCount = Number(data.videoCount) + 1;
+			update(data, null, function (updatedData, err) {
+				if (err) {
+					logger.error(err);
+				}
+			});
+		} else if (data) {
+			data._id = userId;
+			setVideoCounter(data, callback);
+		} else {
+			logger.error('Error updating user video counter: That user does not exist');
+		}
+	}, true);
+}
+
+function setVideoCounter(data, callback) {
+	if(!data) {
+		callback(null);
+		return false;
+	} else if(typeof data !== 'object') {
+		return updateVideoCounter(data, callback);
+	}
+
+	const userId = data.id || data._id;
+
+	Video.count({
+		filters: [{
+			field: 'owner',
+			operator: '=',
+			value: userId
+		}]
+	}, function(userVideos) {
+		data.videoCount = userVideos || 0;
+		update(data, null, function (data, err) {
+			if (err) {
+				logger.error(err);
+			} else {
+				logger.log('Video counter setted for user ' + userId);
+			}
+
+			callback(data);
+		});
+	});
 }
 
 function prepare(data, next) {

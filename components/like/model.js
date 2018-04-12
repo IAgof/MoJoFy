@@ -1,19 +1,22 @@
 
-const Modelate = require('../../modelate');
+const Modelate = require('modelate');
 
 const model = {
-	// name: {
-	// 	type: 'string',
-	// 	maxLength: 12,
-	// 	minLength: 1
-	// },
-	from: 'string',
-	entity: 'string',
-	to: 'string'
+	from: {
+		type: 'string'
+	},
+	entity: {
+		type: 'string'
+	},
+	to: {
+		type: 'string'
+	}
 };
 
+const Model = new Modelate('Like').set(model);
+
 function set(data) {
-	return new Modelate(data, model);
+	return Model.modelate(data);
 }
 
 

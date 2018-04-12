@@ -1,27 +1,78 @@
 
-const Modelate = require('../../modelate');
+var Modelate = require('modelate');
 
 const model = {
-	// name: {
-	// 	type: 'string',
-	// 	maxLength: 12,
-	// 	minLength: 1
-	// },
-	owner: 'string',
-	video: 'string',
-	poster: 'string',
-	title: 'string',
-	description: 'string',
-	hash: 'string',
-	original_name: 'string',
-	metadata: 'object',
-	likes: 'number',
-	liked: 'object',
-	date: 'object'
+	owner: {
+		type: 'string'
+	},
+	video: {
+		type: 'string'
+	},
+	original: {
+		type: 'string'
+	},
+	verified: {
+		type: 'boolean'
+	},
+	poster: {
+		type: 'string'
+	},
+	title: {
+		type: 'string'
+	},
+	productType: {
+		type: 'string'
+	},
+	description: {
+		type: 'string'
+	},
+	hash: {
+		type: 'string'
+	},
+	original_name: {
+		type: 'string'
+	},
+	metadata: {
+		type: 'object'
+	},
+	tag: {
+		type: 'string'
+	},
+	length: {
+		type: 'number'
+	},
+	size: {
+		type: 'number'
+	},
+	format: {
+		type: 'string'
+	},
+	dimensions: {
+		type: 'string'
+	},
+	ratio: {
+		type: 'string'
+	},
+	language: {
+		type: 'string'
+	},
+	quality: {
+		type: 'number'
+	},
+	credibility: {
+		type: 'number'
+	},
+	date: {
+		type: 'object',
+		date: true
+	}
 };
 
+const Model = new Modelate('Video').set(model);
+
+
 function set(data) {
-	return new Modelate(data, model);
+	return Model.modelate(data);
 }
 
 
