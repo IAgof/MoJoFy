@@ -37,6 +37,7 @@ router.get('/', function(req, res, next) {
 		query.excludeTag = req.query.excludeTag || undefined;
 		query.featured = (req.query.featured == 'true') || undefined;
 		query.user = Number(req.params.userId) || undefined;
+		query.q = req.query.q || undefined;
 	}
 
 	Controller.list(req.user, function(data, err, code) {
@@ -48,10 +49,8 @@ router.get('/', function(req, res, next) {
 	}, query);
 });
 
-router.get('/:id/original', function(req, res, next) {
-	const code = req.query.code || null;
-
-	Controller.download(req.params.id, code, function(data, err, code) {
+router.get('/:id/original', Acl, function(req, res, next) {
+	Controller.download(req.params.id, req.query.code, req.owner, function(data, err, code) {
 		if(!err) {
 			const splitUrl = data.split('/');
 			const filename = splitUrl[splitUrl.length - 1];
