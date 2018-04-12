@@ -2,7 +2,6 @@ const logger = require('../../logger');
 
 const Acl = require('../access/acl');
 const Response = require('../../network/response');
-const logger = require('../../logger');
 
 const Store = require('./store');
 
