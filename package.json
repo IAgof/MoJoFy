@@ -1,6 +1,6 @@
 {
   "name": "mojofy",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Cloud storage for Vimojo files and projects",
   "main": "server.js",
   "scripts": {

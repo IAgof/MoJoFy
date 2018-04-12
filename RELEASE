@@ -1,2 +1,5 @@
-v0.5.0
- - Add video search funcionality
+v0.6.0
+ - Update video model with new fields
+ - Add new components for video product types, video categories and video languages
+ - Update video update route and index for handling updates of new fields and replacing files (poster and video)
+ - Some fixes and improvements
