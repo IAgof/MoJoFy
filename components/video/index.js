@@ -102,17 +102,15 @@ function update(data, token, callback) {
 	if (data.date) {
 		data.date = new Date(data.date);
 	}
+	// TODO - FIXME (jliarte): modelate errors with booleans!!
+	if (typeof data.verified == "string" && data.verified !== undefined) {
+		data.verified = (data.verified === 'true');
+	}
+	if (typeof data.featured == "string" && data.featured !== undefined) {
+		data.featured = (data.featured === 'true');
+	}
 
 	const model = Model.set(data);
-	// // TODO - FIXME (jliarte): modelate errors with booleans!!
-	logger.error("model is ", model);
-	if (data.verified !== undefined) {
-		model.verified = (data.verified == 'true');
-	}
-	if (data.featured !== undefined) {
-		model.featured = (data.featured == 'true');
-	}
-	logger.error("model after fix is ", model);
 	const videoId = data.id || data._id;
 	model._id = data.id || data._id;
 
