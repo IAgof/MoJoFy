@@ -179,6 +179,7 @@ function updateVideoCounter(userId, callback) {
 				}
 			});
 		} else if (data) {
+			delete data.password;
 			data._id = userId;
 			setVideoCounter(data, callback);
 		} else {
@@ -212,7 +213,9 @@ function setVideoCounter(data, callback) {
 				logger.log('Video counter setted for user ' + userId);
 			}
 
-			callback(data);
+			if(typeof callback === 'function') {
+				callback(data);
+			}
 		});
 	});
 }
