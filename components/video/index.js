@@ -60,14 +60,9 @@ function add(data, token, callback) {
 
 	if(data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
 		// Store file in a proper place ^^
-		FileUpload.move(data.file, function(uploaded, metadata) {
-			data.video = uploaded.video;
-			data.original = uploaded.video;
-			data.poster = uploaded.img;
+		FileUpload.processUploadedVideo(data.file, function(uploaded, metadata) {
+			addVideoData(data, uploaded, metadata);
 			data.date = new Date();
-
-			setMetadata(data, metadata);
-
 			const model = Model.set(data);
 			logger.debug(model);
 
@@ -84,33 +79,116 @@ function add(data, token, callback) {
 				}
 			});
 		});
-		
+
 	} else {
 		callback(null, 'Invalid video sent', 400);
 	}
+}
 
+function addVideoData(data, uploaded, metadata) {
+	data.video = uploaded.video;
+	data.original = uploaded.video;
+	data.poster = uploaded.img;
 
+	setMetadata(data, metadata);
 }
 
 function update(data, token, callback) {
-
-	if(!data.id && !data._id) {
-		callback(null, 'No video id provided', 400);
+	if (!data.id && !data._id) {
+		logger.error("Unable to update video without id!");
+		return callback(null, 'No video id provided', 400);
+	}
+	// TODO(jliarte): seems a modelate bug
+	if (data.date) {
+		data.date = new Date(data.date);
+	}
+	// TODO - FIXME (jliarte): modelate errors with booleans!!
+	if (typeof data.verified == "string" && data.verified !== undefined) {
+		data.verified = (data.verified === 'true');
+	}
+	if (typeof data.featured == "string" && data.featured !== undefined) {
+		data.featured = (data.featured === 'true');
 	}
 
 	const model = Model.set(data);
-
+	const videoId = data.id || data._id;
 	model._id = data.id || data._id;
 
+	// update data
 	Store.upsert(model, function(result, id) {
-		if(result, id) {
+		if (result, id) {
+			logger.debug("video fields updated!");
 			model._id = id;
-			callback(model, null, 200);
+			processNewFiles(data, videoId)
+				.then(res => callback(model, null, 200))
+				.catch(err => {
+					result = {
+						message: "Error updating video fields",
+						errors: err
+					};
+					callback(model, result, 500)
+				});
 		} else {
-			callback(null, 'Unable to update the video', 500);
+			logger.error("Error updating video fields!");
+			callback(null, { message: 'Unable to update the video' }, 500);
 		}
 	});
+}
 
+function processNewFiles(videoData, videoId) {
+	let updatedFiles = {};
+	if (videoData.files && videoData.files.length > 0) {
+		updatedFiles = videoData.files.reduce((map, obj) => (map[obj.fieldname] = obj, map), {});
+	}
+	return new Promise((resolve, reject) => {
+		if (!updatedFiles.newFile) {
+			return resolve(updateNewPoster(updatedFiles, videoId));
+		}
+		logger.debug("-------------------- Setting new video file -------------------- ");
+		FileUpload.processUploadedVideo(updatedFiles.newFile, function (uploaded, metadata) {
+			logger.debug("New video file processed with results", uploaded);
+			Store.get(videoId, video => {
+				let oldVideo = video.video;
+				let oldOriginal = video.original;
+				video.id = videoId;
+				addVideoData(video, uploaded, metadata);
+				Store.upsert(video, result => {
+					if (result) {
+						FileUpload.removeFromCloudStorage(oldVideo);
+						FileUpload.removeFromCloudStorage(oldOriginal);
+						resolve(updateNewPoster(updatedFiles, videoId));
+					} else {
+						reject({original: "Error updating video file"});
+					}
+				});
+			});
+		});
+
+	});
+}
+
+function updateNewPoster(updatedFiles, videoId) {
+	if (!updatedFiles.newPoster) {
+		return;
+	}
+	logger.debug("-------------------- Setting new video poster -------------------- ");
+	return FileUpload.moveUpladedFile(updatedFiles.newPoster)
+		.then(url => {
+			logger.debug("New poster processed with results", url);
+			Store.get(videoId, video => {
+				let oldPoster = video.poster;
+				video.id = videoId;
+				video.poster = url;
+				Store.upsert(video, result => {
+					if (result) {
+						FileUpload.removeFromCloudStorage(oldPoster);
+						return;
+					} else {
+						throw ({poster: "Error updating poster file"});
+					}
+				});
+			});
+		})
 }
 
 function list(token, callback, props) {
@@ -166,6 +244,17 @@ function list(token, callback, props) {
 			});
 		}
 
+		if (props.featured && typeof props.featured === 'boolean') {
+			if(!params.filters) {
+				params.filters = [];
+			}
+			params.filters.push({
+				field: 'featured',
+				operator: '=',
+				value: props.featured
+			});
+		}
+
 		if (props.q) {
 			const fieldsToQuery = ['title', 'description', 'productType', 'tag'];
 			params.query = [];
@@ -186,7 +275,7 @@ function list(token, callback, props) {
 	/*
 	// Token check for only mine... Deprecated?
 	if (token && token.role === 'admin')  {
-		console.log('An admin asked for all videos...');
+		logger.debug('An admin asked for all videos...');
 	} else {
 		var onlyMine = {
 			field: 'owner',

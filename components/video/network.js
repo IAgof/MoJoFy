@@ -6,14 +6,17 @@ const mime = require('mime');
 const Acl = require('./acl').middleware;
 const Config = require('../../config');
 const Response = require('../../network/response');
+const logger = require('../../logger');
 const Controller = require('./');
 
-const Upload = multer({ dest: Config.upload_folder });
+const MAX_UPLOAD_SIZE = Config.max_video_upload_byte_size;
+
+const Upload = multer( { dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE } );
 
 const router = express.Router({ mergeParams: true });
 
 
-router.get('/:id', function(req, res, next) {
+router.get('/:id(\\d+)/', function(req, res, next) {
   	Controller.get(req.params.id, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
@@ -32,6 +35,7 @@ router.get('/', function(req, res, next) {
 		query.order = req.query.order || 'date';
 		query.tag = req.query.tag || undefined;
 		query.excludeTag = req.query.excludeTag || undefined;
+		query.featured = (req.query.featured == 'true') || undefined;
 		query.user = Number(req.params.userId) || undefined;
 		query.q = req.query.q || undefined;
 	}
@@ -93,8 +97,17 @@ router.post('/', Upload.single('file'), function(req, res, next) {
 });
 
 // router.put('/', Upload.single('file'), function(req, res, next) {
-router.put('/', Acl, Upload.single('file'), function(req, res, next) {
-	req.body.file = req.file;
+router.put('/:id(\\d+)/', Acl, Upload.any(), function(req, res, next) {
+	req.body.files = req.files;
+	req.body.id = req.params.id;
+	logger.info("Handling video " + req.params.id + " put");
+	if (req.body.location && typeof req.body.location === 'string') {
+		try {
+			req.body.location = JSON.parse(req.body.location);
+		} catch (err) {
+			logger.error("Error parsing location ", req.body.location);
+		}
+	}
 
 	Controller.update(req.body, req.user, function(data, err, code) {
 		if(!err) {

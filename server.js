@@ -1,11 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('express-jwt');
+const cors = require('cors');
 
 const Config = require('./config');
 const Routes = require('./network/routes');
 
 const server = express();
+
+server.use(cors());
 
 server.use(function(req, res, next) {
 	res.header('Access-Control-Allow-Origin', '*');

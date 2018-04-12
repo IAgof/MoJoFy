@@ -1,3 +1,4 @@
+const logger = require('../../logger');
 
 const Persistent = require('../../store/datastore');
 const Search = require('../../store/elasticsearch');
@@ -41,7 +42,7 @@ function upsert(data, callback) {
 		callback(result, id);
 		if (result) {
 			Search.add(type, data, id, function(resultSearch, idSearch) {
-				console.log(resultSearch);
+				logger.debug(resultSearch);
 			});
 		}
 	});
@@ -58,6 +59,6 @@ function remove(id, callback) {
 		callback(data);
 	});
 	Search.remove(type, id, function(data) {
-		console.log(data);
+		logger.debug(data);
 	});
 }

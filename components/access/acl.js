@@ -16,8 +16,11 @@ exports.token = token;
 // TO_DO: 
 // THIS SHALL BE RECOVERED FROM DATABASE.
 const roles = {
-	_roleList: ['admin', 'marketing', 'operations', 'guest'],
+	_roleList: ['admin', 'editor', 'marketing', 'operations', 'guest'],
 	video: {
+		guest: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'update_own', 'download_own'],
+		editor: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'remove_other', 'update_own', 'update_other', 'download_own', 'download_other',
+			'update_privileged_fields'],
 		guest: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'download_own'],
 		marketing: ['read', 'add', 'list'],
 		operations: ['read', 'list', 'add']
