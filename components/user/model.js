@@ -24,7 +24,8 @@ const model = {
 		}
 	},
 	password: {
-		type: 'string'
+		type: 'string',
+		typeStrict: true	// Avoid type parsing
 	},
 	following: {
 		type: 'number'
