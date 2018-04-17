@@ -408,8 +408,12 @@ function queryFilters(body, options) {
 			const prefix = { prefix: {} };
 			prefix.prefix[options.query[i].field] = options.query[i].value;
 
+			const wildcard = { wildcard: {} };
+			wildcard.wildcard[options.query[i].field] = '*' + options.query[i].value + '*';
+
 			body.query.bool.should.push(match);
 			body.query.bool.should.push(prefix);
+			body.query.bool.should.push(wildcard);
 		}
 	}
 
