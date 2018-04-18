@@ -256,7 +256,7 @@ function list(token, callback, props) {
 		}
 
 		if (props.q) {
-			const fieldsToQuery = ['title', 'description', 'productType', 'tag'];
+			const fieldsToQuery = ['title', 'description', 'tag', 'locationName'];
 			params.query = [];
 
 			for (var i = 0; i < fieldsToQuery.length; i++) {

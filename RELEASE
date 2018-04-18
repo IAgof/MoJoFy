@@ -1,5 +1,3 @@
-v0.6.0
- - Update video model with new fields
- - Add new components for video product types, video categories and video languages
- - Update video update route and index for handling updates of new fields and replacing files (poster and video)
- - Some fixes and improvements
+v0.6.1
+- Update search query to enable wildcard matching
+- Update video search fields
