@@ -19,7 +19,7 @@ exports.update = update;
 exports.remove = remove;
 exports.query = query;
 exports.count = count;
-exports.like = like;
+// exports.like = like;
 exports.download = download;
 
 const DEFAULT_CODES = 5;
@@ -292,16 +292,16 @@ function list(token, callback, props) {
 	/**/
 }
 
-function like(id, token, callback) {
-
-	const entity = {
-		from: token.sub,
-		entity: 'video',
-		to: id
-	};
-
-	Like.add(entity, callback);
-}
+// function like(id, token, callback) {
+//
+// 	const entity = {
+// 		from: token.sub,
+// 		entity: 'video',
+// 		to: id
+// 	};
+//
+// 	Like.add(entity, callback);
+// }
 
 function getVideoOwner(result, token, callback) {
 	if (result.length === 0) {
