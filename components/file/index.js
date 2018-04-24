@@ -77,10 +77,12 @@ function moveUploadedFile(fileUpload) {
 
 function removeFromCloudStorage(url) {
 	if (config.cloud_storage === 'gcloud') {
-		// TODO(jliarte): remove from cloud
-	} else {
+		// TODO(jliarte): test in cloud storage
+		let cloudFilePath = url.split('googleapis.com')[1];
+		deleteFromGCloudStorage(cloudFilePath);
+	} else if (config.cloud_storage === 'local_cloud') {
 		let localFilePath = url.replace(config.local_cloud_storage_host + '/', '');
-		logger.debug("local path is ", localFilePath);
+		unlink(localFilePath);
 	}
 }
 
@@ -137,8 +139,14 @@ function copyToGCloudStorage(remotePath, localPath) {
 			logger.info('file uploaded');
 			resolve(url);
 		});
-	})
+	});
+}
 
+function deleteFromGCloudStorage(cloudPath) {
+	const bucketName = 'gs://' + config.storage_bucket + cloudPath;
+	const bucket = storage.bucket(bucketName);
+	const file = bucket.file(cloudPath);
+	return file.delete();
 }
 
 function makeScreenshots(fileData, callback) {
