@@ -1,3 +1,7 @@
+v0.6.1
+- Update search query to enable wildcard matching
+- Update video search fields
+
 v0.6.0
  - Update video model with new fields
  - Add new components for video product types, video categories and video languages
