@@ -21,6 +21,13 @@ var client = new elasticsearch.Client({
 	keepAlive: true
 });
 
+client.indices.exists({ index: config.elastic_index }).then(function (exists) {
+	if (!exists) {
+		console.log("Creating index %s", config.elastic_index);
+		return client.indices.create({ index: config.elastic_index })
+	}
+}).catch(logger.error);
+
 /**
  * Callback for elastic get function.
  * 
@@ -169,8 +176,9 @@ function remove(type, id, cb) {
 function search(type, options, cb) {
 	return query(type, 'search', options, function (response) {
 		// Parse possible errors
-		if(typeof(response.hits) == 'undefined') {
-			response.hits = [];
+		if(response === null || typeof(response.hits) == 'undefined') {
+			cb([]);
+			return false;
 		}
 
 		var searchArray = [];
@@ -221,6 +229,9 @@ function count(type, options, cb) {
  * @param {object} options	Query options
  * @param {elasticQueryCallback} cb Callback on query results (or error)
  */
+
+
+// query(type, 'search', options, function (response) {
 function query(type, operation, options, cb) {
 	if(!type || !options) {
 		if(cb && typeof cb) {
@@ -252,7 +263,7 @@ function query(type, operation, options, cb) {
 		
 		// Log errors
 		if(error) {
-			logger.log(error);
+			logger.error("Error querying elasticsearch: ", error);
 			cb(null);
 			return false;
 		}

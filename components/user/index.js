@@ -171,6 +171,7 @@ function updateVideoCounter(userId, callback) {
 	Store.get(userId, function(data) {
 		if (data && data.videoCount) {
 			data._id = userId;
+			delete data.password;
 			data.videoCount = Number(data.videoCount) + 1;
 			update(data, null, function (updatedData, err) {
 				if (err) {
@@ -178,6 +179,7 @@ function updateVideoCounter(userId, callback) {
 				}
 			});
 		} else if (data) {
+			delete data.password;
 			data._id = userId;
 			setVideoCounter(data, callback);
 		} else {
@@ -211,7 +213,9 @@ function setVideoCounter(data, callback) {
 				logger.log('Video counter setted for user ' + userId);
 			}
 
-			callback(data);
+			if(typeof callback === 'function') {
+				callback(data);
+			}
 		});
 	});
 }
