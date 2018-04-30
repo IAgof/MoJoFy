@@ -1,8 +1,3 @@
-v0.6.2
-- Implemented file removeFromCloudStorage function
-- Modified user.updateVideoCounter to not change user password; callback fix
-- Updated video model to fix modelate bug than changed user password on user object updates
-- Updated modelate version to 0.2.8
-- Added workarround in video.add function for problem in frontend not showing recent uploaded video in gallery when upload ends
-- Updated elasticsearch client with a fix for creating non existing video index
-- Updated elasticsearch.search to fix error that crashed backend when no results where returned
+v0.6.3
+- Updated username max length to fit frontend validations.
+- Updated upload response timeout.
