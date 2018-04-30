@@ -73,10 +73,10 @@ function add(data, token, callback) {
 					generate_download_codes(id);
 					notify_video_upload(video);
 					User.updateVideoCounter(video.owner);
-					// TODO:(DevStarlight) 24/04/2018 We have set a timeout of 100ms to give time to process the video 
+					// TODO:(DevStarlight) 24/04/2018 We have set a timeout of 1000ms to give time to process the video 
 					setTimeout(function () {
 						callback(video, null, 201);
-					}, 100);
+					}, 1000);
 				} else {
 					callback(null, 'Unable to add the video', 500);
 				}
