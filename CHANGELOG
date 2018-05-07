@@ -1,3 +1,7 @@
+v0.6.3
+- Updated username max length to fit frontend validations.
+- Updated upload response timeout.
+
 v0.6.2
 - Implemented file removeFromCloudStorage function
 - Modified user.updateVideoCounter to not change user password; callback fix
