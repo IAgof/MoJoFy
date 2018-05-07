@@ -44,6 +44,9 @@ const model = {
 	},
 	role: {
 		type: 'string'
+	},
+	pic: {
+		type: 'string'
 	}
 };
 
