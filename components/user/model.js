@@ -46,7 +46,8 @@ const model = {
 		type: 'string'
 	},
 	pic: {
-		type: 'string'
+		type: 'string',
+		typeStrict: true
 	}
 };
 
