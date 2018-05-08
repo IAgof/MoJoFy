@@ -2,8 +2,14 @@ const express = require('express');
 const Acl = require('./acl').middleware;
 const Response = require('../../network/response');
 const Controller = require('./');
+const multer = require('multer');
+const Config = require('../../config');
 
 const router = express.Router();
+
+const MAX_UPLOAD_SIZE = Config.max_profile_upload_byte_size;
+
+const Upload = multer({ dest: Config.upload_folder + 'users/', fileSize: MAX_UPLOAD_SIZE });
 
 
 router.get('/exist', function(req, res, next) {
@@ -17,7 +23,7 @@ router.get('/exist', function(req, res, next) {
 	});
 });
 
-router.get('/',   function(req, res, next) {
+router.get('/', function(req, res, next) {
 	Controller.list(req.user, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
@@ -28,7 +34,7 @@ router.get('/',   function(req, res, next) {
 });
 
 // router.post('/', Acl,  function(req, res, next) {
-router.post('/',  function(req, res, next) {
+router.post('/', function(req, res, next) {
 	Controller.add(req.body, req.user, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
@@ -38,8 +44,8 @@ router.post('/',  function(req, res, next) {
 	});
 });
 
-router.put('/', Acl,  function(req, res, next) {
-	Controller.update(req.body, req.user, function(data, err, code) {
+router.put('/', Acl, Upload.single('pic'), function(req, res, next) {
+	Controller.update(req.body, req.user, req.file, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {

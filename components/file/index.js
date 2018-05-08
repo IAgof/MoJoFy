@@ -17,7 +17,7 @@ const thumbType = 'png';
 /* Exposed functions */
 
 exports.processUploadedVideo = processUploadedVideo;
-exports.moveUpladedFile = moveUploadedFile;
+exports.moveUploadedFile = moveUploadedFile;
 exports.removeFromCloudStorage = removeFromCloudStorage;
 
 /* Internal functions */
@@ -29,6 +29,7 @@ function processUploadedVideo(file, callback) {
 		return false;
 	}
 
+	
 	const originalFileData = getFileData(file);
 	const response = {
 		originalname: file.originalname,
@@ -71,8 +72,11 @@ function processUploadedVideo(file, callback) {
 }
 
 function moveUploadedFile(fileUpload) {
-	let fileData = getFileData(fileUpload);
-	return moveToCloudStorage(fileData);
+	if (fileUpload) {
+		let fileData = getFileData(fileUpload);
+		return moveToCloudStorage(fileData);
+	}
+	return new Promise(resolve => { resolve() });
 }
 
 function removeFromCloudStorage(url) {
