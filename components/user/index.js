@@ -121,13 +121,15 @@ function update(data, token, file, callback) {
 		callback(null, 'No user id provided', 400);
 		return;
 	}
-
+	
 	prepare(data, function(model) {
 
 		model._id = data.id || data._id;
 		
 		FileUpload.moveUploadedFile(file).then(response => {
-			model.pic = response;
+			if (response) {
+				model.pic = response;
+			}
 			Store.upsert(model, function(result, id) {
 				if(result, id) {
 					model._id = id;
