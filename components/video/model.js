@@ -11,6 +11,9 @@ const model = {
 	original: {
 		type: 'string'
 	},
+	published: {
+		type: 'boolean'
+	},
 	verified: {
 		type: 'boolean'
 	},
@@ -71,7 +74,7 @@ const model = {
 	},
 	featured: {
 		type: 'boolean'
-  },
+    },
 	priceStd: {
 		type: 'number'
 	},

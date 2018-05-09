@@ -113,6 +113,9 @@ function update(data, token, callback) {
 	if (typeof data.featured == "string" && data.featured !== undefined) {
 		data.featured = (data.featured === 'true');
 	}
+	if (typeof data.published == "string" && data.published !== undefined) {
+		data.published = (data.published === 'true');
+	}
 
 	const model = Model.set(data);
 	const videoId = data.id || data._id;
