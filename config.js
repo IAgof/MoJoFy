@@ -54,6 +54,9 @@ const config = {
 	// Email notifications:
 	emailNotificationsRecipient: process.env.BACKEND_EMAIL_NOTIFICATIONS_RECEIVER,
 	emailNotificationsSender: process.env.BACKEND_EMAIL_NOTIFICATIONS_SENDER,
+
+	// Show only verified videos in video lists
+	showOnlyVerifiedVideos: true,
 };
 
 module.exports = config;

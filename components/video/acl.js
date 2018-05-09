@@ -6,13 +6,12 @@ const Response = require('../../network/response');
 const Store = require('./store');
 
 exports.middleware = function(req, res, next) {
-	
 	// Check if user have a Token
 	if(!req.user) {
 		Response.error(req, res, next, 401, 'Unauthenticated');
 		return false;
 	}
-	
+
 	Acl.middleware(req, res, function() {
 		const method = req.method.toUpperCase();
 		if(method === 'DELETE') {
@@ -29,9 +28,7 @@ exports.middleware = function(req, res, next) {
 	return false;
 };
 
-
 exports.query = function(token, operation, callback) {
-
 	Acl.acl.query(token.role, 'video', operation, function(err, allow) {
 		callback(allow);
 	});
