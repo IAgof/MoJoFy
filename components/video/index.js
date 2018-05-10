@@ -201,10 +201,10 @@ function updateNewPoster(updatedFiles, videoId) {
 function list(user, callback, props) {
 	logger.debug("Querying video list...");
 	const params = {};
-	let showOnlyVerifiedVideos = Config.showOnlyVerifiedVideos;
+	let showOnlyPublishedVideos = Config.showOnlyPublishedVideos;
 	// user is editor or it is in its own gallery
 	if ((user != undefined) && (user.role == 'editor' || user.sub == props.user)) {
-		showOnlyVerifiedVideos = false;
+		showOnlyPublishedVideos = false;
 	} 
 	if (props && typeof props === 'object') {
 
@@ -237,6 +237,10 @@ function list(user, callback, props) {
 			insertFilter('featured', '=', props.featured, params);
 		}
 
+		if (props.verified !== undefined && typeof props.verified === 'boolean') {
+			insertFilter('verified', '=', props.verified, params);
+		}
+
 		if (props.q) {
 			const fieldsToQuery = ['title', 'description', 'tag', 'locationName'];
 			params.query = [];
@@ -250,11 +254,11 @@ function list(user, callback, props) {
 				params.query.push(q);
 			}
 		}
-		if (showOnlyVerifiedVideos) {
-			insertFilter('verified', '=', true, params);
+		if (showOnlyPublishedVideos) {
+			insertFilter('published', '=', true, params);
 		} else {
-			if (props.verified !== undefined && typeof props.verified === 'boolean') {
-				insertFilter('verified', '=', props.verified, params);
+			if (props.published !== undefined && typeof props.published === 'boolean') {
+				insertFilter('published', '=', props.published, params);
 			}
 		}
 		
