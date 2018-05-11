@@ -27,17 +27,21 @@ router.get('/:id(\\d+)/', function(req, res, next) {
 });
 
 router.get('/', function(req, res, next) {
-	var query;
+	let params = {};
 	if (req.query && typeof req.query === 'object') {
-		query = {};
-		query.limit = Number(req.query.limit) || 20;
-		query.offset = Number(req.query.offset) || 0;
-		query.order = req.query.order || 'date';
-		query.tag = req.query.tag || undefined;
-		query.excludeTag = req.query.excludeTag || undefined;
-		query.featured = (req.query.featured == 'true') || undefined;
-		query.user = Number(req.params.userId) || undefined;
-		query.q = req.query.q || undefined;
+		params.limit = Number(req.query.limit) || 20;
+		params.offset = Number(req.query.offset) || 0;
+		params.order = req.query.order || 'date';
+		params.tag = req.query.tag || undefined;
+		params.excludeTag = req.query.excludeTag || undefined;
+		if (req.query.featured != undefined) {
+			params.featured = (req.query.featured == 'true');
+		}
+		params.user = Number(req.params.userId) || undefined;
+		params.q = req.query.q || undefined;
+		if (req.query.verified != undefined) {
+			params.verified = (req.query.verified == 'true');
+		}
 	}
 
 	Controller.list(req.user, function(data, err, code) {
@@ -46,7 +50,7 @@ router.get('/', function(req, res, next) {
 		} else {
 			Response.error(req, res, next, (code || 500), err);
 		}
-	}, query);
+	}, params);
 });
 
 router.get('/:id/original', Acl, function(req, res, next) {

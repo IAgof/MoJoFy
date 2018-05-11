@@ -1,3 +1,6 @@
+v0.6.4
+- Added pic field to user model.
+
 v0.6.3
 - Updated username max length to fit frontend validations.
 - Updated upload response timeout.

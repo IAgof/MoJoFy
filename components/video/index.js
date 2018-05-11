@@ -4,6 +4,7 @@ const FileUpload = require('../file');
 const Model = require('./model');
 const Store = require('./store');
 const logger = require('../../logger');
+const Config = require('../../config');
 
 const Like = require('../like');
 const User = require('../user');
@@ -112,6 +113,9 @@ function update(data, token, callback) {
 	if (typeof data.featured == "string" && data.featured !== undefined) {
 		data.featured = (data.featured === 'true');
 	}
+	if (typeof data.published == "string" && data.published !== undefined) {
+		data.published = (data.published === 'true');
+	}
 
 	const model = Model.set(data);
 	const videoId = data.id || data._id;
@@ -194,10 +198,14 @@ function updateNewPoster(updatedFiles, videoId) {
 		})
 }
 
-function list(token, callback, props) {
+function list(user, callback, props) {
 	logger.debug("Querying video list...");
 	const params = {};
-
+	let showOnlyPublishedVideos = Config.showOnlyPublishedVideos;
+	// user is editor or it is in its own gallery
+	if ((user != undefined) && (user.role == 'editor' || user.sub == props.user)) {
+		showOnlyPublishedVideos = false;
+	} 
 	if (props && typeof props === 'object') {
 
 		if (props.limit && typeof props.limit === 'number' && props.limit >= 0) {
@@ -213,49 +221,24 @@ function list(token, callback, props) {
 		}
 
 		if (props.tag && typeof props.tag === 'string') {
-			if(!params.filters) {
-				params.filters = [];
-			}
-			params.filters.push({
-				field: 'tag',
-				operator: '=',
-				value: props.tag
-			});
+			insertFilter('tag', '=', props.tag, params);
 		}
 
 		if (props.excludeTag && typeof props.excludeTag === 'string') {
-			if(!params.filters) {
-				params.filters = [];
-			}
-
-			params.filters.push({
-				field: 'tag',
-				operator: '!=',
-				value: props.excludeTag
-			});
+			insertFilter('tag', '!=', props.excludeTag, params);
 		}
 
 		if (props.user && typeof props.user === 'number' && props.user >= 0) {
 			logger.debug("...for user ", props.user);
-			if(!params.filters) {
-				params.filters = [];
-			}
-			params.filters.push({
-				field: 'owner',
-				operator: '=',
-				value: props.user
-			});
+			insertFilter('owner', '=', props.user, params);
 		}
 
-		if (props.featured && typeof props.featured === 'boolean') {
-			if(!params.filters) {
-				params.filters = [];
-			}
-			params.filters.push({
-				field: 'featured',
-				operator: '=',
-				value: props.featured
-			});
+		if (props.featured !== undefined && typeof props.featured === 'boolean') {
+			insertFilter('featured', '=', props.featured, params);
+		}
+
+		if (props.verified !== undefined && typeof props.verified === 'boolean') {
+			insertFilter('verified', '=', props.verified, params);
 		}
 
 		if (props.q) {
@@ -271,9 +254,17 @@ function list(token, callback, props) {
 				params.query.push(q);
 			}
 		}
+		if (showOnlyPublishedVideos) {
+			insertFilter('published', '=', true, params);
+		} else {
+			if (props.published !== undefined && typeof props.published === 'boolean') {
+				insertFilter('published', '=', props.published, params);
+			}
+		}
+		
 	}
 
-	query(params, token, callback);
+	query(params, user, callback);
 
 	/*
 	// Token check for only mine... Deprecated?
@@ -293,6 +284,17 @@ function list(token, callback, props) {
 		}
 	}
 	/**/
+}
+
+function insertFilter(fieldName, operator, value, params) {
+	if(!params.filters) {
+		params.filters = [];
+	}
+	params.filters.push({
+		field: fieldName,
+		operator: operator,
+		value: value
+	});
 }
 
 function like(id, token, callback) {
