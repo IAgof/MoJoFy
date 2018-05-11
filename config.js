@@ -10,6 +10,7 @@ const config = {
 	//
 	upload_folder: 'uploads/',
 	max_video_upload_byte_size: process.env.MAX_VIDEO_UPLOAD_BYTE_SIZE || '1500000',
+	max_profile_upload_byte_size: process.env.MAX_PROFILE_UPLOAD_BYTE_SIZE || '1500000',
 	
 	// JWT
 	jwt_secret: process.env.JWT_SECRET || 'secret',

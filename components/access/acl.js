@@ -20,14 +20,11 @@ const roles = {
 	video: {
 		guest: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'update_own', 'download_own'],
 		editor: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'remove_other', 'update_own', 'update_other', 'download_own', 'download_other',
-			'update_privileged_fields'],
-		marketing: ['read', 'add', 'list'],
-		operations: ['read', 'list', 'add']
+			'update_privileged_fields']
 	},
 	user: {
 		guest: ['read', 'add', 'edit_own', 'remove_own'],
-		marketing: ['read', 'add', 'list'],
-		operations: ['read', 'add', 'update']
+		editor: ['read', 'add', 'list', 'update', 'edit_own', 'edit_other', 'remove_own', 'remove_other']
 	}
 };
 

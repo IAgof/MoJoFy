@@ -1,5 +1,5 @@
-
 // const Acl = require('./acl');
+const FileUpload = require('../file');
 const Model = require('./model');
 const Pass = require('../access/password');
 const Store = require('./store');
@@ -116,28 +116,32 @@ function isUser(data, token, callback) {
 	}, false);
 }
 
-function update(data, token, callback) {
-
+function update(data, token, file, callback) {
 	if(!data.id && !data._id) {
 		callback(null, 'No user id provided', 400);
 		return;
 	}
-
+	
 	prepare(data, function(model) {
 
 		model._id = data.id || data._id;
-
-		Store.upsert(model, function(result, id) {
-			if(result, id) {
-				model._id = id;
-				delete model.password;
-				callback(model, null, 201);
-			} else {
-				callback(null, 'Unable to update the user', 500);
+		
+		FileUpload.moveUploadedFile(file).then(response => {
+			if (response) {
+				model.pic = response;
 			}
+			Store.upsert(model, function(result, id) {
+				if(result, id) {
+					model._id = id;
+					delete model.password;
+					callback(model, null, 201);
+				} else {
+					callback(null, 'Unable to update the user', 500);
+				}
+			});
 		});
-	});
 
+	});
 }
 
 function list(token, callback) {
@@ -173,7 +177,7 @@ function updateVideoCounter(userId, callback) {
 			data._id = userId;
 			delete data.password;
 			data.videoCount = Number(data.videoCount) + 1;
-			update(data, null, function (updatedData, err) {
+			update(data, null, null, function (updatedData, err) {
 				if (err) {
 					logger.error(err);
 				}
@@ -206,7 +210,7 @@ function setVideoCounter(data, callback) {
 		}]
 	}, function(userVideos) {
 		data.videoCount = userVideos || 0;
-		update(data, null, function (data, err) {
+		update(data, null, null, function (data, err) {
 			if (err) {
 				logger.error(err);
 			} else {
