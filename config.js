@@ -58,6 +58,12 @@ const config = {
 
 	// Show only published videos in video lists
 	showOnlyPublishedVideos: true,
+	
+	// AWS
+	aws_secretKey: process.env.AWS_SECRET || '9VfWVA6IhTooiLlcFNotXcs5kia3v6EYqL9w1yPs',
+	aws_accessKey: process.env.AWS_ACCESS_KEY || 'AKIAJZUXYRZ4TZZ2OGTA',
+	aws_region: process.env.AWS_REGION || 'us-east-1',
+	aws_s3Bucket: process.env.AWS_S3_BUCKET || 'videona-videos',
 };
 
 module.exports = config;
