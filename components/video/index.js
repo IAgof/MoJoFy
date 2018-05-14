@@ -313,7 +313,7 @@ function getVideoOwner(result, token, callback) {
 	for (var i = 0; i < result.length; i++) {
 		delete result[i].original;
 		const video = result[i];
-		User.get(video.owner, token, function (data) {
+		User.get(video.owner, token, undefined, function (data) {
 			if (data) {
 				video.ownerData = data;
 			}

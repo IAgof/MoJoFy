@@ -20,7 +20,7 @@ exports.updateVideoCounter = updateVideoCounter;
 
 // Internal functions
 
-function get(id, token, callback, includePass) {
+function get(id, token, includePass, callback) {
 
 	Store.get(id, function(data) {
 		if(data) {

@@ -50,7 +50,7 @@ router.put('/', Acl,  function(req, res, next) {
 
 // router.get('/:id', Acl,  function(req, res, next) {
 router.get('/:id', function(req, res, next) {
-  Controller.get(req.params.id, req.user, function(data, err, code) {
+  Controller.get(req.params.id, req.user, undefined, function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
