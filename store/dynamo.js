@@ -1,6 +1,15 @@
 const AWS = require('aws-sdk');
 const Nanoid = require('nanoid');
 
+/** Converter:
+ *	Searching through the AWS JS library, there is a file called converter.js 
+ *	that has the methods that can remove the DynamoDB Attribute values. These 
+ *	methods are not in the documentation but it parse outputs.
+ *
+ *	Full thread: https://forums.aws.amazon.com/thread.jspa?threadID=242408
+ */
+const converter = require('aws-sdk/lib/dynamodb/converter.js');
+
 const DEFAULT_READ_CAPACITY_UNITS = 2;
 const DEFAULT_WRITE_CAPACITY_UNITS = 2;
 
@@ -18,19 +27,77 @@ dynamodb.listTables(function (err, data) {
 	for (let i = 0; i < data.TableNames.length; i++) {
 		tables.push(data.TableNames[i]);
 	}
-	console.log(tables);
 });
 
 
-function createTable(table, cb) {
-	dynamodb.createTable(table, function(err, data) {
+function prepareSecondaryIndexes(table, indexes) {
+	if(!table) {
+		return console.error('No table selected!!');
+	}
+
+	if(!table.GlobalSecondaryIndexes) {
+		table.GlobalSecondaryIndexes = [];
+	}
+
+	for (var i = 0; i < indexes.length; i++) {
+		table.GlobalSecondaryIndexes.push({
+			IndexName: table.TableName +'_'+ indexes[i],
+			KeySchema: [{
+				AttributeName: indexes[i],
+				KeyType: "HASH"
+			}],
+			Projection: {
+				ProjectionType: 'ALL'
+			},
+			ProvisionedThroughput: {       
+				ReadCapacityUnits: DEFAULT_READ_CAPACITY_UNITS, 
+				WriteCapacityUnits: DEFAULT_WRITE_CAPACITY_UNITS
+			}
+		});
+
+		table.AttributeDefinitions.push({ 
+			AttributeName: indexes[i], 
+			AttributeType: 'S'
+		});
+	}
+}
+
+
+/**
+ *	
+ */
+function createTable(table, indexes, cb) {
+	if(typeof indexes === 'function') {
+		cb = indexes;
+		indexes = [];
+	}
+
+	// ToDo: Check if we can get more complex structures based on future querys
+	const tableSchema = {
+		TableName: table,
+		KeySchema: [
+			{ AttributeName: "_id", KeyType: "HASH"},  // Partition key
+		],
+		AttributeDefinitions: [       
+			{ AttributeName: "_id", AttributeType: "S" }
+		],
+		ProvisionedThroughput: {       
+			ReadCapacityUnits: DEFAULT_READ_CAPACITY_UNITS, 
+			WriteCapacityUnits: DEFAULT_WRITE_CAPACITY_UNITS
+		}
+	};
+
+	// SET INDEXES!!
+	prepareSecondaryIndexes(tableSchema, indexes);
+
+	dynamodb.createTable(tableSchema, function(err, data) {
 		if (err) {
 			console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
 			typeof cb === 'function' && cb(err, null);
 		} else {
-			console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
-			tables.push(table.TableName);
-			typeof cb === 'function' && cb(null, table.TableName);
+			// console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
+			tables.push(table);
+			typeof cb === 'function' && cb(null, table);
 		}
 	});
 }
@@ -71,22 +138,7 @@ function upsert(table, data, key, cb) {
 
 	if (tables.indexOf(table) === -1) {
 		// Table does not exist. Create it. 
-		// ToDo: Check if we can get more complex structures based on future querys
-		const tableSchema = {
-			TableName: table,
-			KeySchema: [       
-				{ AttributeName: "_id", KeyType: "HASH"},  // Partition key
-			],
-			AttributeDefinitions: [       
-				{ AttributeName: "_id", AttributeType: "S" }
-			],
-			ProvisionedThroughput: {       
-				ReadCapacityUnits: DEFAULT_READ_CAPACITY_UNITS, 
-				WriteCapacityUnits: DEFAULT_WRITE_CAPACITY_UNITS
-			}
-		};
-
-		createTable(tableSchema, function(err, res) {
+		createTable(table, function(err, res) {
 			if(err) {
 				typeof cb === 'function' && cb(err, null);
 				return false;
@@ -107,13 +159,13 @@ function upsert(table, data, key, cb) {
 	// Prepare AWS document client
 	const docClient = new AWS.DynamoDB.DocumentClient();
 
-	console.log("Adding a new item to DynamoDB...");
+	// console.log("Adding a new item to DynamoDB...");
 	docClient.put(params, function(err, data) {
 		if (err) {
 			console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
 			typeof cb === 'function' && cb(err, data);
 		} else {
-			console.log("Added item:", JSON.stringify(data, null, 2));
+			// console.log("Added item:", JSON.stringify(data, null, 2));
 			typeof cb === 'function' && cb(null, data);
 		}
 	});
@@ -151,9 +203,6 @@ function get(table, key, cb) {
 			console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
 			typeof cb === 'function' && cb('Error!', null);
 		} else {
-			// data.Items.forEach(function(item) {
-			//     console.log(" -", item);
-			// });
 			typeof cb === 'function' && cb(null, data.Items[0] || null);
 		}
 	});
@@ -194,11 +243,13 @@ function query(table, params, cb) {
 
 function list(table, cb) {
 	dynamodb.scan({TableName: table}, function(err, data) {
-		console.log(err);
-		console.log(data);
-		console.log('Scanned!');
-		// ToDo: Check errors
-		typeof cb === 'function' && cb(err, data.Items);
+		if (err) {
+			console.error('Error scanning dynamodb:', err);
+			typeof cb === 'function' && cb(err, null);
+			return false;
+		}
+
+		typeof cb === 'function' && cb(null, converter.output(data.Items));
 	});
 }
 
@@ -209,7 +260,7 @@ function search(table, params, cb) {
 
 	for (let i = 0; i < params.filters.length; i++) {
 		const filter = params.filters[i];
-		if(i > 0) {
+		if (i > 0) {
 			conditionExpression += ' and ';
 		}
 		conditionExpression += '#field'+ i +' '+ filter.operator +' :field'+ i;
@@ -223,21 +274,25 @@ function search(table, params, cb) {
 	// ToDo: OrderBy
 	// ToDo: GroupBy
 
-	var params = {
-		TableName : table,
+	var queryParams = {
+		TableName: table,
 		KeyConditionExpression: conditionExpression,
 		ExpressionAttributeNames: expressionNames,
-		ExpressionAttributeValues: expressionValues
+		ExpressionAttributeValues: expressionValues,
 	};
 
-	// console.log(params);
+	if (params && params.filters && params.filters.length > 0) {
+		const indexName = table +'_'+ params.filters[0].field;
+		queryParams.IndexName = indexName;
+	}
 
 	var docClient = new AWS.DynamoDB.DocumentClient();
-	docClient.query(params, function(err, data) {
+	docClient.query(queryParams, function(err, data) {
 		if (err) {
 			console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+			typeof cb === 'function' && cb(err, null);
 		} else {
-			console.log("Query succeeded.");
+			// console.log("Query succeeded.");
 			typeof cb === 'function' && cb(null, data.Items);
 		}
 	});
@@ -246,7 +301,7 @@ function search(table, params, cb) {
 
 
 const exposed = {
-	createTable: createTable,
+	_createTable: createTable,
 	get: get,
 	query: query,
 	// count: count,
