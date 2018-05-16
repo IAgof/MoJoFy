@@ -22,8 +22,8 @@ function upload(remotePath, buffer) {
 	let s3 = new AWS.S3();
 	
 	let params = {
-		Bucket: config.aws_s3Bucket,
-		Key: config.storage_bucket + remotePath,
+		Bucket: config.storage_bucket,
+		Key: remotePath,
 		Body: buffer,
 		ACL: 'public-read',
 		ContentEncoding: 'base64'
@@ -36,7 +36,7 @@ function remove(remotePath) {
 	let s3 = new AWS.S3();
 	
 	let params = {
-		Bucket: config.aws_s3Bucket,
+		Bucket: config.storage_bucket,
 		Key: remotePath
 	};
 	

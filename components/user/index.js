@@ -4,6 +4,7 @@ const Model = require('./model');
 const Pass = require('../access/password');
 const Store = require('./store');
 const logger = require('../../logger');
+const config = require('../../config');
 
 const Video = require('../video');
 
@@ -126,7 +127,7 @@ function update(data, token, file, callback) {
 
 		model._id = data.id || data._id;
 		
-		FileUpload.moveUploadedFile(file).then(response => {
+		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
 			if (response) {
 				model.pic = response;
 			}

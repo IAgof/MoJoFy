@@ -1,47 +1,32 @@
 const fs = require('fs');
 const s3 = require("./s3");
 const logger = require('../../logger');
+const config = require('../../config');
 
 exports.uploadToStore = uploadToStore;
 exports.removeFromStore = removeFromStore;
 
-function uploadToStore(fileData) {
-//	let remotePath = '/' + storageFolder + '/'
-//					+ fileData.filename.substring(0, 2) + '/' + fileData.filename.substring(2, 4) + '/'
-//					+ fileData.filename + '.' + fileData.extension;
-//	let localPath = fileData.path;
-//	return File.get(file)
-//		.then(response => {
-//			return s3.upload(remotePath, response, name);
-//		}).catch(error => {
-//			throw error;
-//		});
-//	let file = {
-//		path: fileData.path,
-//		remotePath: "http://cloudfront...."
-//	};
-	logger.info(fileData);
-	logger.info("/app/" + fileData.path);
+function uploadToStore(fileData, storageFolder) {
+
 	return getFileBuffer("/app/" + fileData.path)
 		.then(fileBuffer => {
-			return s3.upload('/', fileBuffer);
+			return s3.upload(storageFolder + '/' + fileData.filename + '.' + fileData.extension, fileBuffer);
 		}).then(response => {
-			logger.info(response);
-			return {
-				path: response
-			};
+			let replacePath = 's3.amazonaws.com';
+			if (config.aws_region !== 'us-east-1') {
+				replacePath = config.aws_region + '.' + replacePath;
+			}
+			return response.Location.replace(config.storage_bucket + '.' + replacePath, config.cdn_path);
 		}).catch(error => {
 			throw new Error(error.message);
 		});
 }
 
 function removeFromStore(url) {
-	console.log(url);
-	return Promise.resolve();
-//	return s3.remove(url)
-//		.catch(error => {
-//			throw error;
-//		});
+	return s3.remove(url)
+		.catch(error => {
+			throw error;
+		});
 }
 
 function getFileBuffer(path) {

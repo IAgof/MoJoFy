@@ -47,12 +47,12 @@ function processUploadedVideo(file, callback) {
 				response.hash = hash;
 			}
 			Promise.all([
-				moveToCloudStorage(screenShotFileData).then(screenShotURL => {
+				moveToCloudStorage(screenShotFileData, config.storage_folder.poster).then(screenShotURL => {
 					if (screenShotURL) {
 						response.img = screenShotURL;
 					}
 				}),
-				moveToCloudStorage(originalFileData).then(url => {
+				moveToCloudStorage(originalFileData, config.storage_folder.video).then(url => {
 					if (originalFileData.type === 'video') {
 						response.video = url;
 					} else {
@@ -68,10 +68,10 @@ function processUploadedVideo(file, callback) {
 		});
 }
 
-function moveUploadedFile(fileUpload) {
+function moveUploadedFile(fileUpload, folder) {
 	if (fileUpload) {
 		let fileData = getFileData(fileUpload);
-		return moveToCloudStorage(fileData);
+		return moveToCloudStorage(fileData, folder);
 	}
 	return new Promise(resolve => { resolve() });
 }
@@ -82,7 +82,8 @@ function removeFromCloudStorage(url) {
 		let cloudFilePath = url.split('googleapis.com')[1];
 		googleCloud.removeFromStore(cloudFilePath)
 	} else if (config.cloud_storage === 'aws') {
-		aws.removeFromStore(url);
+		let path = url.split(config.cdn_path + '/')[1];
+		aws.removeFromStore(path);
 	} else if (config.cloud_storage === 'local_cloud') {
 		let localFilePath = url.replace(config.local_cloud_storage_host + '/', '');
 		unlink(localFilePath);
@@ -111,23 +112,23 @@ function moveToCloudStorage(fileData, storageFolder) {
 	return new Promise(resolve => {
 		if (fileData) {
 			logger.debug("Move to cloud storage filedata: ", fileData);
-//			if (config.cloud_storage === 'gcloud') {
-//				googleCloud.copyToGCloudStorage(fileData, storageFolder).then(url => {
-//					unlink(url.path);
-//					resolve(url)
-//				});
-//			} else if (config.cloud_storage === 'aws') {
-				aws.uploadToStore(fileData).then(url => {
+			if (config.cloud_storage === 'gcloud') {
+				googleCloud.copyToGCloudStorage(fileData, storageFolder).then(url => {
 					unlink(url.path);
 					resolve(url)
 				});
-//			} else {
-//				fs.rename(fileData.path, fileData.path + '.' + fileData.extension, function (err) {
-//					if (!err) {
-//						resolve(config.local_cloud_storage_host + '/' + fileData.path + '.' + fileData.extension);
-//					}
-//				})
-//			}
+			} else if (config.cloud_storage === 'aws') {
+				aws.uploadToStore(fileData, storageFolder).then(url => {
+					unlink(url.path);
+					resolve(url)
+				});
+			} else {
+				fs.rename(fileData.path, fileData.path + '.' + fileData.extension, function (err) {
+					if (!err) {
+						resolve(config.local_cloud_storage_host + '/' + fileData.path + '.' + fileData.extension);
+					}
+				})
+			}
 		}
 	});
 }

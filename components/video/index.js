@@ -179,7 +179,7 @@ function updateNewPoster(updatedFiles, videoId) {
 		return;
 	}
 	logger.debug("-------------------- Setting new video poster -------------------- ");
-	return FileUpload.moveUploadedFile(updatedFiles.newPoster)
+	return FileUpload.moveUploadedFile(updatedFiles.newPoster, Config.storage_folder.poster)
 		.then(url => {
 			logger.debug("New poster processed with results", url);
 			Store.get(videoId, video => {

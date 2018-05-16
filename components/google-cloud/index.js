@@ -1,5 +1,6 @@
 const CloudStorage = require('cloud-storage');
 const config = require('../../config');
+const logger = require('../../logger');
 
 const storage = new CloudStorage({
 	accessId: config.storage_accessId,
@@ -8,7 +9,6 @@ const storage = new CloudStorage({
 
 exports.removeFromStore = removeFromStore;
 exports.copyToGCloudStorage = copyToGCloudStorage;
-
 
 function removeFromStore(cloudPath) {
 	const bucketName = 'gs://' + config.storage_bucket + cloudPath;
