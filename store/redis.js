@@ -29,6 +29,8 @@ function addList(type, id, from, cb) {
 }
 
 module.exports = {
+	// ToDo: Manage indexes!!
+	index: function () { return true; },
 	// get: get,
 	// query: query,
 	// add: upsert,

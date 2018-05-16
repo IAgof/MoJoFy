@@ -72,6 +72,13 @@ function createTable(table, indexes, cb) {
 		indexes = [];
 	}
 
+
+	if(tables.indexOf(table) > -1) {
+		console.log('Ya existe, madafaka');
+		cb();
+		return false;
+	}
+
 	// ToDo: Check if we can get more complex structures based on future querys
 	const tableSchema = {
 		TableName: table,
@@ -302,6 +309,7 @@ function search(table, params, cb) {
 
 const exposed = {
 	_createTable: createTable,
+	index: createTable,
 	get: get,
 	query: query,
 	// count: count,

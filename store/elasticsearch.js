@@ -432,6 +432,8 @@ function queryFilters(body, options) {
 }
 
 module.exports = {
+	// ToDo: Manage indexes!!
+	index: function () { return true; },
 	get: get,
 	query: search,
 	count: count,

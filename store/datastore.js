@@ -234,6 +234,8 @@ module.exports = {
 	_ns: namespace,
 	_dataset: dataset,
 	_key: Key,
+	// ToDo: Manage indexes!!
+	index: function () { return true; },
 	get: get,
 	query: query,
 	add: upsert,
