@@ -135,8 +135,6 @@ function update(data, token, file, callback) {
 				} else if (response) {
 					model.pic = response;
 				}
-				// TODO/FIXME modelate problem?
-//				model.role = user.role;
 				Store.upsert(model, function(result, id) {
 					if(result, id) {
 						model._id = id;
