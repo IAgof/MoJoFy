@@ -3,12 +3,6 @@ const Promise = require('bluebird');
 const config = require('../../config');
 const logger = require('../../logger');
 
-AWS.config = new AWS.Config({
-	accessKeyId: config.aws_accessKey,
-	secretAccessKey: config.aws_secretKey,
-	region: config.aws_region
-});
-
 AWS.config.setPromisesDependency(Promise);
 
 AWS.config.apiVersions = {

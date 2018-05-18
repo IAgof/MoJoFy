@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const Nanoid = require('nanoid');
+const config = require('../config');
 const Util = require('../util');
 
 /** Converter:
@@ -13,16 +14,6 @@ const converter = require('aws-sdk/lib/dynamodb/converter.js');
 
 const DEFAULT_READ_CAPACITY_UNITS = 2;
 const DEFAULT_WRITE_CAPACITY_UNITS = 2;
-
-/* ----------------------------------------- */
-// Shall this be in a "global" file? (such as server.js or similar...)
-AWS.config.update({
-	accessKeyId: config.aws_accessKey,
-	secretAccessKey: config.aws_secretKey,
-	region: config.aws_region
-//	endpoint: "http://localhost:8000"
-});
-/* ----------------------------------------- */
 
 const dynamodb = new AWS.DynamoDB();
 
@@ -154,28 +145,41 @@ function upsert(table, data, key, cb) {
 	}
 	if (typeof key === 'function') {
 		cb = key;
-		key = undefined;
+		key = null;
 	}
 
-	if (typeof data._id !== 'undefined' || typeof key !== 'undefined') {
+	data = cleanUnsafeData(data);
 
+	if (typeof data._id !== 'undefined' || key !== null) {
 		data._id = key || data._id;
-
 		// Probably there was something. To do a good upsert, we shall get the 
 		// row, and merge it with given data (to patch instead of put).
 		get(table, data._id, function (err, gottenData) {
 			var mergedData = data;
-			if(gottenData !== null) {
+			if(typeof gottenData !== 'undefined' && gottenData !== null) {
 				mergedData = Util.merge(gottenData, data);
 			}
 
 			save(table, mergedData, cb);
 		});
-	} else if (typeof data._id === 'undefined' && typeof key === 'undefined') {
+	} else if (typeof data._id === 'undefined' && key === null) {
 		// generate a new id, and set it to _id
 		data._id = Nanoid();
 		save(table, data, cb);
 	}
+}
+
+/** [iternal] cleanUnsafeData
+ *	Detect and act on data that might cause an error in DynamoDB
+ */
+function cleanUnsafeData(data) {
+	for (let param in data) {
+		if(data[param] === '') {
+			delete data[param];
+		}
+	}
+
+	return data;
 }
 
 /** [internal] save
@@ -191,6 +195,10 @@ function save(table, data, cb) {
 		return false;
 	}
 
+	console.log('------------ SAVE ---------------');
+	console.log(data);
+	console.log('------------ ---- ---------------');
+
 	// Prepare insert
 	const params = {
 		TableName: table,
@@ -201,13 +209,12 @@ function save(table, data, cb) {
 	const docClient = new AWS.DynamoDB.DocumentClient();
 
 	// console.log("Adding a new item to DynamoDB...");
-	docClient.put(params, function(err, data) {
+	docClient.put(params, function(err, putData) {
 		if (err) {
 			console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
-			typeof cb === 'function' && cb(err, data);
+			typeof cb === 'function' && cb(false, null);
 		} else {
-			// console.log("Added item:", JSON.stringify(data, null, 2));
-			typeof cb === 'function' && cb(null, data);
+			typeof cb === 'function' && cb(true, data._id);
 		}
 	});
 }
@@ -242,9 +249,9 @@ function get(table, key, cb) {
 	docClient.query(params, function(err, data) {
 		if (err) {
 			console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
-			typeof cb === 'function' && cb('Error!', null);
+			typeof cb === 'function' && cb(null);
 		} else {
-			typeof cb === 'function' && cb(null, data.Items[0] || null);
+			typeof cb === 'function' && cb(data.Items[0] || null);
 		}
 	});
 }
@@ -253,7 +260,7 @@ function get(table, key, cb) {
  * Callback for DynamoDB query function.
  * 
  * @callback dynamoSearchCallback
- * @param {array} results List of entities matching query
+ * @param {array} results List of entities matching query or null if error
  */
 /**
  * Search data in elasticseatch by query
@@ -368,10 +375,10 @@ function search(table, params, cb) {
 	docClient.query(queryParams, function(err, data) {
 		if (err) {
 			console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
-			typeof cb === 'function' && cb(err, null);
+			typeof cb === 'function' && cb(null);
 		} else {
-			// console.log("Query succeeded.");
-			typeof cb === 'function' && cb(null, data.Items);
+			console.log("Query succeeded.");
+			typeof cb === 'function' && cb(data.Items || []);
 		}
 	});
 

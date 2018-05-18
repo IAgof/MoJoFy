@@ -44,6 +44,11 @@ function upsert(data, callback) {
 
 	Persistent.add(type, data, id, function(result, id) {
 		callback(result, id);
+
+		console.log(' - - - - - >>> id');
+		console.log(id);
+		console.log(' - - - - - <<< --');
+
 		if (result) {
 			Search.add(type, data, id, function(resultSearch, idSearch) {
 				logger.debug(resultSearch);

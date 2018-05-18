@@ -16,15 +16,11 @@ const Upload = multer( { dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE }
 const router = express.Router({ mergeParams: true });
 
 
-router.get('/:id(\\d+)/', function(req, res, next) {
-  	Controller.get(req.params.id, function(data, err, code) {
-		if(!err) {
-			Response.success(req, res, next, (code || 200), data);
-		} else {
-			Response.error(req, res, next, (code || 500), err);
-		}
-	});
-});
+// Nested components
+router.use('/product_type', require('../product_type/network'));
+router.use('/lang', require('../video_lang/network'));
+router.use('/category', require('../video_category/network'));
+
 
 router.get('/', function(req, res, next) {
 	let params = {};
@@ -87,6 +83,16 @@ router.get('/user/:id', Acl, function(req, res, next) {
 	});
 });
 
+router.get('/:id', function(req, res, next) {
+  	Controller.get(req.params.id, function(data, err, code) {
+		if(!err) {
+			Response.success(req, res, next, (code || 200), data);
+		} else {
+			Response.error(req, res, next, (code || 500), err);
+		}
+	});
+});
+
 router.post('/', Upload.single('file'), function(req, res, next) {
 // router.post('/', Acl, Upload.single('file'), function(req, res, next) {
 	req.body.file = req.file;
@@ -101,7 +107,7 @@ router.post('/', Upload.single('file'), function(req, res, next) {
 });
 
 // router.put('/', Upload.single('file'), function(req, res, next) {
-router.put('/:id(\\d+)/', Acl, Upload.any(), function(req, res, next) {
+router.put('/:id', Acl, Upload.any(), function(req, res, next) {
 	req.body.files = req.files;
 	req.body.id = req.params.id;
 	logger.info("Handling video " + req.params.id + " put");

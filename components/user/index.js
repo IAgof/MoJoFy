@@ -54,6 +54,10 @@ function add(data, token, callback) {
 			callback(null, 'User already exists', 400);
 			return false;
 		}
+
+		if(!data.role || data.role === '') {
+			data.role = 'guest';
+		}
 		
 		// Execute all the code;
 		prepare(data, function(model) {
@@ -89,7 +93,7 @@ function isUser(data, token, callback) {
 
 	if(typeof data.name === 'string' && data.name !== '') {
 		params.filters.push({
-			field: 'name', 
+			field: 'username', 
 			operator: '=', 
 			value: data.name
 		});
@@ -127,29 +131,47 @@ function update(data, token, file, callback) {
 
 		model._id = data.id || data._id;
 		
-		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
-			Store.get(model._id, function (user) {
-				if (!user) {
-					callback(null, 'Unable to update the user', 500);
-					return;
-				} else if (response) {
+		console.log('&&&&&&&&&&&&&&& UPDARING USER');
+		console.log(file);
+
+		if (file) {
+			FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
+				const removeFile = (typeof response !== 'undefined');
+				if (response) {
 					model.pic = response;
 				}
-				Store.upsert(model, function(result, id) {
-					if(result, id) {
-						model._id = id;
-						delete model.password;
-						FileUpload.removeFromCloudStorage(user.pic);
-						callback(model, null, 200);
-					} else {
-						callback(null, 'Unable to update the user', 500);
-					}
-				});
-			});
-		});
+
+				updateVideo(model, removeFile, callback);
+			});			
+		}
 
 	});
 }
+
+function updateVideo(model, removeFile, callback) {
+	Store.get(model._id, function (user) {
+		if (!user) {
+			callback(null, 'Unable to update the user', 500);
+			return;
+		}
+
+		Store.upsert(model, function(result, id) {
+			if(result, id) {
+				model._id = id;
+				delete model.password;
+
+				if(removeFile) {
+					FileUpload.removeFromCloudStorage(user.pic);
+				}
+				
+				callback(model, null, 200);
+			} else {
+				callback(null, 'Unable to update the user', 500);
+			}
+		});
+	});
+}
+
 
 function list(token, callback) {
 	query({}, token, callback);
