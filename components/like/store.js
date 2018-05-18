@@ -1,8 +1,10 @@
-
-const Persistent = require('../../store/datastore');
+const config = require('../../config');
+const Persistent = require('../../store/' + config.persistence_db);
 // const Cache = require('../../store/redis');
 
 const type = 'like';
+
+Persistent.index(type, []);
 
 exports.upsert = upsert;
 exports.remove = remove;

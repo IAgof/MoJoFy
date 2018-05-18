@@ -14,10 +14,15 @@ const converter = require('aws-sdk/lib/dynamodb/converter.js');
 const DEFAULT_READ_CAPACITY_UNITS = 2;
 const DEFAULT_WRITE_CAPACITY_UNITS = 2;
 
+/* ----------------------------------------- */
+// Shall this be in a "global" file? (such as server.js or similar...)
 AWS.config.update({
-	region: "us-west-2",
+	accessKeyId: config.aws_accessKey,
+	secretAccessKey: config.aws_secretKey,
+	region: config.aws_region
 //	endpoint: "http://localhost:8000"
 });
+/* ----------------------------------------- */
 
 const dynamodb = new AWS.DynamoDB();
 

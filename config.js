@@ -17,6 +17,10 @@ const config = {
 	//jwt_issuer: process.env.JWT_ISSUER,
 	jwt_expires: process.env.JWT_TOKEN_EXPIRATION || '1y',		// Format guide: https://github.com/zeit/ms
 
+	// Databases
+	persistence_db: process.env.BACKEND_PERSISTENT_DB || 'datastore',
+	search_db: process.env.BACKEND_SEARCH_DB || 'elasticsearch',
+
 	// Datastore:
 	ds_emulator_host: process.env.DATASTORE_EMULATOR_HOST,
 	ds_namespace: process.env.BACKEND_DATASTORE_NAMESPACE,

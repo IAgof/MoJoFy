@@ -1,10 +1,14 @@
 const logger = require('../../logger');
+const config = require('../../config');
 
-const Persistent = require('../../store/datastore');
-const Search = require('../../store/elasticsearch');
+const Persistent = require('../../store/' + config.persistence_db);
+const Search = require('../../store/' + config.search_db);
 // const Cache = require('../../store/redis');
 
 const type = 'video';
+
+Persistent.index(type, []);
+// Search.index(type, []);
 
 exports.get = get;
 exports.list = list;

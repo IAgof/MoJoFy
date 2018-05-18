@@ -1,6 +1,9 @@
-const Persistent = require('../../store/datastore');
+const config = require('../../config');
+const Persistent = require('../../store/' + config.persistence_db);
 
 const type = 'download_code';
+
+Persistent.index(type, ['video', 'code']);
 
 
 exports.query = query;
