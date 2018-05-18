@@ -9,7 +9,7 @@ const router = express.Router();
 
 const MAX_UPLOAD_SIZE = Config.max_profile_upload_byte_size;
 
-const Upload = multer({ dest: Config.upload_folder + 'users/', fileSize: MAX_UPLOAD_SIZE });
+const Upload = multer({ dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE });
 
 
 router.get('/exist', function(req, res, next) {
