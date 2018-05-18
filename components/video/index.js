@@ -157,12 +157,14 @@ function processNewFiles(videoData, videoId) {
 			Store.get(videoId, video => {
 				let oldVideo = video.video;
 				let oldOriginal = video.original;
+				let oldPoster = video.poster;
 				video.id = videoId;
 				addVideoData(video, uploaded, metadata);
 				Store.upsert(video, result => {
 					if (result) {
 						FileUpload.removeFromCloudStorage(oldVideo);
 						FileUpload.removeFromCloudStorage(oldOriginal);
+						FileUpload.removeFromCloudStorage(oldPoster);
 						resolve(updateNewPoster(updatedFiles, videoId));
 					} else {
 						reject({original: "Error updating video file"});

@@ -7,17 +7,10 @@ const storage = new CloudStorage({
 	privateKey: config.storage_keyFilename
 });
 
-exports.removeFromStore = removeFromStore;
-exports.copyToGCloudStorage = copyToGCloudStorage;
+exports.uploadToStorage = uploadToStorage;
+exports.removeFromStorage = removeFromStorage;
 
-function removeFromStore(cloudPath) {
-	const bucketName = 'gs://' + config.storage_bucket + cloudPath;
-	const bucket = storage.bucket(bucketName);
-	const file = bucket.file(cloudPath);
-	return file.delete();
-}
-
-function copyToGCloudStorage(fileData, storageFolder) {
+function uploadToStorage(fileData, storageFolder) {
 	let remotePath = '/' + storageFolder + '/';
 	
 	return new Promise((resolve, reject) => {
@@ -36,4 +29,12 @@ function copyToGCloudStorage(fileData, storageFolder) {
 			resolve(url);
 		});
 	});
+}
+
+function removeFromStorage(url) {
+	let cloudFilePath = url.split('googleapis.com')[1];
+	const bucketName = 'gs://' + config.storage_bucket + cloudFilePath;
+	const bucket = storage.bucket(bucketName);
+	const file = bucket.file(cloudFilePath);
+	return file.delete();
 }

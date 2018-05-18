@@ -3,11 +3,10 @@ const s3 = require("./s3");
 const logger = require('../../logger');
 const config = require('../../config');
 
-exports.uploadToStore = uploadToStore;
-exports.removeFromStore = removeFromStore;
+exports.uploadToStorage = uploadToStorage;
+exports.removeFromStorage = removeFromStorage;
 
-function uploadToStore(fileData, storageFolder) {
-
+function uploadToStorage(fileData, storageFolder) {
 	return getFileBuffer("/app/" + fileData.path)
 		.then(fileBuffer => {
 			return s3.upload(storageFolder + '/' + fileData.filename + '.' + fileData.extension, fileBuffer);
@@ -22,8 +21,9 @@ function uploadToStore(fileData, storageFolder) {
 		});
 }
 
-function removeFromStore(url) {
-	return s3.remove(url)
+function removeFromStorage(url) {
+	let path = url.split(config.cdn_path + '/')[1];
+	return s3.remove(path)
 		.catch(error => {
 			throw error;
 		});

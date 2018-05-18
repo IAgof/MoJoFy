@@ -123,22 +123,30 @@ function update(data, token, file, callback) {
 		return;
 	}
 	
-	prepare(data, function(model) {
+	updatePassword(data, function(model) {
 
 		model._id = data.id || data._id;
 		
 		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
-			if (response) {
-				model.pic = response;
-			}
-			Store.upsert(model, function(result, id) {
-				if(result, id) {
-					model._id = id;
-					delete model.password;
-					callback(model, null, 201);
-				} else {
+			Store.get(model._id, function (user) {
+				if (!user) {
 					callback(null, 'Unable to update the user', 500);
+					return;
+				} else if (response) {
+					model.pic = response;
 				}
+				// TODO/FIXME modelate problem?
+//				model.role = user.role;
+				Store.upsert(model, function(result, id) {
+					if(result, id) {
+						model._id = id;
+						delete model.password;
+						FileUpload.removeFromCloudStorage(user.pic);
+						callback(model, null, 200);
+					} else {
+						callback(null, 'Unable to update the user', 500);
+					}
+				});
 			});
 		});
 
@@ -227,14 +235,17 @@ function setVideoCounter(data, callback) {
 
 function prepare(data, next) {
 	const model = Model.set(data);
+	updatePassword(model, next);
+}
 
+function updatePassword(data, next) {
 	// Check if pasword shall be created
 	if(typeof(data.password) !== 'undefined') {
 		Pass.crypt(data.password, function(err, hash) {
-			model.password = hash;
-			next(model);
+			data.password = hash;
+			next(data);
 		});
 	} else {
-		next(model);
+		next(data);
 	}
 }

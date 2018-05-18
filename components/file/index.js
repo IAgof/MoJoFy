@@ -10,6 +10,13 @@ const aws = require('../aws');
 
 const thumbType = 'png';
 
+let cloudStorage;
+if (config.cloud_storage == 'aws') {
+	cloudStorage = aws;
+} else if (config.cloud_storage == 'gcloud') {
+	cloudStorage = googleCloud;
+}
+
 
 /* Exposed functions */
 
@@ -73,20 +80,15 @@ function moveUploadedFile(fileUpload, folder) {
 		let fileData = getFileData(fileUpload);
 		return moveToCloudStorage(fileData, folder);
 	}
-	return new Promise(resolve => { resolve() });
+	return Promise.resolve();
 }
 
 function removeFromCloudStorage(url) {
-	if (config.cloud_storage === 'gcloud') {
-		// TODO(jliarte): test in cloud storage
-		let cloudFilePath = url.split('googleapis.com')[1];
-		googleCloud.removeFromStore(cloudFilePath)
-	} else if (config.cloud_storage === 'aws') {
-		let path = url.split(config.cdn_path + '/')[1];
-		aws.removeFromStore(path);
-	} else if (config.cloud_storage === 'local_cloud') {
+	if (config.cloud_storage === 'local_cloud') {
 		let localFilePath = url.replace(config.local_cloud_storage_host + '/', '');
 		unlink(localFilePath);
+	} else {
+		cloudStorage.removeFromStorage(url);
 	}
 }
 
@@ -112,22 +114,17 @@ function moveToCloudStorage(fileData, storageFolder) {
 	return new Promise(resolve => {
 		if (fileData) {
 			logger.debug("Move to cloud storage filedata: ", fileData);
-			if (config.cloud_storage === 'gcloud') {
-				googleCloud.copyToGCloudStorage(fileData, storageFolder).then(url => {
-					unlink(url.path);
-					resolve(url)
-				});
-			} else if (config.cloud_storage === 'aws') {
-				aws.uploadToStore(fileData, storageFolder).then(url => {
-					unlink(url.path);
-					resolve(url)
-				});
-			} else {
+			if (config.cloud_storage === 'local_cloud') {
 				fs.rename(fileData.path, fileData.path + '.' + fileData.extension, function (err) {
 					if (!err) {
 						resolve(config.local_cloud_storage_host + '/' + fileData.path + '.' + fileData.extension);
 					}
-				})
+				});
+			} else {
+				cloudStorage.uploadToStorage(fileData, storageFolder).then(url => {
+					unlink(fileData.path);
+					resolve(url)
+				});
 			}
 		}
 	});
