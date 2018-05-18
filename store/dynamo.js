@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const Nanoid = require('nanoid');
+const Util = require('../util');
 
 /** Converter:
  *	Searching through the AWS JS library, there is a file called converter.js 
@@ -29,7 +30,11 @@ dynamodb.listTables(function (err, data) {
 	}
 });
 
-
+/** [internal] prepareSecondaryIndexes
+ *	
+ *	@param {object} table A DynamoDB table structure to update with indexes
+ *	@param {array} indexes A [String] Array with field to index names 
+ */
 function prepareSecondaryIndexes(table, indexes) {
 	if(!table) {
 		return console.error('No table selected!!');
@@ -62,9 +67,19 @@ function prepareSecondaryIndexes(table, indexes) {
 	}
 }
 
-
 /**
- *	
+ * Callback for DynamoDB createTable function.
+ * 
+ * @callback dynamoCreateTableCallback
+ * @param {boolean} error Error message or null if success
+ * @param {string} name Table name, or null on error
+ */
+/**	createTable
+ *	Create a new dynamodb table, including secondary indexes
+ *
+ *	@param {string} table 	Table name
+ *	@param {array}	indexes	Array of strings with fields to index names
+ *	@param {dynamoCreateTableCallback}	cb	Callback to execute on operation complete.
  */
 function createTable(table, indexes, cb) {
 	if(typeof indexes === 'function') {
@@ -74,8 +89,7 @@ function createTable(table, indexes, cb) {
 
 
 	if(tables.indexOf(table) > -1) {
-		console.log('Ya existe, madafaka');
-		cb();
+		cb(null, table);
 		return false;
 	}
 
@@ -95,7 +109,9 @@ function createTable(table, indexes, cb) {
 	};
 
 	// SET INDEXES!!
-	prepareSecondaryIndexes(tableSchema, indexes);
+	if(indexes && indexes.length > 0) {
+		prepareSecondaryIndexes(tableSchema, indexes);
+	}
 
 	dynamodb.createTable(tableSchema, function(err, data) {
 		if (err) {
@@ -136,21 +152,34 @@ function upsert(table, data, key, cb) {
 		key = undefined;
 	}
 
-	if (typeof data._id === 'undefined' && typeof key !== 'undefined') {
-		data._id = key;
+	if (typeof data._id !== 'undefined' || typeof key !== 'undefined') {
+
+		data._id = key || data._id;
+
+		// Probably there was something. To do a good upsert, we shall get the 
+		// row, and merge it with given data (to patch instead of put).
+		get(table, data._id, function (err, gottenData) {
+			var mergedData = data;
+			if(gottenData !== null) {
+				mergedData = Util.merge(gottenData, data);
+			}
+
+			save(table, mergedData, cb);
+		});
 	} else if (typeof data._id === 'undefined' && typeof key === 'undefined') {
 		// generate a new id, and set it to _id
 		data._id = Nanoid();
+		save(table, data, cb);
 	}
+}
 
+/** [internal] save
+ *	Save, no question asking, a row in dynamo.
+ */
+function save(table, data, cb) {
 	if (tables.indexOf(table) === -1) {
 		// Table does not exist. Create it. 
 		createTable(table, function(err, res) {
-			if(err) {
-				typeof cb === 'function' && cb(err, null);
-				return false;
-			}
-
 			upsert(table, data, key, cb);
 		});
 
@@ -246,6 +275,36 @@ function query(table, params, cb) {
 	}
 }
 
+/**
+ *
+ */
+function remove(table, key, cb) {
+	var docClient = new AWS.DynamoDB.DocumentClient();
+
+	var params = {
+		TableName : table,
+		Key: {
+			"_id": key
+		}
+		// KeyConditionExpression: "#id = :key",
+		// ExpressionAttributeNames:{
+		// 	"#id": "_id"
+		// },
+		// ExpressionAttributeValues: {
+		// 	":key": key
+		// }
+	};
+
+	docClient.delete(params, function(err, data) {
+		if (err) {
+			console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+			typeof cb === 'function' && cb('Error!', null);
+		} else {
+			typeof cb === 'function' && cb(null, data);
+		}
+	});
+}
+
 /* --- Internal functions -- */
 
 function list(table, cb) {
@@ -256,7 +315,14 @@ function list(table, cb) {
 			return false;
 		}
 
-		typeof cb === 'function' && cb(null, converter.output(data.Items));
+		const response = data.Items.map(function(item) {
+			Object.keys(item).map(function(key, index) {
+			   item[key] = converter.output(item[key]);
+			});
+			return item;
+		});
+
+		typeof cb === 'function' && cb(null, response);
 	});
 }
 
@@ -316,7 +382,7 @@ const exposed = {
 	add: upsert,
 	update: upsert,
 	upsert: upsert,
-	// remove: remove
+	remove: remove
 };
 
 module.exports = exposed;
