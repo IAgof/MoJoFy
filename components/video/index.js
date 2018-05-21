@@ -230,7 +230,7 @@ function list(user, callback, props) {
 			insertFilter('tag', '!=', props.excludeTag, params);
 		}
 
-		if (props.user && typeof props.user === 'number' && props.user >= 0) {
+		if (props.user) {
 			logger.debug("...for user ", props.user);
 			insertFilter('owner', '=', props.user, params);
 		}

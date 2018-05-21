@@ -1,5 +1,6 @@
 // const Acl = require('./acl');
 const FileUpload = require('../file');
+const merge = require('util-merge');
 const Model = require('./model');
 const Pass = require('../access/password');
 const Store = require('./store');
@@ -33,7 +34,7 @@ function get(id, token, callback, includePass) {
 			if(!data.videoCount) {
 				setVideoCounter(id, function(data) {
 					callback(data, null);
-				})
+				});
 			} else {
 				callback(data, null);
 			}
@@ -131,37 +132,35 @@ function update(data, token, file, callback) {
 
 		model._id = data.id || data._id;
 
-		if (file) {
-			FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
-				const removeFile = (typeof response !== 'undefined');
-				if (response) {
-					model.pic = response;
-				}
+		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
+			if (response) {
+				model.pic = response;
+			}
 
-				updateVideo(model, removeFile, callback);
-			});			
-		}
-
+			updateUser(model, callback);
+		});
 	});
 }
 
-function updateVideo(model, removeFile, callback) {
+function updateUser(model, callback) {
 	Store.get(model._id, function (user) {
 		if (!user) {
 			callback(null, 'Unable to update the user', 500);
-			return;
+			return false;
 		}
-
-		Store.upsert(model, function(result, id) {
+		
+		const merged = merge(user, model);
+		
+		Store.upsert(merged, function(result, id) {
 			if(result, id) {
-				model._id = id;
-				delete model.password;
+				merged._id = id;
+				delete merged.password;
 
-				if(removeFile) {
+				if(user.pic) {
 					FileUpload.removeFromCloudStorage(user.pic);
 				}
 				
-				callback(model, null, 200);
+				callback(merged, null, 200);
 			} else {
 				callback(null, 'Unable to update the user', 500);
 			}
@@ -195,6 +194,7 @@ function query(params, token, callback, includePass) {
 
 function updateVideoCounter(userId, callback) {
 	if(!userId) {
+		typeof callback === 'function' && callback(null);
 		return false;
 	}
 
@@ -207,6 +207,7 @@ function updateVideoCounter(userId, callback) {
 				if (err) {
 					logger.error(err);
 				}
+				typeof callback === 'function' && callback(updatedData.videoCount || null);
 			});
 		} else if (data) {
 			delete data.password;
@@ -214,6 +215,7 @@ function updateVideoCounter(userId, callback) {
 			setVideoCounter(data, callback);
 		} else {
 			logger.error('Error updating user video counter: That user does not exist');
+			typeof callback === 'function' && callback(null);
 		}
 	}, true);
 }
@@ -242,7 +244,7 @@ function setVideoCounter(data, callback) {
 			} else {
 				logger.log('Video counter setted for user ' + userId);
 			}
-
+			
 			if(typeof callback === 'function') {
 				callback(data);
 			}

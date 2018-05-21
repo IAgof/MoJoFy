@@ -33,7 +33,7 @@ router.get('/', function(req, res, next) {
 		if (req.query.featured != undefined) {
 			params.featured = (req.query.featured == 'true');
 		}
-		params.user = Number(req.params.userId) || undefined;
+		params.user = req.params.userId || undefined;
 		params.q = req.query.q || undefined;
 		if (req.query.verified != undefined) {
 			params.verified = (req.query.verified == 'true');

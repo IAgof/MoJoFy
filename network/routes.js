@@ -5,9 +5,6 @@ const routes = function(server) {
 
 	const component = function(name) { return '../components/'+ name +'/network'; };
 
-	// nested routes
-	require(component('user')).use('/:userId/video', require(component('video')));
-
 	server.use('/', express.static('public'));
 	server.use('/login', require(component('access')));
 	server.use('/user', require(component('user')));
