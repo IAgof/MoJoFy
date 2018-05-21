@@ -29,15 +29,8 @@ const DEFAULT_CODES = 5;
 // Internal functions
 
 function get(id, callback, includeOriginal) {
-
-	console.log(' -------------- id ---------------');
-	console.log(id);
-
 	Store.get(id, function(data) {
-
-		console.log(data);
-
-		if(data) {
+		if (data) {
 			data._id = id;
 			if(!includeOriginal) {
 				delete data.original;

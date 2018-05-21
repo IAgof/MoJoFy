@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const Nanoid = require('nanoid');
 const config = require('../config');
 const Util = require('../util');
+const logger = require('../logger');
 
 /** Converter:
  *	Searching through the AWS JS library, there is a file called converter.js 
@@ -33,7 +34,7 @@ dynamodb.listTables(function (err, data) {
  */
 function prepareSecondaryIndexes(table, indexes) {
 	if(!table) {
-		return console.error('No table selected!!');
+		return logger.error('No table selected!!');
 	}
 
 	if(!table.GlobalSecondaryIndexes) {
@@ -111,10 +112,10 @@ function createTable(table, indexes, cb) {
 
 	dynamodb.createTable(tableSchema, function(err, data) {
 		if (err) {
-			console.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
+			logger.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
 			typeof cb === 'function' && cb(err, null);
 		} else {
-			// console.log("Created table. Table description JSON:", JSON.stringify(data, null, 2));
+			// logger.debug("Created table. Table description JSON:", JSON.stringify(data, null, 2));
 			tables.push(table);
 			typeof cb === 'function' && cb(null, table);
 		}
@@ -195,10 +196,6 @@ function save(table, data, cb) {
 		return false;
 	}
 
-	console.log('------------ SAVE ---------------');
-	console.log(data);
-	console.log('------------ ---- ---------------');
-
 	// Prepare insert
 	const params = {
 		TableName: table,
@@ -208,10 +205,10 @@ function save(table, data, cb) {
 	// Prepare AWS document client
 	const docClient = new AWS.DynamoDB.DocumentClient();
 
-	// console.log("Adding a new item to DynamoDB...");
+	// logger.debug("Adding a new item to DynamoDB...");
 	docClient.put(params, function(err, putData) {
 		if (err) {
-			console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+			logger.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
 			typeof cb === 'function' && cb(false, null);
 		} else {
 			typeof cb === 'function' && cb(true, data._id);
@@ -248,7 +245,7 @@ function get(table, key, cb) {
 
 	docClient.query(params, function(err, data) {
 		if (err) {
-			console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+			logger.error("Unable to query. Error:", JSON.stringify(err, null, 2));
 			typeof cb === 'function' && cb(null);
 		} else {
 			typeof cb === 'function' && cb(data.Items[0] || null);
@@ -309,7 +306,7 @@ function remove(table, key, cb) {
 
 	docClient.delete(params, function(err, data) {
 		if (err) {
-			console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+			logger.error("Unable to query. Error:", JSON.stringify(err, null, 2));
 			typeof cb === 'function' && cb('Error!', null);
 		} else {
 			typeof cb === 'function' && cb(null, data);
@@ -322,7 +319,7 @@ function remove(table, key, cb) {
 function list(table, cb) {
 	dynamodb.scan({TableName: table}, function(err, data) {
 		if (err) {
-			console.error('Error scanning dynamodb:', err);
+			logger.error('Error scanning dynamodb:', err);
 			typeof cb === 'function' && cb(err, null);
 			return false;
 		}
@@ -374,10 +371,10 @@ function search(table, params, cb) {
 	var docClient = new AWS.DynamoDB.DocumentClient();
 	docClient.query(queryParams, function(err, data) {
 		if (err) {
-			console.log("Unable to query. Error:", JSON.stringify(err, null, 2));
+			logger.debug("Unable to query. Error:", JSON.stringify(err, null, 2));
 			typeof cb === 'function' && cb(null);
 		} else {
-			console.log("Query succeeded.");
+			// logger.debug("Query succeeded.");
 			typeof cb === 'function' && cb(data.Items || []);
 		}
 	});

@@ -130,9 +130,6 @@ function update(data, token, file, callback) {
 	updatePassword(data, function(model) {
 
 		model._id = data.id || data._id;
-		
-		console.log('&&&&&&&&&&&&&&& UPDARING USER');
-		console.log(file);
 
 		if (file) {
 			FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
