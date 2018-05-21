@@ -16,8 +16,6 @@ function uploadToStorage(fileData, storageFolder) {
 				replacePath = config.aws_region + '.' + replacePath;
 			}
 			return response.Location.replace(config.storage_bucket + '.' + replacePath, config.cdn_path);
-		}).catch(error => {
-			throw new Error(error.message);
 		});
 }
 
@@ -33,7 +31,7 @@ function getFileBuffer(path) {
 	return new Promise((resolve, reject) => {
 		fs.readFile(path, function (error, data) {
 			if (error) {
-				throw new Error(error.message);
+				return reject(error.message);
 			} else {
 				resolve(new Buffer(data, 'binary'));
 			}

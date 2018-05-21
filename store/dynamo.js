@@ -16,6 +16,17 @@ const converter = require('aws-sdk/lib/dynamodb/converter.js');
 const DEFAULT_READ_CAPACITY_UNITS = 2;
 const DEFAULT_WRITE_CAPACITY_UNITS = 2;
 
+AWS.config = new AWS.Config({
+	accessKeyId: config.aws_accessKey,
+	secretAccessKey: config.aws_secretKey,
+	region: config.aws_region
+});
+
+AWS.config.apiVersions = {
+	dynamodb: '2012-08-10'
+};
+
+
 const dynamodb = new AWS.DynamoDB();
 
 const tables = [];
@@ -190,7 +201,7 @@ function save(table, data, cb) {
 	if (tables.indexOf(table) === -1) {
 		// Table does not exist. Create it. 
 		createTable(table, function(err, res) {
-			upsert(table, data, key, cb);
+			upsert(table, data, cb);
 		});
 
 		return false;
