@@ -111,7 +111,7 @@ function getFileData(file) {
 }
 
 function moveToCloudStorage(fileData, storageFolder) {
-	return new Promise((resolve, reject) => {
+	return new Promise(resolve => {
 		if (fileData) {
 			logger.debug("Move to cloud storage filedata: ", fileData);
 			if (config.cloud_storage === 'local_cloud') {
@@ -127,7 +127,8 @@ function moveToCloudStorage(fileData, storageFolder) {
 				});
 			}
 		} else {
-			reject(new Error('No file data'));
+			// ToDo: Check use cases of this flow
+			resolve();
 		}
 	});
 }

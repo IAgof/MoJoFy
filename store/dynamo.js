@@ -1,8 +1,8 @@
 const AWS = require('aws-sdk');
 const Nanoid = require('nanoid');
 const config = require('../config');
-const Util = require('../util');
 const logger = require('../logger');
+const merge = require('util-merge');
 
 /** Converter:
  *	Searching through the AWS JS library, there is a file called converter.js 
@@ -139,8 +139,8 @@ function createTable(table, indexes, cb) {
  */
 function upsert(table, data, key, cb) {
 	if (!table || !data) {
-		if(cb && typeof cb) {
-			cb();
+		if(cb && typeof cb === 'function') {
+			cb(false, null);
 		}
 		return false;
 	}
@@ -158,7 +158,7 @@ function upsert(table, data, key, cb) {
 		get(table, data._id, function (err, gottenData) {
 			var mergedData = data;
 			if(typeof gottenData !== 'undefined' && gottenData !== null) {
-				mergedData = Util.merge(gottenData, data);
+				mergedData = merge(gottenData, data);
 			}
 
 			save(table, mergedData, cb);
@@ -273,7 +273,7 @@ function query(table, params, cb) {
 	}
 
 	if (!table) {
-		typeof cb === 'function' && cb('ERROR!! No table selected', null);
+		typeof cb === 'function' && cb(null);
 		return false;
 	}
 
@@ -285,7 +285,18 @@ function query(table, params, cb) {
 }
 
 /**
+ * Callback for DynamoDB remove function.
+ * 
+ * @callback dynamoRemoveCallback
+ * @param {boolean} error Error message or null if success
+ * @param {object} data Dynamo removed info, or null on error
+ */
+/**	remove
+ *	Remove a dynamo row
  *
+ *	@param {string} table 	Table name
+ *	@param {string}	key	Id of the object
+ *	@param {dynamoRemoveCallback}	cb	Callback to execute on operation complete.
  */
 function remove(table, key, cb) {
 	var docClient = new AWS.DynamoDB.DocumentClient();

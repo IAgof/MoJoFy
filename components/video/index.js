@@ -197,7 +197,7 @@ function updateNewPoster(updatedFiles, videoId) {
 					}
 				});
 			});
-		})
+		});
 }
 
 function list(user, callback, props) {
