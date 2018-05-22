@@ -44,15 +44,15 @@ dynamodb.listTables(function (err, data) {
  *	@param {array} indexes A [String] Array with field to index names 
  */
 function prepareSecondaryIndexes(table, indexes) {
-	if(!table) {
+	if (!table) {
 		return logger.error('No table selected!!');
 	}
 
-	if(!table.GlobalSecondaryIndexes) {
+	if (!table.GlobalSecondaryIndexes) {
 		table.GlobalSecondaryIndexes = [];
 	}
 
-	for (var i = 0; i < indexes.length; i++) {
+	for (let i = 0; i < indexes.length; i++) {
 		table.GlobalSecondaryIndexes.push({
 			IndexName: table.TableName +'_'+ indexes[i],
 			KeySchema: [{
@@ -90,20 +90,21 @@ function prepareSecondaryIndexes(table, indexes) {
  *	@param {dynamoCreateTableCallback}	cb	Callback to execute on operation complete.
  */
 function createTable(table, indexes, cb) {
-	if(typeof indexes === 'function') {
+	if (typeof indexes === 'function') {
 		cb = indexes;
 		indexes = [];
 	}
 
-
-	if(tables.indexOf(table) > -1) {
-		cb(null, table);
+	if (tables.indexOf(config.db_table_prefix + table) > -1) {
+		if (cb) {
+			cb(null, table);
+		}
 		return false;
 	}
 
 	// ToDo: Check if we can get more complex structures based on future querys
 	const tableSchema = {
-		TableName: table,
+		TableName: config.db_table_prefix + table,
 		KeySchema: [
 			{ AttributeName: "_id", KeyType: "HASH"},  // Partition key
 		],
@@ -117,7 +118,7 @@ function createTable(table, indexes, cb) {
 	};
 
 	// SET INDEXES!!
-	if(indexes && indexes.length > 0) {
+	if (indexes && indexes.length > 0) {
 		prepareSecondaryIndexes(tableSchema, indexes);
 	}
 
@@ -150,7 +151,7 @@ function createTable(table, indexes, cb) {
  */
 function upsert(table, data, key, cb) {
 	if (!table || !data) {
-		if(cb && typeof cb === 'function') {
+		if (cb && typeof cb === 'function') {
 			cb(false, null);
 		}
 		return false;
@@ -167,11 +168,10 @@ function upsert(table, data, key, cb) {
 		// Probably there was something. To do a good upsert, we shall get the 
 		// row, and merge it with given data (to patch instead of put).
 		get(table, data._id, function (err, gottenData) {
-			var mergedData = data;
-			if(typeof gottenData !== 'undefined' && gottenData !== null) {
+			let mergedData = data;
+			if (typeof gottenData !== 'undefined' && gottenData !== null) {
 				mergedData = merge(gottenData, data);
 			}
-
 			save(table, mergedData, cb);
 		});
 	} else if (typeof data._id === 'undefined' && key === null) {
@@ -181,12 +181,12 @@ function upsert(table, data, key, cb) {
 	}
 }
 
-/** [iternal] cleanUnsafeData
+/** [internal] cleanUnsafeData
  *	Detect and act on data that might cause an error in DynamoDB
  */
 function cleanUnsafeData(data) {
 	for (let param in data) {
-		if(data[param] === '') {
+		if (data[param] === '') {
 			delete data[param];
 		}
 	}
@@ -198,7 +198,7 @@ function cleanUnsafeData(data) {
  *	Save, no question asking, a row in dynamo.
  */
 function save(table, data, cb) {
-	if (tables.indexOf(table) === -1) {
+	if (tables.indexOf(config.db_table_prefix + table) === -1) {
 		// Table does not exist. Create it. 
 		createTable(table, function(err, res) {
 			upsert(table, data, cb);
@@ -209,7 +209,7 @@ function save(table, data, cb) {
 
 	// Prepare insert
 	const params = {
-		TableName: table,
+		TableName: config.db_table_prefix + table,
 		Item: data
 	};
 
@@ -241,12 +241,12 @@ function save(table, data, cb) {
  * @param {dyanmoGetCallback} cb 	Callback on get (or error)
  */
 function get(table, key, cb) {
-	var docClient = new AWS.DynamoDB.DocumentClient();
+	let docClient = new AWS.DynamoDB.DocumentClient();
 
-	var params = {
-		TableName : table,
+	let params = {
+		TableName: config.db_table_prefix + table,
 		KeyConditionExpression: "#id = :key",
-		ExpressionAttributeNames:{
+		ExpressionAttributeNames: {
 			"#id": "_id"
 		},
 		ExpressionAttributeValues: {
@@ -288,7 +288,7 @@ function query(table, params, cb) {
 		return false;
 	}
 
-	if (!params) {
+	if (!params || Object.keys(params).length === 0) {
 		return list(table, cb);
 	} else {
 		return search(table, params, cb);
@@ -310,10 +310,10 @@ function query(table, params, cb) {
  *	@param {dynamoRemoveCallback}	cb	Callback to execute on operation complete.
  */
 function remove(table, key, cb) {
-	var docClient = new AWS.DynamoDB.DocumentClient();
+	let docClient = new AWS.DynamoDB.DocumentClient();
 
-	var params = {
-		TableName : table,
+	let params = {
+		TableName: config.db_table_prefix + table,
 		Key: {
 			"_id": key
 		}
@@ -339,7 +339,7 @@ function remove(table, key, cb) {
 /* --- Internal functions -- */
 
 function list(table, cb) {
-	dynamodb.scan({TableName: table}, function(err, data) {
+	dynamodb.scan({TableName: config.db_table_prefix + table}, function(err, data) {
 		if (err) {
 			logger.error('Error scanning dynamodb:', err);
 			typeof cb === 'function' && cb(err, null);
@@ -370,7 +370,6 @@ function search(table, params, cb) {
 		conditionExpression += '#field'+ i +' '+ filter.operator +' :field'+ i;
 		expressionNames['#field'+i] = filter.field;
 		expressionValues[':field'+i] = filter.value;
-
 	}
 
 	// ToDo: Limit
@@ -378,8 +377,8 @@ function search(table, params, cb) {
 	// ToDo: OrderBy
 	// ToDo: GroupBy
 
-	var queryParams = {
-		TableName: table,
+	let queryParams = {
+		TableName: config.db_table_prefix + table,
 		KeyConditionExpression: conditionExpression,
 		ExpressionAttributeNames: expressionNames,
 		ExpressionAttributeValues: expressionValues,
@@ -390,7 +389,7 @@ function search(table, params, cb) {
 		queryParams.IndexName = indexName;
 	}
 
-	var docClient = new AWS.DynamoDB.DocumentClient();
+	let docClient = new AWS.DynamoDB.DocumentClient();
 	docClient.query(queryParams, function(err, data) {
 		if (err) {
 			logger.debug("Unable to query. Error:", JSON.stringify(err, null, 2));

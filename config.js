@@ -20,6 +20,7 @@ const config = {
 	// Databases
 	persistence_db: process.env.BACKEND_PERSISTENT_DB || 'datastore',
 	search_db: process.env.BACKEND_SEARCH_DB || 'elasticsearch',
+	db_table_prefix: process.env.DB_TABLE_PREFIX || 'tableprefix',
 
 	// Datastore:
 	ds_emulator_host: process.env.DATASTORE_EMULATOR_HOST,

@@ -3,12 +3,10 @@ const config = require('../../config');
 
 const Persistent = require('../../store/' + config.persistence_db);
 const Search = require('../../store/' + config.search_db);
-// const Cache = require('../../store/redis');
 
 const type = 'video';
 
-Persistent.index(type, []);
-// Search.index(type, []);
+Persistent.index(type, []), logger.debug;
 
 exports.get = get;
 exports.list = list;
