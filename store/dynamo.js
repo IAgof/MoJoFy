@@ -388,8 +388,9 @@ function search(table, params, cb) {
 
 	if (params && params.filters && params.filters.length > 0) {
 		const indexName = table +'_'+ params.filters[0].field;
-		queryParams.IndexName = indexName;
+		queryParams.IndexName = config.db_table_prefix + indexName;
 	}
+	logger.debug('[dynamo] query params are', queryParams);
 
 	let docClient = new AWS.DynamoDB.DocumentClient();
 	docClient.query(queryParams, function(err, data) {
