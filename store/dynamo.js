@@ -278,6 +278,7 @@ function get(table, key, cb) {
  * @param {dynamoSearchCallback} cb Callback on query results (or error)
  */
 function query(table, params, cb) {
+	logger.debug('[dynamo] querying ', table);
 	if (typeof params === 'function') {
 		cb = params;
 		params = undefined;
@@ -339,6 +340,7 @@ function remove(table, key, cb) {
 /* --- Internal functions -- */
 
 function list(table, cb) {
+	logger.debug('[dynamo] performing scan');
 	dynamodb.scan({TableName: config.db_table_prefix + table}, function(err, data) {
 		if (err) {
 			logger.error('Error scanning dynamodb:', err);
@@ -353,7 +355,7 @@ function list(table, cb) {
 			return item;
 		});
 
-		typeof cb === 'function' && cb(null, response);
+		typeof cb === 'function' && cb(response);
 	});
 }
 
