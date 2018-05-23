@@ -28,7 +28,8 @@ function upload(remotePath, buffer) {
 		ACL: 'public-read',
 		ContentEncoding: 'base64'
 	};
-	
+
+	logger.debug("[S3 driver] launching s3.upload");
 	return s3.upload(params).promise();
 }
 
