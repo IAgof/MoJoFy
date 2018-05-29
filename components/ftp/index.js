@@ -1,0 +1,84 @@
+const ftp = require("basic-ftp");
+const mime = require('mime');
+
+const fs = require("fs");
+
+const http = require("http");
+const https = require("https");
+
+/* Methods interface */
+
+exports.send = send;
+
+
+/* Internal functions */
+
+/** send
+ * 	Get a file from a given URI and sends to FTP
+ *
+ *	@param {object} ftpData	Object with FTP connection info (host, user, password and secure).
+ *	@param {string} fileUri
+ *	@returns {void}
+ */
+function send(ftpData, fileUri, callback) {
+	if (fileUri.indexOf('http://') === 0 || fileUri.indexOf('https://') === 0) {
+		// Is an URL
+		downloadPipe(fileUri, function(file) {
+			ftpUpload(ftpData, file, callback);
+		});
+	} else {
+		// Is a local file 
+		ftpUpload(ftpData, fs.createReadStream(fileUri), callback);
+	}
+}
+
+/** [internal] downloadPipe
+ *	Create a stream from a file located in a HTTP(s) location
+ *
+ *	@param {string} url	URL with location of file.
+ *	@param {callback} callback Same than any http.get callback. 
+ *	@see https://nodejs.org/api/http.html#http_class_http_agent
+ *	@returns {void}
+ */
+function downloadPipe(url, callback) {
+	const splitUrl = url.split('/');
+	const filename = splitUrl[splitUrl.length - 1];
+	const type = mime.getType(filename);
+
+	let transport = http;
+	if (url.startsWith('https')) {
+		transport = https;
+	}
+	transport.get(url, callback);
+}
+
+/** [internal] ftpUpload
+ *	Upload a file stream to an ftp client given its data
+ *
+ *	@param {object} ftpData	Object with FTP connection info (host, user, password and secure).
+ *	@param {stream} file	A file stream to upload to the FTP client.
+ *	@returns {Promise} Promise with the result of the async function.
+ */
+function ftpUpload(ftpData, file, callback) {
+	const client = new ftp.Client();
+	
+	client.access({
+		host: ftpData.host,
+		user: ftpData.user,	
+		password: ftpData.password,
+		secure: ftpData.secure || false
+	})
+		.then(function () {
+			return client.upload(file, "video.mp4");
+		})
+		.then(function () {
+			client.close();
+			callback(true, null);
+		})
+		.catch(function (err) {
+			client.close();
+			console.error('Error in FTP upload:');
+			console.error(err);
+			callback(false, err);
+		});
+}

@@ -26,6 +26,7 @@
   "homepage": "https://github.com/IAgof/MoJoFy#readme",
   "dependencies": {
     "@sendgrid/mail": "6.2.1",
+    "basic-ftp": "^2.12.2",
     "bcrypt": "1.0.3",
     "bluebird": "^3.5.0",
     "body-parser": "1.18.1",
