@@ -5,7 +5,7 @@ const config = {
 	port: process.env.PORT || 3000,
 
 	//
-	logLevel: String(process.env.BACKEND_WINSTON_LOG_LEVEL) || info,
+	logLevel: String(process.env.BACKEND_WINSTON_LOG_LEVEL) || 'info',
 
 	//
 	upload_folder: 'uploads/',
