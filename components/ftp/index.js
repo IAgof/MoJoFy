@@ -21,14 +21,15 @@ exports.send = send;
  *	@returns {void}
  */
 function send(ftpData, fileUri, callback) {
+	const fileName = fileUri.split('/').pop();
 	if (fileUri.indexOf('http://') === 0 || fileUri.indexOf('https://') === 0) {
 		// Is an URL
 		downloadPipe(fileUri, function(file) {
-			ftpUpload(ftpData, file, callback);
+			ftpUpload(ftpData, file, fileName, callback);
 		});
 	} else {
 		// Is a local file 
-		ftpUpload(ftpData, fs.createReadStream(fileUri), callback);
+		ftpUpload(ftpData, fs.createReadStream(fileUri), fileName, callback);
 	}
 }
 
@@ -45,10 +46,8 @@ function downloadPipe(url, callback) {
 	const filename = splitUrl[splitUrl.length - 1];
 	const type = mime.getType(filename);
 
-	let transport = http;
-	if (url.startsWith('https')) {
-		transport = https;
-	}
+	let transport = url.startsWith('https') ? https : http;
+	
 	transport.get(url, callback);
 }
 
@@ -59,7 +58,7 @@ function downloadPipe(url, callback) {
  *	@param {stream} file	A file stream to upload to the FTP client.
  *	@returns {Promise} Promise with the result of the async function.
  */
-function ftpUpload(ftpData, file, callback) {
+function ftpUpload(ftpData, file, fileName, callback) {
 	const client = new ftp.Client();
 	
 	client.access({
@@ -67,18 +66,16 @@ function ftpUpload(ftpData, file, callback) {
 		user: ftpData.user,	
 		password: ftpData.password,
 		secure: ftpData.secure || false
-	})
-		.then(function () {
-			return client.upload(file, "video.mp4");
-		})
-		.then(function () {
-			client.close();
-			callback(true, null);
-		})
-		.catch(function (err) {
-			client.close();
-			console.error('Error in FTP upload:');
-			console.error(err);
-			callback(false, err);
-		});
+	}).then(function () {
+		// TO-DO: check naming video since this rewrite what you have uploaded every time
+		return client.upload(file, fileName);
+	}).then(function () {
+		client.close();
+		callback(true, null);
+	}).catch(function (err) {
+		client.close();
+		console.error('Error in FTP upload:');
+		console.error(err);
+		callback(false, err);
+	});
 }
