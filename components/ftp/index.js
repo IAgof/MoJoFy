@@ -1,5 +1,6 @@
 const ftp = require("basic-ftp");
 const mime = require('mime');
+const logger = require('../../logger');
 
 const fs = require("fs");
 
@@ -60,14 +61,12 @@ function downloadPipe(url, callback) {
  */
 function ftpUpload(ftpData, file, fileName, callback) {
 	const client = new ftp.Client();
-	
 	client.access({
 		host: ftpData.host,
 		user: ftpData.user,	
 		password: ftpData.password,
-		secure: ftpData.secure || false
+		secure: ftpData.secure === 'true' || ftpData.secure === true
 	}).then(function () {
-		// TO-DO: check naming video since this rewrite what you have uploaded every time
 		return client.upload(file, fileName);
 	}).then(function () {
 		client.close();
