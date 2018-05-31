@@ -21,6 +21,13 @@ var client = new elasticsearch.Client({
 	keepAlive: true
 });
 
+client.indices.exists({ index: config.elastic_index }).then(function (exists) {
+	if (!exists) {
+		console.log("Creating index %s", config.elastic_index);
+		return client.indices.create({ index: config.elastic_index })
+	}
+}).catch(logger.error);
+
 /**
  * Callback for elastic get function.
  * 
@@ -154,19 +161,79 @@ function remove(type, id, cb) {
 }
 
 /**
- * Callback for elastic query function.
+ * Callback for elastic search function.
+ * 
+ * @callback elasticSearchCallback
+ * @param {array} results List of entities matching query
+ */
+/**
+ * Search data in elasticseatch by query
+ *
+ * @param {string} type	Document type (sql "table")
+ * @param {object} options	Query options
+ * @param {elasticSearchCallback} cb Callback on query results (or error)
+ */
+function search(type, options, cb) {
+	logger.debug('[elasticsearch] performing ' + type + ' search with options ' + options);
+	return query(type, 'search', options, function (response) {
+		// Parse possible errors
+		if(response === null || typeof(response.hits) == 'undefined') {
+			cb([]);
+			return false;
+		}
+
+		var searchArray = [];
+
+		for(var i = 0; i < response.hits.hits.length; i++) {
+			response.hits.hits[i]._source._id = response.hits.hits[i]._id;
+			searchArray.push(response.hits.hits[i]._source);
+		}
+
+		if(cb && typeof cb) {
+			cb(searchArray);
+		}
+	});
+}
+
+/**
+ * Callback for elastic count function.
+ * 
+ * @callback elasticCountCallback
+ * @param {array} results List of entities matching query
+ */
+/**
+ * Count data in elasticseatch by query
+ *
+ * @param {string} type	Document type (sql "table")
+ * @param {object} options	Query options
+ * @param {elasticCountCallback} cb Callback with count (or error)
+ */
+function count(type, options, cb) {
+	return query(type, 'count', options, function (response) {
+		const result = response.count || null
+		cb(result);
+	});
+}
+
+// 
+/**
+ * Callback for elastic search function.
  * 
  * @callback elasticQueryCallback
  * @param {array} results List of entities matching query
  */
 /**
- * Query data in elasticseatch by ID
+ * [internal] Query data to elasticseatch
  *
  * @param {string} type	Document type (sql "table")
+ * @param {string} operation	Type of operation to perform (count, search...) 
  * @param {object} options	Query options
  * @param {elasticQueryCallback} cb Callback on query results (or error)
  */
-function query(type, options, cb) {
+
+
+// query(type, 'search', options, function (response) {
+function query(type, operation, options, cb) {
 	if(!type || !options) {
 		if(cb && typeof cb) {
 			cb();
@@ -182,13 +249,14 @@ function query(type, options, cb) {
 		cb = options;
 	} else {
 		filters(body, options);
+		queryFilters(body, options);
 		limits(body, options);
 		order(body, options);
 		// TODO:
 		// groupBy(body, options);
 	}
 
-	client.search({
+	client[operation]({
 		index: INDEX,
 		type: type,
 		body: body
@@ -196,27 +264,12 @@ function query(type, options, cb) {
 		
 		// Log errors
 		if(error) {
-			console.log(error);
+			logger.error("Error querying elasticsearch: ", error);
 			cb(null);
 			return false;
 		}
 
-		// Parse possible errors
-		if(typeof(response.hits) == 'undefined') {
-			response.hits = [];
-		}
-
-		var searchArray = [];
-
-		for(var i = 0; i < response.hits.hits.length; i++) {
-			response.hits.hits[i]._source._id = response.hits.hits[i]._id;
-			searchArray.push(response.hits.hits[i]._source);
-		}
-
-		if(cb && typeof cb) {
-			cb(searchArray);
-		}
-
+		cb(response);
 	});
 }
 
@@ -229,7 +282,10 @@ function query(type, options, cb) {
  */
 function filters(body, options) {
 	if (options.filters) {
-		body.query = { bool: {} };
+		if( !body.query) {
+			body.query = { bool: {} };
+		}
+
 		for(var filter in options.filters) {
 			var f = options.filters[filter];
 			var e = {};
@@ -321,7 +377,7 @@ function order(body, options) {
 
 	if (options.orderBy) {
 		const sort = {}
-		let field = orderBy;
+		let field = options.orderBy;
 		let order = 'asc';
 
 		if(field.indexOf('-') === 0) {
@@ -336,11 +392,53 @@ function order(body, options) {
 	return body;
 }
 
+/**
+ * [internal] Parse query to elasticsearch query syntax 
+ *
+ * @param {object} body ElasticSearch search request body *WILL BE MODIFIED*
+ * @param {object} options Query to add
+ * @return {object} body ElasticSearch constructed search request body
+ */
+function queryFilters(body, options) {
+	if (!body) { 
+		body = {};
+	}
+
+	if (options.query && Array.isArray(options.query)) {
+		if (!body.query || !body.query.bool) {
+			body.query = { bool: {} };
+		}
+
+		if (!body.query.bool.should) {
+			body.query.bool.should = [];
+		}
+
+		for (var i = 0; i < options.query.length; i++) {
+			const match = { match: {} };
+			match.match[options.query[i].field] = options.query[i].value;
+
+			const prefix = { prefix: {} };
+			prefix.prefix[options.query[i].field] = options.query[i].value;
+
+			const wildcard = { wildcard: {} };
+			wildcard.wildcard[options.query[i].field] = '*' + options.query[i].value + '*';
+
+			body.query.bool.should.push(match);
+			body.query.bool.should.push(prefix);
+			body.query.bool.should.push(wildcard);
+		}
+	}
+
+	return body;
+}
 
 module.exports = {
 	_client: client,
+	// ToDo: Manage indexes!!
+	index: function () { return true; },
 	get: get,
-	query: query,
+	query: search,
+	count: count,
 	add: upsert,
 	update: upsert,
 	upsert: upsert,

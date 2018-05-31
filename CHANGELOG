@@ -1,0 +1,54 @@
+v0.9.0
+- Add support to store data in dynamoDB
+
+v0.8.0
+- Add support to store files in s3
+
+v0.7.0
+- As Junior I want the gallery to only show published videos
+
+v0.6.4
+- Added pic field to user model.
+
+v0.6.3
+- Updated username max length to fit frontend validations.
+- Updated upload response timeout.
+
+v0.6.2
+- Implemented file removeFromCloudStorage function
+- Modified user.updateVideoCounter to not change user password; callback fix
+- Updated video model to fix modelate bug than changed user password on user object updates
+- Updated modelate version to 0.2.8
+- Added workarround in video.add function for problem in frontend not showing recent uploaded video in gallery when upload ends
+- Updated elasticsearch client with a fix for creating non existing video index
+- Updated elasticsearch.search to fix error that crashed backend when no results where returned
+
+v0.6.1
+- Update search query to enable wildcard matching
+- Update video search fields
+
+v0.6.0
+ - Update video model with new fields
+ - Add new components for video product types, video categories and video languages
+ - Update video update route and index for handling updates of new fields and replacing files (poster and video)
+ - Some fixes and improvements
+
+ v0.5.0
+ - Add video search funcionality
+
+v0.4.0
+ - Ability to download a video if you are the owner.
+ - Ability to register being logged in.
+
+ v0.3.1
+- Update metadata retieving to get always the video info
+
+v0.3.0
+- Increase the video model
+- Add user's video counting
+
+v0.2.0
+- Add user/:id/video nested routes for supporting user galleries
+
+v0.1.0
+- Initial version of platform

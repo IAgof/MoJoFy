@@ -13,7 +13,7 @@ const model = {
 		type: 'string',
 		length: {
 			min: 1,
-			max: 12
+			max: 32
 		}
 	},
 	email: {
@@ -24,7 +24,8 @@ const model = {
 		}
 	},
 	password: {
-		type: 'string'
+		type: 'string',
+		typeStrict: true	// Avoid type parsing
 	},
 	following: {
 		type: 'number'
@@ -37,6 +38,16 @@ const model = {
 	},
 	theme_options: {
 		type: 'object'
+	},
+	videoCount: {
+		type: 'number'
+	},
+	role: {
+		type: 'string'
+	},
+	pic: {
+		type: 'string',
+		typeStrict: true
 	}
 };
 

@@ -9,11 +9,18 @@ const config = {
 
 	//
 	upload_folder: 'uploads/',
+	max_video_upload_byte_size: process.env.MAX_VIDEO_UPLOAD_BYTE_SIZE || '1500000',
+	max_profile_upload_byte_size: process.env.MAX_PROFILE_UPLOAD_BYTE_SIZE || '1500000',
 	
 	// JWT
 	jwt_secret: process.env.JWT_SECRET || 'secret',
 	//jwt_issuer: process.env.JWT_ISSUER,
 	jwt_expires: process.env.JWT_TOKEN_EXPIRATION || '1y',		// Format guide: https://github.com/zeit/ms
+
+	// Databases
+	persistence_db: process.env.BACKEND_PERSISTENT_DB || 'datastore',
+	search_db: process.env.BACKEND_SEARCH_DB || 'elasticsearch',
+	db_table_prefix: process.env.DB_TABLE_PREFIX || 'tableprefix',
 
 	// Datastore:
 	ds_emulator_host: process.env.DATASTORE_EMULATOR_HOST,
@@ -23,20 +30,22 @@ const config = {
 
 	// 'Elsasticsearch'
 	elastic_index: process.env.ELASTIC_INDEX || 'test',
-	elastic_user: process.env.ELASTIC_USER || null,
-	elastic_pass: process.env.ELASTIC_PASS || null,
+	elastic_user: process.env.ELASTIC_USER || 'elastic',
+	elastic_pass: process.env.ELASTIC_PASS || 'changeme',
 	elastic_host: process.env.ELASTIC_HOST || 'localhost',
 	elastic_port: process.env.ELASTIC_PORT || '9200',
 	elastic_log: process.env.ELASTIC_LOG || ['error', 'info'],
 
 	// Cloud Storage:
 	cloud_storage: process.env.BACKEND_CLOUD_STORAGE_TYPE,
-	storage_accessId: 'YOUR-CLIENT-ACCESS-ID@developer.gserviceaccount.com',
-	storage_keyFilename: './cloud-storage-key.pem',
-	storage_bucket: 'YOUR-BUCKET-NAME',
+	storage_accessId: process.env.STORAGE_ACCESS_ID || 'YOUR-CLIENT-ACCESS-ID@developer.gserviceaccount.com',
+	storage_keyFilename: process.env.STORAGE_KEY || 'YOUR-STORAGE-KEY',
+	storage_bucket: process.env.STORAGE_BUCKET || 'YOUR-BUCKET-NAME',
 	storage_folder: {
 		image: 'image',
-		video: 'video'
+		video: 'video',
+		poster: 'poster',
+		user: 'user'
 	},
 	
 	frontend_url: process.env.FRONTEND_URL,
@@ -47,9 +56,21 @@ const config = {
 	// Sendgrid
 	sendgridApiKey: process.env.SENDGRID_API_KEY,
 
+	// Flavour
+	flavour: process.env.FLAVOUR || 'vimojo',
+
 	// Email notifications:
 	emailNotificationsRecipient: process.env.BACKEND_EMAIL_NOTIFICATIONS_RECEIVER,
 	emailNotificationsSender: process.env.BACKEND_EMAIL_NOTIFICATIONS_SENDER,
+
+	// Show only published videos in video lists
+	showOnlyPublishedVideos: true,
+	
+	// AWS
+	aws_secretKey: process.env.AWS_SECRET || 'YOUR-SECRET-KEY',
+	aws_accessKey: process.env.AWS_ACCESS_KEY || 'YOUR-ACCESS-KEY',
+	aws_region: process.env.AWS_REGION || 'YOUR-REGION',
+	cdn_path: process.env.CDN_PATH || 'YOUR-CLOUDFRONT-URL'
 };
 
 module.exports = config;

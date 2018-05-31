@@ -11,6 +11,9 @@ const model = {
 	original: {
 		type: 'string'
 	},
+	published: {
+		type: 'boolean'
+	},
 	verified: {
 		type: 'boolean'
 	},
@@ -21,7 +24,10 @@ const model = {
 		type: 'string'
 	},
 	productType: {
-		type: 'object'
+		type: 'string'
+	},
+	categories: {
+		type: 'string'
 	},
 	description: {
 		type: 'string'
@@ -38,9 +44,57 @@ const model = {
 	tag: {
 		type: 'string'
 	},
+	length: {
+		type: 'number'
+	},
+	size: {
+		type: 'number'
+	},
+	format: {
+		type: 'string'
+	},
+	dimensions: {
+		type: 'string'
+	},
+	ratio: {
+		type: 'string'
+	},
+	language: {
+		type: 'string'
+	},
+	quality: {
+		type: 'number'
+	},
+	credibility: {
+		type: 'number'
+	},
 	date: {
 		type: 'object',
 		date: true
+	},
+	featured: {
+		type: 'boolean'
+    },
+	priceStd: {
+		type: 'number'
+	},
+	priceCountry: {
+		type: 'number'
+	},
+	priceContinent: {
+		type: 'number'
+	},
+	priceWorld: {
+		type: 'number'
+	},
+	notes: {
+		type: 'string'
+	},
+	locationName: {
+		type: 'string'
+	},
+	location: {
+		type: 'object'
 	}
 };
 

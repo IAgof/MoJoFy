@@ -1,10 +1,9 @@
 // Datastore connection and Dataset definition
-
 const gcloud = require('google-cloud');
 
 const config = require('../config');
 const logger = require('../logger');
-const Util = require('../util');
+var merge = require('util-merge');
 
 const namespace = config.ds_namespace;
 const dataset = gcloud.datastore({
@@ -37,22 +36,20 @@ function get(kind, id, cb) {
 		cb = id;
 		cb(null);
 		return false;
-	} else if(!cb || !id || !kind) {
+	} else if(!cb && !id && !kind) {
 		return false;
 	}
 
 	const key = Key(kind, id);
-
 	dataset.get(key, function(err, entity) {
-
-		if(err) {
-			logger.err('There have been an error retieving the '+ kind +' from Datastore');
-			logger.err(err, true);
+		if (err) {
+			logger.error('There have been an error retrieving the ' + kind + ' with id ' + id + ' from Datastore');
+			logger.error(err, true);
 			cb(null);
 			return false;
 		}
 
-		if(typeof(entity) === 'undefined' && typeof(cb) === 'function') {
+		if (typeof(entity) === 'undefined' && typeof(cb) === 'function') {
 			cb(null);
 		} else if(typeof(cb) === 'function') {
 			cb(entity);
@@ -89,7 +86,9 @@ function upsert(kind, data, id, cb) {
 				storedData = {};
 			}
 
-			const merged = Util.merge(storedData, data);
+			// const merged = Util.merge(storedData, data);
+			const merged = merge(storedData, data);
+
 			save(key, merged, cb);
 		});
 	} else {
@@ -105,22 +104,20 @@ function save(key, data, cb) {
         key: key,
         data: data
     },
-    function(err) {
-
-        if(err) {
-        	logger.err('There have been an error upserting the '+ key.path[0] +' '+ key.path[1] +' to datastore');
-			logger.err(err, true);
-			if(cb && typeof cb === 'function') {
-				cb(false, null);
+		function(err) {
+			if(err) {
+        logger.error('There have been an error upserting the '+ key.path[0] +' '+ key.path[1] +' to datastore');
+        logger.error(err, true);
+        if(cb && typeof cb === 'function') {
+        	cb(false, null);
+        }
+        return false;
 			}
-			return false;
-        }
 
-        if(cb && typeof(cb) === 'function') {
-			cb(true, key.path[1]);
-        }
-    });
-
+			if(cb && typeof(cb) === 'function') {
+				cb(true, key.path[1]);
+			}
+	});
 }
 
 /**
@@ -138,8 +135,8 @@ function remove(kind, id, cb) {
 
 	dataset.delete(key, function(err) {
 		if(err) {
-			logger.err('There have been an error removing the '+ kind +' to datastore');
-			logger.err(err, true);
+			logger.error('There have been an error removing the '+ kind +' to datastore');
+			logger.error(err, true);
 			if(cb && typeof(cb) === 'function') {
 				cb(false);
 			}
@@ -202,7 +199,7 @@ function query(kind, options, cb) {
 
 	query.run(function(err, entities, info) {
 		// We shall do this with this info, to enable cursors...
-		console.log(info);
+		logger.log(info);
 		cb(entities.map(fromDatastore));
 	});
 
@@ -236,6 +233,8 @@ module.exports = {
 	_ns: namespace,
 	_dataset: dataset,
 	_key: Key,
+	// ToDo: Manage indexes!!
+	index: function () { return true; },
 	get: get,
 	query: query,
 	add: upsert,

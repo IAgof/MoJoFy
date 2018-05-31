@@ -6,6 +6,8 @@ const Handlebars = require('handlebars');
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 
+const templatePath = './src/templates/' + config.flavour;
+
 const sendgridMail = require('@sendgrid/mail');
 sendgridMail.setApiKey(config.sendgridApiKey);
 
@@ -23,7 +25,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 	// TODO: Keep an eye on i18n
 	var subject = 'Se ha subido un nuevo vídeo a Vimojo.';
 	if (user) {
-		subject = user.name + ' ha subido un nuevo vídeo a Vimojo.';
+		subject = (user.username || 'Se') + ' ha subido un nuevo vídeo a Vimojo.';
 	}
 	const msg = {
 		to: config.emailNotificationsRecipient,
@@ -31,7 +33,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 		subject: subject,
 		html: '',
 	};
-	getTemplate('./src/templates/notifyVideoUploaded.hbs', {
+	getTemplate(templatePath + '/notify-video-uploaded.hbs', {
 		title: video.title,
 		description: video.description,
 		date: video.date,
@@ -71,7 +73,7 @@ function notifyVideoCodesGenerated(videoId, codes) {
 		let generatedCodesString = "Los códigos generados son: " + codes.map(elem => {
 			return elem.code;
 		}).join(", ");
-		getTemplate('./src/templates/notifyVideoCodesGenerated.hbs', {
+		getTemplate(templatePath + '/notify-video-codes-generated.hbs', {
 			title: "Se han generado " + codes.length + " códigos de descarga",
 			description: generatedCodesString,
 			url: config.frontend_url + '/download/' + videoId,

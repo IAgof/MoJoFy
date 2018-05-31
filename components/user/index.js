@@ -1,9 +1,13 @@
-
 // const Acl = require('./acl');
+const FileUpload = require('../file');
+const merge = require('util-merge');
 const Model = require('./model');
 const Pass = require('../access/password');
 const Store = require('./store');
 const logger = require('../../logger');
+const config = require('../../config');
+
+const Video = require('../video');
 
 // Exposed functions
 
@@ -13,6 +17,7 @@ exports.add = add;
 exports.exist = exist;
 exports.update = update;
 exports.query = query;
+exports.updateVideoCounter = updateVideoCounter;
 
 
 // Internal functions
@@ -25,7 +30,15 @@ function get(id, token, callback, includePass) {
 			if(!includePass) {
 				delete data.password;
 			}
-			callback(data, null);
+
+			if(!data.videoCount) {
+				setVideoCounter(id, function(data) {
+					callback(data, null);
+				});
+			} else {
+				callback(data, null);
+			}
+
 		} else {
 			callback(null, 'That user does not exist', 404);
 		}
@@ -41,6 +54,10 @@ function add(data, token, callback) {
 		} else if (exists === true) {
 			callback(null, 'User already exists', 400);
 			return false;
+		}
+
+		if(!data.role || data.role === '') {
+			data.role = 'guest';
 		}
 		
 		// Execute all the code;
@@ -77,7 +94,7 @@ function isUser(data, token, callback) {
 
 	if(typeof data.name === 'string' && data.name !== '') {
 		params.filters.push({
-			field: 'name', 
+			field: 'username', 
 			operator: '=', 
 			value: data.name
 		});
@@ -105,29 +122,52 @@ function isUser(data, token, callback) {
 	}, false);
 }
 
-function update(data, token, callback) {
-
+function update(data, token, file, callback) {
 	if(!data.id && !data._id) {
 		callback(null, 'No user id provided', 400);
 		return;
 	}
-
-	prepare(data, function(model) {
+	
+	updatePassword(data, function(model) {
 
 		model._id = data.id || data._id;
 
-		Store.upsert(model, function(result, id) {
+		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
+			if (response) {
+				model.pic = response;
+			}
+
+			updateUser(model, callback);
+		});
+	});
+}
+
+function updateUser(model, callback) {
+	Store.get(model._id, function (user) {
+		if (!user) {
+			callback(null, 'Unable to update the user', 500);
+			return false;
+		}
+		
+		const merged = merge(user, model);
+		
+		Store.upsert(merged, function(result, id) {
 			if(result, id) {
-				model._id = id;
-				delete model.password;
-				callback(model, null, 201);
+				merged._id = id;
+				delete merged.password;
+
+				if(user.pic) {
+					FileUpload.removeFromCloudStorage(user.pic);
+				}
+				
+				callback(merged, null, 200);
 			} else {
 				callback(null, 'Unable to update the user', 500);
 			}
 		});
 	});
-
 }
+
 
 function list(token, callback) {
 	query({}, token, callback);
@@ -152,16 +192,79 @@ function query(params, token, callback, includePass) {
 	// });
 }
 
+function updateVideoCounter(userId, callback) {
+	if(!userId) {
+		typeof callback === 'function' && callback(null);
+		return false;
+	}
+
+	Store.get(userId, function(data) {
+		if (data && data.videoCount) {
+			data._id = userId;
+			delete data.password;
+			data.videoCount = Number(data.videoCount) + 1;
+			update(data, null, null, function (updatedData, err) {
+				if (err) {
+					logger.error(err);
+				}
+				typeof callback === 'function' && callback(updatedData.videoCount || null);
+			});
+		} else if (data) {
+			delete data.password;
+			data._id = userId;
+			setVideoCounter(data, callback);
+		} else {
+			logger.error('Error updating user video counter: That user does not exist');
+			typeof callback === 'function' && callback(null);
+		}
+	}, true);
+}
+
+function setVideoCounter(data, callback) {
+	if(!data) {
+		callback(null);
+		return false;
+	} else if(typeof data !== 'object') {
+		return updateVideoCounter(data, callback);
+	}
+
+	const userId = data.id || data._id;
+
+	Video.count({
+		filters: [{
+			field: 'owner',
+			operator: '=',
+			value: userId
+		}]
+	}, function(userVideos) {
+		data.videoCount = userVideos || 0;
+		update(data, null, null, function (data, err) {
+			if (err) {
+				logger.error(err);
+			} else {
+				logger.log('Video counter setted for user ' + userId);
+			}
+			
+			if(typeof callback === 'function') {
+				callback(data);
+			}
+		});
+	});
+}
+
 function prepare(data, next) {
 	const model = Model.set(data);
+	updatePassword(model, next);
+}
 
+function updatePassword(data, next) {
 	// Check if pasword shall be created
 	if(typeof(data.password) !== 'undefined') {
 		Pass.crypt(data.password, function(err, hash) {
-			model.password = hash;
-			next(model);
+			data.password = hash;
+			next(data);
 		});
 	} else {
-		next(model);
+		next(data);
 	}
 }

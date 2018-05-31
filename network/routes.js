@@ -13,6 +13,6 @@ const routes = function(server) {
 	// server.use('/resource', require('../components/resource/network'));
 
 	return server;
-};	
+};
 
 module.exports = routes;
