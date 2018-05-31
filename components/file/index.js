@@ -1,17 +1,21 @@
 const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
-const CloudStorage = require('cloud-storage');
 
 const config = require('../../config');
 const logger = require('../../logger');
 const Integrity = require('./integrity');
 
-const storage = new CloudStorage({
-	accessId: config.storage_accessId,
-	privateKey: config.storage_keyFilename
-});
+const googleCloud = require('../google-cloud');
+const aws = require('../aws');
 
 const thumbType = 'png';
+
+let cloudStorage;
+if (config.cloud_storage == 'aws') {
+	cloudStorage = aws;
+} else if (config.cloud_storage == 'gcloud') {
+	cloudStorage = googleCloud;
+}
 
 
 /* Exposed functions */
@@ -50,12 +54,12 @@ function processUploadedVideo(file, callback) {
 				response.hash = hash;
 			}
 			Promise.all([
-				moveToCloudStorage(screenShotFileData).then(screenShotURL => {
+				moveToCloudStorage(screenShotFileData, config.storage_folder.poster).then(screenShotURL => {
 					if (screenShotURL) {
 						response.img = screenShotURL;
 					}
 				}),
-				moveToCloudStorage(originalFileData).then(url => {
+				moveToCloudStorage(originalFileData, config.storage_folder.video).then(url => {
 					if (originalFileData.type === 'video') {
 						response.video = url;
 					} else {
@@ -71,22 +75,20 @@ function processUploadedVideo(file, callback) {
 		});
 }
 
-function moveUploadedFile(fileUpload) {
+function moveUploadedFile(fileUpload, folder) {
 	if (fileUpload) {
 		let fileData = getFileData(fileUpload);
-		return moveToCloudStorage(fileData);
+		return moveToCloudStorage(fileData, folder);
 	}
-	return new Promise(resolve => { resolve() });
+	return Promise.resolve();
 }
 
 function removeFromCloudStorage(url) {
-	if (config.cloud_storage === 'gcloud') {
-		// TODO(jliarte): test in cloud storage
-		let cloudFilePath = url.split('googleapis.com')[1];
-		deleteFromGCloudStorage(cloudFilePath);
-	} else if (config.cloud_storage === 'local_cloud') {
+	if (config.cloud_storage === 'local_cloud') {
 		let localFilePath = url.replace(config.local_cloud_storage_host + '/', '');
 		unlink(localFilePath);
+	} else {
+		cloudStorage.removeFromStorage(url);
 	}
 }
 
@@ -112,45 +114,20 @@ function moveToCloudStorage(fileData, storageFolder) {
 	return new Promise(resolve => {
 		if (fileData) {
 			logger.debug("Move to cloud storage filedata: ", fileData);
-			if (config.cloud_storage === 'gcloud') {
-				let remotePath = '/' + storageFolder + '/'
-					+ fileData.filename.substring(0, 2) + '/' + fileData.filename.substring(2, 4) + '/'
-					+ fileData.filename + '.' + fileData.extension;
-				copyToGCloudStorage(remotePath, fileData.path).then(url => {
-					unlink(url.path);
-					resolve(url)
-				});
-			} else {
+			if (config.cloud_storage === 'local_cloud') {
 				fs.rename(fileData.path, fileData.path + '.' + fileData.extension, function (err) {
 					if (!err) {
 						resolve(config.local_cloud_storage_host + '/' + fileData.path + '.' + fileData.extension);
 					}
-				})
+				});
+			} else {
+				cloudStorage.uploadToStorage(fileData, storageFolder).then(url => {
+					unlink(fileData.path);
+					resolve(url)
+				});
 			}
 		}
 	});
-}
-
-function copyToGCloudStorage(remotePath, localPath) {
-	return new Promise((resolve, reject) => {
-		const bucket = 'gs://' + config.storage_bucket + remotePath;
-		storage.copy('./' + localPath, bucket, function (err, url) {
-			if (err) {
-				logger.error('Error copying file:');
-				logger.error(err);
-				reject();
-			}
-			logger.info('file uploaded');
-			resolve(url);
-		});
-	});
-}
-
-function deleteFromGCloudStorage(cloudPath) {
-	const bucketName = 'gs://' + config.storage_bucket + cloudPath;
-	const bucket = storage.bucket(bucketName);
-	const file = bucket.file(cloudPath);
-	return file.delete();
 }
 
 function makeScreenshots(fileData, callback) {
