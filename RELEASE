@@ -1,2 +1,2 @@
-v0.8.0
-- Add support to store files in s3
+v0.9.0
+- Add support to store data in dynamoDB
