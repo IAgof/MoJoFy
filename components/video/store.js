@@ -10,6 +10,7 @@ Persistent.index(type, []), logger.debug;
 
 exports.get = get;
 exports.list = list;
+exports.listPersistence = listPersistence;
 exports.upsert = upsert;
 exports.remove = remove;
 exports.count = count;
@@ -29,8 +30,13 @@ function get(id, callback) {
 }
 
 function list(params, callback) {
-
 	Search.query(type, params, function(data) {
+		callback(data);
+	});
+}
+
+function listPersistence(params, callback) {
+	Persistent.query(type, params, function(data) {
 		callback(data);
 	});
 }

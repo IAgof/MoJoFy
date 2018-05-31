@@ -108,11 +108,11 @@ function upsert(type, data, id, cb) {
 	// Add an index
 	client.index(options, function (error, response) {
 		if(error) {
-			logger.error('Have been an error writting in ElasticSearch!!');
+			logger.error('There have been an error writing in ElasticSearch!!');
 			logger.error(error);
 			cb(error);
 		} else {
-			logger.log('Successfully added ' + type + ' to ElasticSearch');
+			logger.log('Successfully added ' + options.type + ' to ElasticSearch');
 		}
 
 		// logger.log(response);
@@ -433,6 +433,7 @@ function queryFilters(body, options) {
 }
 
 module.exports = {
+	_client: client,
 	// ToDo: Manage indexes!!
 	index: function () { return true; },
 	get: get,
