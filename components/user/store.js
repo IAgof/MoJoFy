@@ -1,8 +1,10 @@
-
-const Persistent = require('../../store/datastore');
-// const Cache = require('../../store/redis');
+const logger = require('../../logger');
+const config = require('../../config');
+const Persistent = require('../../store/' + config.persistence_db);
 
 const type = 'user';
+
+Persistent.index(type, ['username', 'email'], logger.debug);
 
 exports.get = get;
 exports.list = list;

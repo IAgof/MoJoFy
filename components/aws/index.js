@@ -7,17 +7,18 @@ exports.uploadToStorage = uploadToStorage;
 exports.removeFromStorage = removeFromStorage;
 
 function uploadToStorage(fileData, storageFolder) {
+	logger.debug("[S3] Uploading to S3", fileData);
 	return getFileBuffer("/app/" + fileData.path)
 		.then(fileBuffer => {
+			logger.debug("[S3] buffer created");
 			return s3.upload(storageFolder + '/' + fileData.filename + '.' + fileData.extension, fileBuffer);
 		}).then(response => {
+			logger.debug("[S3] got response " + response);
 			let replacePath = 's3.amazonaws.com';
 			if (config.aws_region !== 'us-east-1') {
 				replacePath = config.aws_region + '.' + replacePath;
 			}
 			return response.Location.replace(config.storage_bucket + '.' + replacePath, config.cdn_path);
-		}).catch(error => {
-			throw new Error(error.message);
 		});
 }
 
@@ -33,7 +34,8 @@ function getFileBuffer(path) {
 	return new Promise((resolve, reject) => {
 		fs.readFile(path, function (error, data) {
 			if (error) {
-				throw new Error(error.message);
+				logger.error("[S3] Error creating buffer for path", path);
+				return reject(error.message);
 			} else {
 				resolve(new Buffer(data, 'binary'));
 			}

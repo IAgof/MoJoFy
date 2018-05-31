@@ -1,5 +1,6 @@
 // const Acl = require('./acl');
 const FileUpload = require('../file');
+const merge = require('util-merge');
 const Model = require('./model');
 const Pass = require('../access/password');
 const Store = require('./store');
@@ -33,7 +34,7 @@ function get(id, token, callback, includePass) {
 			if(!data.videoCount) {
 				setVideoCounter(id, function(data) {
 					callback(data, null);
-				})
+				});
 			} else {
 				callback(data, null);
 			}
@@ -53,6 +54,10 @@ function add(data, token, callback) {
 		} else if (exists === true) {
 			callback(null, 'User already exists', 400);
 			return false;
+		}
+
+		if(!data.role || data.role === '') {
+			data.role = 'guest';
 		}
 		
 		// Execute all the code;
@@ -89,7 +94,7 @@ function isUser(data, token, callback) {
 
 	if(typeof data.name === 'string' && data.name !== '') {
 		params.filters.push({
-			field: 'name', 
+			field: 'username', 
 			operator: '=', 
 			value: data.name
 		});
@@ -126,30 +131,43 @@ function update(data, token, file, callback) {
 	updatePassword(data, function(model) {
 
 		model._id = data.id || data._id;
-		
-		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
-			Store.get(model._id, function (user) {
-				if (!user) {
-					callback(null, 'Unable to update the user', 500);
-					return;
-				} else if (response) {
-					model.pic = response;
-				}
-				Store.upsert(model, function(result, id) {
-					if(result, id) {
-						model._id = id;
-						delete model.password;
-						FileUpload.removeFromCloudStorage(user.pic);
-						callback(model, null, 200);
-					} else {
-						callback(null, 'Unable to update the user', 500);
-					}
-				});
-			});
-		});
 
+		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
+			if (response) {
+				model.pic = response;
+			}
+
+			updateUser(model, callback);
+		});
 	});
 }
+
+function updateUser(model, callback) {
+	Store.get(model._id, function (user) {
+		if (!user) {
+			callback(null, 'Unable to update the user', 500);
+			return false;
+		}
+		
+		const merged = merge(user, model);
+		
+		Store.upsert(merged, function(result, id) {
+			if(result, id) {
+				merged._id = id;
+				delete merged.password;
+
+				if(user.pic) {
+					FileUpload.removeFromCloudStorage(user.pic);
+				}
+				
+				callback(merged, null, 200);
+			} else {
+				callback(null, 'Unable to update the user', 500);
+			}
+		});
+	});
+}
+
 
 function list(token, callback) {
 	query({}, token, callback);
@@ -176,6 +194,7 @@ function query(params, token, callback, includePass) {
 
 function updateVideoCounter(userId, callback) {
 	if(!userId) {
+		typeof callback === 'function' && callback(null);
 		return false;
 	}
 
@@ -188,6 +207,7 @@ function updateVideoCounter(userId, callback) {
 				if (err) {
 					logger.error(err);
 				}
+				typeof callback === 'function' && callback(updatedData.videoCount || null);
 			});
 		} else if (data) {
 			delete data.password;
@@ -195,6 +215,7 @@ function updateVideoCounter(userId, callback) {
 			setVideoCounter(data, callback);
 		} else {
 			logger.error('Error updating user video counter: That user does not exist');
+			typeof callback === 'function' && callback(null);
 		}
 	}, true);
 }
@@ -223,7 +244,7 @@ function setVideoCounter(data, callback) {
 			} else {
 				logger.log('Video counter setted for user ' + userId);
 			}
-
+			
 			if(typeof callback === 'function') {
 				callback(data);
 			}

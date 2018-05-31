@@ -30,7 +30,7 @@ const DEFAULT_CODES = 5;
 
 function get(id, callback, includeOriginal) {
 	Store.get(id, function(data) {
-		if(data) {
+		if (data) {
 			data._id = id;
 			if(!includeOriginal) {
 				delete data.original;
@@ -197,7 +197,7 @@ function updateNewPoster(updatedFiles, videoId) {
 					}
 				});
 			});
-		})
+		});
 }
 
 function list(user, callback, props) {
@@ -230,7 +230,7 @@ function list(user, callback, props) {
 			insertFilter('tag', '!=', props.excludeTag, params);
 		}
 
-		if (props.user && typeof props.user === 'number' && props.user >= 0) {
+		if (props.user) {
 			logger.debug("...for user ", props.user);
 			insertFilter('owner', '=', props.user, params);
 		}

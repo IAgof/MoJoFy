@@ -11,6 +11,8 @@ const MAX_UPLOAD_SIZE = Config.max_profile_upload_byte_size;
 
 const Upload = multer({ dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE });
 
+	// nested routes
+router.use('/:userId/video', require('../video/network'));
 
 router.get('/exist', function(req, res, next) {
 // router.get('/exist?:name&:email', Acl,  function(req, res, next) {

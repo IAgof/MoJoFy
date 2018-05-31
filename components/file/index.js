@@ -126,6 +126,9 @@ function moveToCloudStorage(fileData, storageFolder) {
 					resolve(url)
 				});
 			}
+		} else {
+			// ToDo: Check use cases of this flow
+			resolve();
 		}
 	});
 }

@@ -12,12 +12,6 @@ const routes = function(server) {
 	server.use('/video', require(component('video')));
 	// server.use('/resource', require('../components/resource/network'));
 
-	// nested routes
-	require(component('user')).use('/:userId/video', require(component('video')));
-	require(component('video')).use('/product_type', require(component('product_type')));
-	require(component('video')).use('/lang', require(component('video_lang')));
-	require(component('video')).use('/category', require(component('video_category')));
-
 	return server;
 };
 
