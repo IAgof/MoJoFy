@@ -5,17 +5,6 @@ const Controller = require('./');
 
 const router = express.Router();
 
-
-// router.get('/', function(req, res, next) {
-// 	Controller.list(function(data, err, code) {
-// 		if(!err) {
-// 			Response.success(req, res, next, (code || 200), data);
-// 		} else {
-// 			Response.error(req, res, next, (code || 500), err);
-// 		}
-// 	});
-// });
-
 router.post('/', Acl,  function(req, res, next) {
 	const uid = req.user.sub || -1;
 	const clientId = req.body.client || null;

@@ -32,7 +32,7 @@ function list(params, callback) {
 			err = 'Error listing clients from database';
 		}
 
-		typeof callback === 'function' && callback(data, err);
+		callback(data, err);
 	});
 }
 
@@ -44,11 +44,7 @@ function list(params, callback) {
  *	@param {function} callback Return the data added if success, null if error.
  */
 function add(data, callback) {
-	// If there's not callback, result will not be used, so we go out the function
-	if (typeof callback !== 'function') {
-		logger.debug((typeof callback === 'undefined' ? 'No callback specified' : 'Invalid type "'+ typeof callback +'" for callback') +' in "client.list" function. Skipping.');
-		return false;
-	} else if (!data) {
+	if (!data) {
 		logger.debug('No data specified in "client.add" function. Skipping.');
 		callback(null, 'No data specified', 400);
 		return false;
@@ -92,11 +88,6 @@ function update(data, id, callback) {
 		callback = id;
 		id = null;
 	}
-	// If there's not callback, result will not be used, so we go out the function
-	if (typeof callback !== 'function') {
-		logger.debug((typeof callback === 'undefined' ? 'No callback specified' : 'Invalid type "'+ typeof callback +'" for callback') +' in "client.list" function. Skipping.');
-		return false;
-	}
 
 	if (id === null) {
 		id = data._id || null;
@@ -133,6 +124,7 @@ function get(id, callback) {
 		return false;
 	} else if (typeof id === 'undefined' || id === null) {
 		logger.debug('No id specified in "client.get" function. Skipping.');
+		callback(null, 'No id specified', 400);
 		return false;
 	}
 
@@ -147,6 +139,6 @@ function get(id, callback) {
 			data._id = id;
 		}
 
-		typeof callback === 'function' && callback(data, err, code);
+		callback(data, err, code);
 	});
 }

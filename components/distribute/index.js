@@ -15,7 +15,7 @@ exports.get = getVideoDistribution;
 /* Internal functions */
 
 /**	distributeCallback
- *	@param {??????}	data	Result of distribution, or null on error
+ *	@param {object}	data	Result of distribution, or null on error
  *	@param {string}	error	Error message, or null on success
  *	@param {number}	status	Error code using HTTP Status codes
  */
@@ -70,7 +70,7 @@ function distribute(uid, clientId, videoId, method, callback) {
 }
 
 /** getVideoDistribution
- *	???
+ *	
  *	@param {string}	videoId	ID of the video to get distribution info
  *	@param {function}	callback	Function to execute on success or error
  */
