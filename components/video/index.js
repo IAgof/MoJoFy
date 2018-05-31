@@ -30,7 +30,7 @@ const DEFAULT_CODES = 5;
 
 function get(id, callback, includeOriginal) {
 	Store.get(id, function(data) {
-		if(data) {
+		if (data) {
 			data._id = id;
 			if(!includeOriginal) {
 				delete data.original;
@@ -157,12 +157,14 @@ function processNewFiles(videoData, videoId) {
 			Store.get(videoId, video => {
 				let oldVideo = video.video;
 				let oldOriginal = video.original;
+				let oldPoster = video.poster;
 				video.id = videoId;
 				addVideoData(video, uploaded, metadata);
 				Store.upsert(video, result => {
 					if (result) {
 						FileUpload.removeFromCloudStorage(oldVideo);
 						FileUpload.removeFromCloudStorage(oldOriginal);
+						FileUpload.removeFromCloudStorage(oldPoster);
 						resolve(updateNewPoster(updatedFiles, videoId));
 					} else {
 						reject({original: "Error updating video file"});
@@ -179,7 +181,7 @@ function updateNewPoster(updatedFiles, videoId) {
 		return;
 	}
 	logger.debug("-------------------- Setting new video poster -------------------- ");
-	return FileUpload.moveUploadedFile(updatedFiles.newPoster)
+	return FileUpload.moveUploadedFile(updatedFiles.newPoster, Config.storage_folder.poster)
 		.then(url => {
 			logger.debug("New poster processed with results", url);
 			Store.get(videoId, video => {
@@ -195,7 +197,7 @@ function updateNewPoster(updatedFiles, videoId) {
 					}
 				});
 			});
-		})
+		});
 }
 
 function list(user, callback, props) {
@@ -228,7 +230,7 @@ function list(user, callback, props) {
 			insertFilter('tag', '!=', props.excludeTag, params);
 		}
 
-		if (props.user && typeof props.user === 'number' && props.user >= 0) {
+		if (props.user) {
 			logger.debug("...for user ", props.user);
 			insertFilter('owner', '=', props.user, params);
 		}

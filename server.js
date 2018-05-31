@@ -4,6 +4,7 @@ const jwt = require('express-jwt');
 const cors = require('cors');
 
 const Config = require('./config');
+
 const Routes = require('./network/routes');
 
 const server = express();
