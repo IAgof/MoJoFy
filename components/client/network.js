@@ -6,7 +6,7 @@ const Controller = require('./');
 const router = express.Router();
 
 
-router.get('/', function(req, res, next) {
+router.get('/', Acl, function(req, res, next) {
 	Controller.list(function(data, err, code) {
 		if(!err) {
 			Response.success(req, res, next, (code || 200), data);
