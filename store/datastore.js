@@ -3,7 +3,6 @@ const gcloud = require('google-cloud');
 
 const config = require('../config');
 const logger = require('../logger');
-const Util = require('../util');
 var merge = require('util-merge');
 
 const namespace = config.ds_namespace;
@@ -43,14 +42,14 @@ function get(kind, id, cb) {
 
 	const key = Key(kind, id);
 	dataset.get(key, function(err, entity) {
-		if(err) {
-			logger.error('There have been an error retieving the '+ kind +' from Datastore');
+		if (err) {
+			logger.error('There have been an error retrieving the ' + kind + ' with id ' + id + ' from Datastore');
 			logger.error(err, true);
 			cb(null);
 			return false;
 		}
 
-		if(typeof(entity) === 'undefined' && typeof(cb) === 'function') {
+		if (typeof(entity) === 'undefined' && typeof(cb) === 'function') {
 			cb(null);
 		} else if(typeof(cb) === 'function') {
 			cb(entity);
@@ -234,6 +233,8 @@ module.exports = {
 	_ns: namespace,
 	_dataset: dataset,
 	_key: Key,
+	// ToDo: Manage indexes!!
+	index: function () { return true; },
 	get: get,
 	query: query,
 	add: upsert,

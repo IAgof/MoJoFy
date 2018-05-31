@@ -1,11 +1,13 @@
-const Persistent = require('../../store/datastore');
+const logger = require('../../logger');
+const config = require('../../config');
+const Persistent = require('../../store/' + config.persistence_db);
 
 const type = 'download_code';
 
+Persistent.index(type, ['video', 'code'], logger.debug);
 
 exports.query = query;
 exports.upsert = upsert;
-
 
 function query(params, callback) {
 	Persistent.query(type, params, function(data) {

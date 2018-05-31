@@ -174,6 +174,7 @@ function remove(type, id, cb) {
  * @param {elasticSearchCallback} cb Callback on query results (or error)
  */
 function search(type, options, cb) {
+	logger.debug('[elasticsearch] performing ' + type + ' search with options ' + options);
 	return query(type, 'search', options, function (response) {
 		// Parse possible errors
 		if(response === null || typeof(response.hits) == 'undefined') {
@@ -432,6 +433,8 @@ function queryFilters(body, options) {
 }
 
 module.exports = {
+	// ToDo: Manage indexes!!
+	index: function () { return true; },
 	get: get,
 	query: search,
 	count: count,
