@@ -141,6 +141,7 @@ function makeScreenshots(fileData, callback) {
 				.screenshots({
 					count: 1,
 					filename: thumbFileName,
+					size: '560x?',
 					folder: './uploads'
 				})
 				.on('end', function () {
