@@ -39,6 +39,9 @@ function distribute(uid, clientId, videoId, method, callback) {
 		callback = method;
 		method = 'ftp';
 	}
+	if (!method) {
+		method = 'ftp'
+	}
 
 	let res = 0;
 	let clientData = null;
