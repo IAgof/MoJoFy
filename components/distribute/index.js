@@ -88,12 +88,14 @@ function getVideoDistribution(videoId, callback) {
 	}
 
 	const params = {
-		filter: [{
+		filters: [{
 			field: 'video',
 			operator: '=',
 			value: videoId
 		}]
 	};
+
+	console.log(params);
 
 	Store.list(params, function (data) {
 		let err = null;
