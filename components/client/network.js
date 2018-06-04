@@ -46,4 +46,15 @@ router.get('/:id', Acl,  function(req, res, next) {
 	});
 });
 
+router.delete('/:id', Acl,  function(req, res, next) {
+  Controller.remove(req.params.id, function(data, err, code) {
+		if(!err) {
+			Response.success(req, res, next, (code || 200), data);
+		} else {
+			Response.error(req, res, next, (code || 500), err);
+		}
+	});
+});
+
+
 module.exports = router;

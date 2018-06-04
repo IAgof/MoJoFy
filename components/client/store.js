@@ -5,6 +5,7 @@ const type = 'client';
 exports.get = get;
 exports.list = list;
 exports.upsert = upsert;
+exports.delete = remove;
 
 
 function get(id, callback) {
@@ -26,5 +27,11 @@ function upsert(data, callback) {
 
 	Persistent.add(type, data, id, function(result, id) {
 		callback(result, id);
+	});
+}
+
+function remove(id, callback) {
+	Persistent.remove(type, id, function(data) {
+		callback(data);
 	});
 }

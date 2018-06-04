@@ -28,6 +28,9 @@ exports.middleware = function (req, res, next) {
 		case 'PUT':
 			action = 'update';
 			break;
+		case 'DELETE':
+			action = 'delete';
+			break;
 	}
 
 	// Check if role is allowed to do this or not :S

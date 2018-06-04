@@ -6,6 +6,7 @@ exports.list = list;
 exports.add = add;
 exports.update = update;
 exports.get = get;
+exports.remove = remove;
 
 /**
  */
@@ -160,5 +161,11 @@ function get(id, callback) {
 		}
 
 		callback(data, err, code);
+	});
+}
+
+function remove(id, callback) {
+	Store.delete(id, function (data) {
+		callback(data);
 	});
 }

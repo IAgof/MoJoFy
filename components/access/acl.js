@@ -28,7 +28,7 @@ const roles = {
 	},
 	client: {
 		guest: [],
-		editor: ['read', 'add', 'update']
+		editor: ['read', 'add', 'update', 'delete']
 	},
 	distribute: {
 		guest: [],
