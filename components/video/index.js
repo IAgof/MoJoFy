@@ -257,7 +257,14 @@ function list(user, callback, props) {
 			}
 		}
 		if (showOnlyPublishedVideos) {
-			insertFilter('published', '=', true, params);
+			/** CAUTION! 
+			 * 	This double denial is to avoid unexpected behaviour in search
+			 *	for non-editor users. This condition avoid unpublished videos 
+			 *	to appear. Using "published == true" will show all published 
+			 *	videos, even not coincident with search query. This happens due
+			 *	to = filters use "MUST" and != uses MUST_NOT in ElasticSearch.
+			 */
+			insertFilter('published', '!=', false, params);
 		} else {
 			if (props.published !== undefined && typeof props.published === 'boolean') {
 				insertFilter('published', '=', props.published, params);
