@@ -25,7 +25,7 @@ function upsert(data, callback) {
 	delete data.id;
 	delete data._id;
 
-	Persistent.add(type, data, id, function(result, id) {
+	Persistent.upsert(type, data, id, function(result, id) {
 		callback(result, id);
 	});
 }
