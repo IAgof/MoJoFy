@@ -55,7 +55,7 @@ function add(data, callback) {
 		try {
 			data.ftp = JSON.parse(data.ftp);
 		} catch (e) {
-			console.log('Unable to parse ftp string to object. Client might not be added.');
+			logger.info('Unable to parse ftp string to object. Client might not be added.');
 		}
 	}
 
@@ -108,7 +108,7 @@ function update(data, id, callback) {
 		try {
 			data.ftp = JSON.parse(data.ftp);
 		} catch (e) {
-			console.log('Unable to parse ftp string to object. Client might not be added.');
+			logger.info('Unable to parse ftp string to object. Client might not be updated.');
 		}
 	}
 
