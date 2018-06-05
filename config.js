@@ -17,6 +17,11 @@ const config = {
 	//jwt_issuer: process.env.JWT_ISSUER,
 	jwt_expires: process.env.JWT_TOKEN_EXPIRATION || '1y',		// Format guide: https://github.com/zeit/ms
 
+	// Databases
+	persistence_db: process.env.BACKEND_PERSISTENT_DB || 'datastore',
+	search_db: process.env.BACKEND_SEARCH_DB || 'elasticsearch',
+	db_table_prefix: process.env.DB_TABLE_PREFIX || 'tableprefix',
+
 	// Datastore:
 	ds_emulator_host: process.env.DATASTORE_EMULATOR_HOST,
 	ds_namespace: process.env.BACKEND_DATASTORE_NAMESPACE,
@@ -33,12 +38,14 @@ const config = {
 
 	// Cloud Storage:
 	cloud_storage: process.env.BACKEND_CLOUD_STORAGE_TYPE,
-	storage_accessId: 'YOUR-CLIENT-ACCESS-ID@developer.gserviceaccount.com',
-	storage_keyFilename: './cloud-storage-key.pem',
-	storage_bucket: 'YOUR-BUCKET-NAME',
+	storage_accessId: process.env.STORAGE_ACCESS_ID || 'YOUR-CLIENT-ACCESS-ID@developer.gserviceaccount.com',
+	storage_keyFilename: process.env.STORAGE_KEY || 'YOUR-STORAGE-KEY',
+	storage_bucket: process.env.STORAGE_BUCKET || 'YOUR-BUCKET-NAME',
 	storage_folder: {
 		image: 'image',
-		video: 'video'
+		video: 'video',
+		poster: 'poster',
+		user: 'user'
 	},
 	
 	frontend_url: process.env.FRONTEND_URL,
@@ -58,6 +65,12 @@ const config = {
 
 	// Show only published videos in video lists
 	showOnlyPublishedVideos: true,
+	
+	// AWS
+	aws_secretKey: process.env.AWS_SECRET || 'YOUR-SECRET-KEY',
+	aws_accessKey: process.env.AWS_ACCESS_KEY || 'YOUR-ACCESS-KEY',
+	aws_region: process.env.AWS_REGION || 'YOUR-REGION',
+	cdn_path: process.env.CDN_PATH || 'YOUR-CLOUDFRONT-URL'
 };
 
 module.exports = config;
