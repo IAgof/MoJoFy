@@ -6,24 +6,26 @@ const Response = require('../../network/response');
 const Store = require('./store');
 
 exports.middleware = function(req, res, next) {
-	// Check if user have a Token
-	if(!req.user) {
+	const method = req.method.toUpperCase();
+	
+	if(method === 'GET' && req.url.indexOf('/original') > -1) {
+		download(req, res, next);
+	} else if(!req.user) {
+		// Check if user have a Token (and is not a download)
 		Response.error(req, res, next, 401, 'Unauthenticated');
 		return false;
+	} else {	
+		Acl.middleware(req, res, function() {
+			if(method === 'DELETE') {
+				remove(req, res, next);
+			} else if (method === 'PUT') {
+				put(req, res, next);
+			} else {
+				next();
+			}
+		});
 	}
-
-	Acl.middleware(req, res, function() {
-		const method = req.method.toUpperCase();
-		if(method === 'DELETE') {
-			remove(req, res, next);
-		} else if (method === 'PUT') {
-			put(req, res, next);
-		} else if (method === 'GET' && req.url.indexOf('/original') > -1) {
-			download(req, res, next);
-		} else {
-			next();
-		}
-	});
+	
 
 	return false;
 };
@@ -104,20 +106,29 @@ function download(req, res, next) {
 	var id = req.params.id || req.params._id || null;
 	var action = 'download_other';
 
-	Store.get(id, function(data) {		
-		if(data && data.owner === req.user.sub) {
-			action = 'download_own';
-		}
+	if(!req.user) {
+		logger.info('User not logged tries to download video');
+		req.user = {};
+		req.query.code = req.query.code || null;
+		next();
 
-		Acl.acl.query(req.user.role, 'video', action, function(err, allow) {
-			if(allow) {
-				logger.info('I am the owner of that video');
-				req.owner = true;
-			} else {
-				logger.info('I have the code to download that video');
-				req.query.code = req.query.code || null;
+	} else {		
+
+		Store.get(id, function(data) {		
+			if(data && data.owner === req.user.sub) {
+				action = 'download_own';
 			}
-			next();
+
+			Acl.acl.query(req.user.role, 'video', action, function(err, allow) {
+				if(allow) {
+					logger.info('I am the owner of that video');
+					req.owner = true;
+				} else {
+					logger.info('I have the code to download that video');
+					req.query.code = req.query.code || null;
+				}
+				next();
+			});
 		});
-	});
+	}
 }
