@@ -6,6 +6,7 @@ exports.list = list;
 exports.add = add;
 exports.update = update;
 exports.get = get;
+exports.remove = remove;
 
 /**
  */
@@ -50,6 +51,14 @@ function add(data, callback) {
 		return false;
 	}
 
+	if(typeof data.ftp === 'string') {
+		try {
+			data.ftp = JSON.parse(data.ftp);
+		} catch (e) {
+			logger.info('Unable to parse ftp string to object. Client might not be added.');
+		}
+	}
+
 	const safeData = model.set(data);
 	if(!safeData.name || !safeData.ftp) {
 		logger.debug('Invalid data modelated for "client.add" function:');
@@ -69,6 +78,8 @@ function add(data, callback) {
 			logger.debug('Database client upsert error (in update function).');
 			err = 'Unable to update client in database';
 			resp = null;
+		} else {
+			resp._id = id;
 		}
 
 		typeof callback === 'function' && callback(resp, err);
@@ -93,6 +104,14 @@ function update(data, id, callback) {
 		id = data._id || null;
 	}
 
+	if(typeof data.ftp === 'string') {
+		try {
+			data.ftp = JSON.parse(data.ftp);
+		} catch (e) {
+			logger.info('Unable to parse ftp string to object. Client might not be updated.');
+		}
+	}
+
 	const safeData = model.set(data);
 	safeData._id = id;
 
@@ -104,6 +123,8 @@ function update(data, id, callback) {
 			logger.debug('Database client upsert error (in update function).');
 			err = 'Unable to update client in database';
 			resp = null;
+		} else {
+			resp._id = id;
 		}
 
 		typeof callback === 'function' && callback(resp, err);
@@ -140,5 +161,11 @@ function get(id, callback) {
 		}
 
 		callback(data, err, code);
+	});
+}
+
+function remove(id, callback) {
+	Store.delete(id, function (data) {
+		callback(data);
 	});
 }

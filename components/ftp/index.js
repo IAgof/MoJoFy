@@ -21,8 +21,13 @@ exports.send = send;
  *	@param {string} fileUri
  *	@returns {void}
  */
-function send(ftpData, fileUri, callback) {
-	const fileName = fileUri.split('/').pop();
+function send(ftpData, fileUri, fileName, callback) {
+	if(!fileName) {
+		fileName = fileUri.split('/').pop();
+	} else if(fileName.indexOf('.')) {
+		fileName += '.' + fileUri.split('.').pop();
+	}
+
 	if (fileUri.indexOf('http://') === 0 || fileUri.indexOf('https://') === 0) {
 		// Is an URL
 		downloadPipe(fileUri, function(file) {
@@ -44,8 +49,8 @@ function send(ftpData, fileUri, callback) {
  */
 function downloadPipe(url, callback) {
 	const splitUrl = url.split('/');
-	const filename = splitUrl[splitUrl.length - 1];
-	const type = mime.getType(filename);
+	const fileName = splitUrl[splitUrl.length - 1];
+	const type = mime.getType(fileName);
 
 	let transport = url.startsWith('https') ? https : http;
 	
@@ -60,21 +65,36 @@ function downloadPipe(url, callback) {
  *	@returns {Promise} Promise with the result of the async function.
  */
 function ftpUpload(ftpData, file, fileName, callback) {
+
+	if(ftpData.folder) {
+
+	}
+
 	const client = new ftp.Client();
+
 	client.access({
 		host: ftpData.host,
 		user: ftpData.user,	
 		password: ftpData.password,
 		secure: ftpData.secure === 'true' || ftpData.secure === true
-	}).then(function () {
+	})
+	.then( function () {
+		if(ftpData.folder) {
+			return client.ensureDir(ftpData.folder)
+		} else {
+			return true;
+		}
+	})
+	.then(function () {
 		return client.upload(file, fileName);
 	}).then(function () {
+		logger.debug('Distributed "' + fileName + '" to ' + ftpData.user + '@' + ftpData.host );
 		client.close();
 		callback(true, null);
 	}).catch(function (err) {
 		client.close();
-		console.error('Error in FTP upload:');
-		console.error(err);
+		logger.error('Error in FTP upload:');
+		logger.error(err);
 		callback(false, err);
 	});
 }

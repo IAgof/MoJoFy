@@ -17,10 +17,20 @@ exports.middleware = function (req, res, next) {
 	const method = req.method.toUpperCase();
 	let action = null;
 
-	if (method === 'GET') {
-		action = 'read';
-	} else if (method === 'POST') {
-		action = 'add'
+	switch (method) {
+		case 'GET':
+			action = 'read';
+			break;
+		case 'POST':
+			action = 'add';
+			break;
+		case 'PATCH':
+		case 'PUT':
+			action = 'update';
+			break;
+		case 'DELETE':
+			action = 'delete';
+			break;
 	}
 
 	// Check if role is allowed to do this or not :S
