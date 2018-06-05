@@ -149,7 +149,9 @@ function executeDistribution(uid, client, video, method, callback) {
  *	@param {distributeCallback} callback	Function to execute on success or error
  */
 function sendToFtp(uid, client, video, callback) {
-	ftp.send(client.ftp, video.video, function (res) {
+	var title = video.title.replace(/[^A-Za-z0-9]/g, '');
+
+	ftp.send(client.ftp, video.video, title, function (res) {
 		if (res === false) {
 			(typeof callback === 'function') && callback(null, 'Error moving the file to the FTP server', 500);
 			return false;
