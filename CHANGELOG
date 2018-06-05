@@ -1,3 +1,6 @@
+v0.11.0
+- Added FTP feature
+
 v0.9.0
 - Add support to store data in dynamoDB
 
