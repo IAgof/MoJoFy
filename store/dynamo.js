@@ -95,7 +95,7 @@ function createTable(table, indexes, cb) {
 		indexes = [];
 	}
 
-	if (tables.indexOf(config.db_table_prefix + table) > -1) {
+	if (tables.indexOf(config.db_table_prefix + table) > -1 || tables.indexOf(config.table) > -1) {
 		if (cb) {
 			cb(null, table);
 		}
@@ -145,12 +145,12 @@ function createTable(table, indexes, cb) {
  * Insert or update data in DynamoDB
  *
  * @param {string} table Table name (sql "table")
- * @param {object} data Data to write
+ * @param {object} rawData Data to write
  * @param {string} key	Table Hash Key (sql "primary key")
  * @param {dynamoUpsertCallback} cb Callback on upsert (or error)
  */
-function upsert(table, data, key, cb) {
-	if (!table || !data) {
+function upsert(table, rawData, key, cb) {
+	if (!table || !rawData) {
 		if (cb && typeof cb === 'function') {
 			cb(false, null);
 		}
@@ -161,7 +161,7 @@ function upsert(table, data, key, cb) {
 		key = null;
 	}
 
-	data = cleanUnsafeData(data);
+	const data = cleanUnsafeData(rawData);
 
 	if (typeof data._id !== 'undefined' || key !== null) {
 		data._id = key || data._id;
@@ -184,10 +184,13 @@ function upsert(table, data, key, cb) {
 /** [internal] cleanUnsafeData
  *	Detect and act on data that might cause an error in DynamoDB
  */
-function cleanUnsafeData(data) {
+function cleanUnsafeData(rawData) {
+	const data = Object.assign({}, rawData);
 	for (let param in data) {
 		if (data[param] === '') {
 			delete data[param];
+		} else if (data[param] instanceof Date) {
+			data[param] = data[param].toString();
 		}
 	}
 
