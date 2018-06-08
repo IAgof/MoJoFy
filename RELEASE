@@ -1,2 +1,2 @@
-v0.12.0
-- Added distribution through FTP 
+v0.12.1
+- Fix a bug in dynamoDB for what dates were not being setup correctly. 
