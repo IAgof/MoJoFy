@@ -185,12 +185,12 @@ function upsert(table, rawData, key, cb) {
  *	Detect and act on data that might cause an error in DynamoDB
  */
 function cleanUnsafeData(rawData) {
-	const data = Object.assign({}, rawData);
-	for (let param in data) {
-		if (data[param] === '') {
-			delete data[param];
-		} else if (data[param] instanceof Date) {
-			data[param] = data[param].toString();
+	const data = {};
+	for (let param in rawData) {
+		if (rawData[param] instanceof Date) {
+			data[param] = rawData[param].toString();
+		} else if (rawData[param] !== '') {
+			data[param] = rawData[param];
 		}
 	}
 
