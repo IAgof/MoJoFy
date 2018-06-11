@@ -24,7 +24,7 @@ const roles = {
 	},
 	user: {
 		guest: ['read', 'add', 'edit_own', 'remove_own'],
-		editor: ['read', 'add', 'list', 'update', 'edit_own', 'edit_other', 'remove_own', 'remove_other']
+		editor: ['read', 'add', 'list', 'update', 'edit_own', 'edit_other', 'remove_own', 'remove_other', 'see_emai']
 	},
 	client: {
 		guest: [],

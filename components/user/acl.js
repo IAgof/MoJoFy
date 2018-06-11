@@ -23,8 +23,9 @@ exports.middleware = function(req, res, next) {
 
 
 exports.query = function(token, operation, callback) {
+	const role = token.role || 'guest';
 
-	Acl.acl.query(token.role, 'user', operation, function(err, allow) {
+	Acl.acl.query(role, 'user', operation, function(err, allow) {
 		callback(allow);
 	});
 	
