@@ -1,4 +1,4 @@
-// const Acl = require('./acl');
+const Acl = require('./acl');
 const FileUpload = require('../file');
 const merge = require('util-merge');
 const Model = require('./model');
@@ -31,13 +31,24 @@ function get(id, token, callback, includePass) {
 				delete data.password;
 			}
 
-			if(!data.videoCount) {
-				setVideoCounter(id, function(data) {
-					callback(data, null);
-				});
-			} else {
-				callback(data, null);
+			if (!token) {
+				token = {};
 			}
+
+			Acl.query(token, 'see_email', function (allowed) {
+				if (!allowed) {
+					delete data.email;
+				}
+
+				if(!data.videoCount) {
+					setVideoCounter(id, function(data) {
+						callback(data, null);
+					});
+				} else {
+					callback(data, null);
+				}
+			})
+			
 
 		} else {
 			callback(null, 'That user does not exist', 404);
@@ -175,16 +186,25 @@ function list(token, callback) {
 
 function query(params, token, callback, includePass) {
 	// Acl.query(token, 'list', function(success) {
+		if (!token) {
+			token = {};
+		}
 
 		Store.list(params, function(result) {
 			if(result) {
-				for (var i = 0; i < result.length; i++) {
-					// result[i]._id = id;
-					if(!includePass) {
-						delete result[i].password;
+				Acl.query(token, 'see_email', function (allowed) {
+					for (var i = 0; i < result.length; i++) {
+						// result[i]._id = id;
+						if(!includePass) {
+							delete result[i].password;
+						}
+
+						if (!allowed) {
+							delete result[i].email;
+						}
 					}
-				}
-				callback(result, null, 201);
+					callback(result, null, 201);
+				});
 			} else {
 				callback(null, 'Unable to list users', 500);
 			}
