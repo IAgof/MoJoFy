@@ -128,16 +128,16 @@ router.put('/:id', Acl, Upload.any(), function(req, res, next) {
 	});
 });
 
-// router.post('/:id/like', function(req, res, next) {
-router.post('/:id/like', Acl, function(req, res, next) {
-	Controller.like(req.params.id, req.user, function(data, err, code) {
-		if(!err) {
-			Response.success(req, res, next, (code || 200), data);
-		} else {
-			Response.error(req, res, next, (code || 500), err);
-		}
-	});
-});
+// // router.post('/:id/like', function(req, res, next) {
+// router.post('/:id/like', Acl, function(req, res, next) {
+// 	Controller.like(req.params.id, req.user, function(data, err, code) {
+// 		if(!err) {
+// 			Response.success(req, res, next, (code || 200), data);
+// 		} else {
+// 			Response.error(req, res, next, (code || 500), err);
+// 		}
+// 	});
+// });
 
 
 router.delete('/:id', Acl,  function(req, res, next) {

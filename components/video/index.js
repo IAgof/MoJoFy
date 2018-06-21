@@ -20,7 +20,7 @@ exports.update = update;
 exports.remove = remove;
 exports.query = query;
 exports.count = count;
-exports.like = like;
+// exports.like = like;
 exports.download = download;
 
 const DEFAULT_CODES = 5;
@@ -306,16 +306,16 @@ function insertFilter(fieldName, operator, value, params) {
 	});
 }
 
-function like(id, token, callback) {
-
-	const entity = {
-		from: token.sub,
-		entity: 'video',
-		to: id
-	};
-
-	Like.add(entity, callback);
-}
+// function like(id, token, callback) {
+//
+// 	const entity = {
+// 		from: token.sub,
+// 		entity: 'video',
+// 		to: id
+// 	};
+//
+// 	Like.add(entity, callback);
+// }
 
 function getVideoOwner(result, token, callback) {
 	if (result.length === 0) {
@@ -327,7 +327,7 @@ function getVideoOwner(result, token, callback) {
 	for (var i = 0; i < result.length; i++) {
 		delete result[i].original;
 		const video = result[i];
-		User.get(video.owner, token, function (data) {
+		User.get(video.owner, token, undefined, function (data) {
 			if (data) {
 				video.ownerData = data;
 			}
