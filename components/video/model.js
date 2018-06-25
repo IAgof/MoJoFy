@@ -1,4 +1,3 @@
-
 var Modelate = require('modelate');
 
 const model = {

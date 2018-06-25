@@ -45,7 +45,8 @@ const config = {
 		image: 'image',
 		video: 'video',
 		poster: 'poster',
-		user: 'user'
+		user: 'user',
+		asset: 'assets'
 	},
 	
 	frontend_url: process.env.FRONTEND_URL,

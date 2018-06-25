@@ -78,20 +78,27 @@ function upsert(kind, data, id, cb) {
 
 	const key = Key(kind, id);
 
-	// CHECH IF IS UPSERT. IF SO, GET THE ENTITY AND MERGE CHANGES.
+	// CHECK IF IT IS UPSERT. IF SO, GET THE ENTITY AND MERGE CHANGES.
 	if(id) {
 		get(kind, id, function(storedData) {
 			
 			if(!storedData) {
-				storedData = {};
+				// TODO: check for all models, and implement in dynamo
+				logger.debug("Non existing object, setting creation date");
+				storedData = { creation_date: new Date() };
 			}
 
 			// const merged = Util.merge(storedData, data);
 			const merged = merge(storedData, data);
+			merged.modification_date = new Date();
+			logger.debug("updating modification date");
 
 			save(key, merged, cb);
 		});
 	} else {
+		// TODO: check for all models, and implement in dynamo
+		data.creation_date = new Date();
+		data.modification_date = data.creation_date;
 		save(key, data, cb);
 	}
 }
