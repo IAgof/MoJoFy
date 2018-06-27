@@ -17,7 +17,7 @@ router.use('/:userId/video', require('../video/network'));
 router.get('/exist', function(req, res, next) {
 // router.get('/exist?:name&:email', Acl,  function(req, res, next) {
 	Controller.exist(req.query, req.user, function(data, err, code) {
-		if(!err) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -27,7 +27,7 @@ router.get('/exist', function(req, res, next) {
 
 router.get('/', function(req, res, next) {
 	Controller.list(req.user, function(data, err, code) {
-		if(!err) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -38,7 +38,7 @@ router.get('/', function(req, res, next) {
 // router.post('/', Acl,  function(req, res, next) {
 router.post('/', function(req, res, next) {
 	Controller.add(req.body, req.user, function(data, err, code) {
-		if(!err) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -48,7 +48,7 @@ router.post('/', function(req, res, next) {
 
 router.put('/', Acl, Upload.single('pic'), function(req, res, next) {
 	Controller.update(req.body, req.user, req.file, function(data, err, code) {
-		if(!err) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -58,8 +58,8 @@ router.put('/', Acl, Upload.single('pic'), function(req, res, next) {
 
 // router.get('/:id', Acl,  function(req, res, next) {
 router.get('/:id', function(req, res, next) {
-  Controller.get(req.params.id, req.user, function(data, err, code) {
-		if(!err) {
+  Controller.get(req.params.id, req.user, false, function(data, err, code) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);

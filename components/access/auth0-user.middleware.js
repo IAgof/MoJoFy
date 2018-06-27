@@ -38,7 +38,7 @@ module.exports = function (req, res, next) {
 		logger.debug("request headers are: ", req.headers);
 		logger.debug("auth is: ", req.headers.authorization.split(' ')[1]);
 
-		userController.get(req.user.sub, null, (existingUser, errorCode) => {
+		userController.get(req.user.sub, null, false, (existingUser, errorCode) => {
 			logger.debug("existing user is ", existingUser);
 			if (!existingUser) {
 				logger.debug("User with id " + req.user.sub + " not found, creating new user...");
@@ -57,7 +57,7 @@ module.exports = function (req, res, next) {
 					});
 
 			}
-		}, false);
+		});
 	}
 	next();
 };

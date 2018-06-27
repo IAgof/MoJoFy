@@ -1,11 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const jwt = require('express-jwt');
 const cors = require('cors');
 const checkJwt = require('./components/access/auth0-middleware');
 const auth0User = require('./components/access/auth0-user.middleware');
 
 const Config = require('./config');
-
 const Routes = require('./network/routes');
 
 const server = express();
@@ -34,6 +34,9 @@ server.use(auth0User);
 
 // Router
 Routes(server);
+// server = Routes(server);
 
 server.listen(port);
 console.log('Server listening on port ' + port);
+
+module.exports = server;

@@ -54,7 +54,7 @@ function put(req, res, next) {
 
 		Acl.acl.query(req.user.role, 'video', action, function (err, allow) {
 			if (allow) {
-				removePrivilegedFilds(req, res, next);
+				removePrivilegedFields(req, res, next);
 			} else {
 				Response.error(req, res, next, 403, 'Unauthorized');
 			}
@@ -63,7 +63,7 @@ function put(req, res, next) {
 
 }
 
-function removePrivilegedFilds(req, res, next) {
+function removePrivilegedFields(req, res, next) {
 	Acl.acl.query(req.user.role, 'video', 'update_privileged_fields', function (err, allow) {
 		if (!allow) {
 			delete req.body.featured;

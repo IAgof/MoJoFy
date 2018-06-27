@@ -9,6 +9,7 @@ Persistent.index(type, ['username', 'email'], logger.debug);
 exports.get = get;
 exports.list = list;
 exports.upsert = upsert;
+exports.removeId = removeId;
 
 function get(id, callback) {
 	// Cache.get(type, id, function(data) {
@@ -48,4 +49,10 @@ function upsert(data, callback) {
 	// 		callback(data);
 	// 	}
 	// });
+}
+
+function removeId(id, callback) {
+	Persistent.remove(type, id, function(data) {
+		callback(data);
+	});
 }

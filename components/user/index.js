@@ -5,7 +5,6 @@ const Model = require('./model');
 const Pass = require('../access/password');
 const Store = require('./store');
 const logger = require('../../logger');
-const config = require('../../config');
 
 const Video = require('../video');
 
@@ -22,7 +21,8 @@ exports.updateVideoCounter = updateVideoCounter;
 
 // Internal functions
 
-function get(id, token, callback, includePass) {
+function get(id, token, includePass, callback) {
+
 	Store.get(id, function(data) {
 		if (data) {
 			data._id = id;
@@ -135,8 +135,8 @@ function update(data, token, file, callback) {
 		callback(null, 'No user id provided', 400);
 		return;
 	}
-	
-	updatePassword(data, function(model) {
+
+	prepare(data, function(model) {
 
 		model._id = data.id || data._id;
 
@@ -175,7 +175,6 @@ function updateUser(model, callback) {
 		});
 	});
 }
-
 
 function list(token, callback) {
 	query({}, token, callback);

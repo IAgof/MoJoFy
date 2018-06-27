@@ -53,7 +53,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 }
 
 function notifyVideoUploaded(video) {
-	user.get(video.owner, null, function (user) {
+	user.get(video.owner, null, false, function (user) {
 		sendNotificationVideoUploadedMail(user, video);
 	});
 }

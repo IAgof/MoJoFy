@@ -4,7 +4,6 @@ const express = require('express');
 const multer  = require('multer');
 const mime = require('mime');
 const Acl = require('./acl').middleware;
-
 const Config = require('../../config');
 const Response = require('../../network/response');
 const logger = require('../../logger');
@@ -126,7 +125,6 @@ router.put('/:id', Acl, Upload.any(), function(req, res, next) {
 		}
 	});
 });
-
 
 // // router.post('/:id/like', function(req, res, next) {
 // router.post('/:id/like', Acl, function(req, res, next) {
