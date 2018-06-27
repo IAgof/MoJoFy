@@ -23,11 +23,10 @@ exports.updateVideoCounter = updateVideoCounter;
 // Internal functions
 
 function get(id, token, callback, includePass) {
-
 	Store.get(id, function(data) {
-		if(data) {
+		if (data) {
 			data._id = id;
-			if(!includePass) {
+			if (!includePass) {
 				delete data.password;
 			}
 
@@ -39,16 +38,14 @@ function get(id, token, callback, includePass) {
 				if (!allowed) {
 					delete data.email;
 				}
-
-				if(!data.videoCount) {
+				if (!data.videoCount) {
 					setVideoCounter(id, function(data) {
 						callback(data, null);
 					});
 				} else {
 					callback(data, null);
 				}
-			})
-			
+			});
 
 		} else {
 			callback(null, 'That user does not exist', 404);
@@ -58,7 +55,7 @@ function get(id, token, callback, includePass) {
 
 function add(data, token, callback) {
 	logger.debug("user.add mehod, data - ", data);
-	isUser(data, token, function (exists) {
+	userExists(data, token, function (exists) {
 		if (exists === null) {
 			callback(null, 'Unable to register, no user or email provided', 400);
 			return false;
@@ -67,7 +64,7 @@ function add(data, token, callback) {
 			return false;
 		}
 
-		if(!data.role || data.role === '') {
+		if (!data.role || data.role === '') {
 			data.role = 'guest';
 		}
 		
@@ -87,7 +84,7 @@ function add(data, token, callback) {
 }
 
 function exist(data, token, callback) {
-	isUser(data, token, function (exists) {
+	userExists(data, token, function (exists) {
 		if (exists === null) {
 			callback(null, 'Unable to register, no user or email provided', 400);
 			return false;
@@ -97,19 +94,19 @@ function exist(data, token, callback) {
 	});
 }
 
-function isUser(data, token, callback) {
-	var params = {
+function userExists(data, token, callback) {
+	const params = {
 		filters: [],
 		limit: 1
 	};
 
-	if(typeof data.name === 'string' && data.name !== '') {
+	if (typeof data.name === 'string' && data.name !== '') {
 		params.filters.push({
 			field: 'username', 
 			operator: '=', 
 			value: data.name
 		});
-	} else if(typeof data.email === 'string' && data.email !== '') {
+	} else if (typeof data.email === 'string' && data.email !== '') {
 		params.filters.push({
 			field: 'email', 
 			operator: '=', 
@@ -120,12 +117,12 @@ function isUser(data, token, callback) {
 	}
 	logger.debug("querying with params ", params);
 
-	query(params, token, function(found, error) {	//, code) {
-		if(error) {
+	query(params, token, function(found, error) {
+		if (error) {
 			callback(null);
 		}
 
-		if(found && found.length > 0) {
+		if (found && found.length > 0) {
 			callback(true);
 		} else {
 			callback(false);
@@ -134,7 +131,7 @@ function isUser(data, token, callback) {
 }
 
 function update(data, token, file, callback) {
-	if(!data.id && !data._id) {
+	if (!data.id && !data._id) {
 		callback(null, 'No user id provided', 400);
 		return;
 	}
@@ -163,11 +160,11 @@ function updateUser(model, callback) {
 		const merged = merge(user, model);
 		
 		Store.upsert(merged, function(result, id) {
-			if(result, id) {
+			if (result, id) {
 				merged._id = id;
 				delete merged.password;
 
-				if(user.pic) {
+				if (user.pic) {
 					FileUpload.removeFromCloudStorage(user.pic);
 				}
 				
@@ -191,11 +188,11 @@ function query(params, token, callback, includePass) {
 		}
 
 		Store.list(params, function(result) {
-			if(result) {
+			if (result) {
 				Acl.query(token, 'see_email', function (allowed) {
 					for (var i = 0; i < result.length; i++) {
 						// result[i]._id = id;
-						if(!includePass) {
+						if (!includePass) {
 							delete result[i].password;
 						}
 
@@ -213,7 +210,7 @@ function query(params, token, callback, includePass) {
 }
 
 function updateVideoCounter(userId, callback) {
-	if(!userId) {
+	if (!userId) {
 		typeof callback === 'function' && callback(null);
 		return false;
 	}
@@ -241,10 +238,10 @@ function updateVideoCounter(userId, callback) {
 }
 
 function setVideoCounter(data, callback) {
-	if(!data) {
+	if (!data) {
 		callback(null);
 		return false;
-	} else if(typeof data !== 'object') {
+	} else if (typeof data !== 'object') {
 		return updateVideoCounter(data, callback);
 	}
 
@@ -265,7 +262,7 @@ function setVideoCounter(data, callback) {
 				logger.log('Video counter setted for user ' + userId);
 			}
 			
-			if(typeof callback === 'function') {
+			if (typeof callback === 'function') {
 				callback(data);
 			}
 		});
@@ -274,12 +271,15 @@ function setVideoCounter(data, callback) {
 
 function prepare(data, next) {
 	const model = Model.set(data);
-	updatePassword(model, next);
+	next(model);
+	
+	// TODO(jliarte): 27/06/18 clean auth code
+	// updatePassword(model, next);
 }
 
 function updatePassword(data, next) {
-	// Check if pasword shall be created
-	if(typeof(data.password) !== 'undefined') {
+	// Check if password shall be created
+	if (typeof(data.password) !== 'undefined') {
 		Pass.crypt(data.password, function(err, hash) {
 			data.password = hash;
 			next(data);

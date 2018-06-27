@@ -10,9 +10,7 @@ exports.get = get;
 exports.list = list;
 exports.upsert = upsert;
 
-
 function get(id, callback) {
-
 	// Cache.get(type, id, function(data) {
 	// 	if(!data) {
 			Persistent.get(type, id, function(data) {
@@ -25,7 +23,6 @@ function get(id, callback) {
 }
 
 function list(params, callback) {
-
 	// Cache.get(type, id, function(data) {
 	// 	if(!data) {
 			Persistent.query(type, params, function(data) {

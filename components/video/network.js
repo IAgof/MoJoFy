@@ -4,6 +4,7 @@ const express = require('express');
 const multer  = require('multer');
 const mime = require('mime');
 const Acl = require('./acl').middleware;
+
 const Config = require('../../config');
 const Response = require('../../network/response');
 const logger = require('../../logger');
@@ -15,12 +16,10 @@ const Upload = multer( { dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE }
 
 const router = express.Router({ mergeParams: true });
 
-
 // Nested components
 router.use('/product_type', require('../product_type/network'));
 router.use('/lang', require('../video_lang/network'));
 router.use('/category', require('../video_category/network'));
-
 
 router.get('/', function(req, res, next) {
 	let params = {};
@@ -93,8 +92,8 @@ router.get('/:id', function(req, res, next) {
 	});
 });
 
-router.post('/', Upload.single('file'), function(req, res, next) {
 // router.post('/', Acl, Upload.single('file'), function(req, res, next) {
+router.post('/', Upload.single('file'), function(req, res, next) {
 	req.body.file = req.file;
 
 	Controller.add(req.body, req.user, function(data, err, code) {
@@ -128,16 +127,17 @@ router.put('/:id', Acl, Upload.any(), function(req, res, next) {
 	});
 });
 
-// router.post('/:id/like', function(req, res, next) {
-router.post('/:id/like', Acl, function(req, res, next) {
-	Controller.like(req.params.id, req.user, function(data, err, code) {
-		if(!err) {
-			Response.success(req, res, next, (code || 200), data);
-		} else {
-			Response.error(req, res, next, (code || 500), err);
-		}
-	});
-});
+
+// // router.post('/:id/like', function(req, res, next) {
+// router.post('/:id/like', Acl, function(req, res, next) {
+// 	Controller.like(req.params.id, req.user, function(data, err, code) {
+// 		if(!err) {
+// 			Response.success(req, res, next, (code || 200), data);
+// 		} else {
+// 			Response.error(req, res, next, (code || 500), err);
+// 		}
+// 	});
+// });
 
 
 router.delete('/:id', Acl,  function(req, res, next) {

@@ -41,8 +41,7 @@ const roles = {
 acl.allow('admin');
 
 // If we've got roles...
-if(roles._roleList) {
-
+if (roles._roleList) {
 	// Add roles to the acl system
 	for(let i = 0; i > roles._roleList.length; i++) {
 		acl.addRole(roles._roleList.length[i]);
@@ -59,15 +58,13 @@ if(roles._roleList) {
 			acl.allow(role, resource, roles[resource][role]);
 		}
 	}
-
 } else {
 	logger.warn('There are no role list in your role system. Only users with role admin are allowed to access the resources');
 }
 
 
 function middleware(req, res, next, operation) {
-
-	if(!req.headers.authorization) {
+	if (!req.headers.authorization) {
 		logger.error(' -- No authorization header present -- ');
 		Response.error(req, res, next, 401);
 		return false;
@@ -85,10 +82,10 @@ function middleware(req, res, next, operation) {
 
 	acl.query(role, resource, action, function(err, allow) {
 
-		if(err) {
+		if (err) {
 			Response.error(req, res, next, 500, 'There was an error performing access control');
 		} else {
-			if(allow) {
+			if (allow) {
 				next();
 			} else {
 				Response.error(req, res, next, 403);

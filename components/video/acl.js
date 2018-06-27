@@ -8,15 +8,15 @@ const Store = require('./store');
 exports.middleware = function(req, res, next) {
 	const method = req.method.toUpperCase();
 	
-	if(method === 'GET' && req.url.indexOf('/original') > -1) {
+	if (method === 'GET' && req.url.indexOf('/original') > -1) {
 		download(req, res, next);
-	} else if(!req.user) {
+	} else if (!req.user) {
 		// Check if user have a Token (and is not a download)
 		Response.error(req, res, next, 401, 'Unauthenticated');
 		return false;
 	} else {	
 		Acl.middleware(req, res, function() {
-			if(method === 'DELETE') {
+			if (method === 'DELETE') {
 				remove(req, res, next);
 			} else if (method === 'PUT') {
 				put(req, res, next);
@@ -25,8 +25,6 @@ exports.middleware = function(req, res, next) {
 			}
 		});
 	}
-	
-
 	return false;
 };
 

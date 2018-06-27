@@ -55,7 +55,9 @@ function notify_video_upload(video) {
 }
 
 function add(data, token, callback) {
-	if(!data.owner) {
+	logger.debug("Adding video of user ", token);
+	if (!data.owner) {
+		// TODO(jliarte): 27/06/18 check that there's user!!!!
 		data.owner = token.sub;
 	}
 

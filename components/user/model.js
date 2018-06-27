@@ -6,7 +6,7 @@ const model = {
 		type: 'string',
 		length: {
 			min: 1,
-			max: 32
+			max: 100
 		}
 	},
 	username: {
@@ -48,6 +48,10 @@ const model = {
 	pic: {
 		type: 'string',
 		typeStrict: true
+	},
+	updated_at: {
+		type: 'object',
+		date: true
 	}
 };
 
