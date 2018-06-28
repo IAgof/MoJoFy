@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const Nanoid = require('nanoid');
 const config = require('../config');
-const logger = require('../logger');
+const logger = require('../logger')(module);
 const merge = require('util-merge');
 
 /** Converter:

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const s3 = require("./s3");
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const config = require('../../config');
 
 exports.uploadToStorage = uploadToStorage;

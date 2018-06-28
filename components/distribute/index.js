@@ -4,7 +4,7 @@ const ftp = require('../ftp');
 
 const Model = require('./model');
 const Store = require('./store');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 
 /* Exported interface */

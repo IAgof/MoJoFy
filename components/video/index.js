@@ -3,7 +3,7 @@ const FileUpload = require('../file');
 // const Acl = require('./acl');
 const Model = require('./model');
 const Store = require('./store');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const Config = require('../../config');
 
 const Like = require('../like');
@@ -319,6 +319,7 @@ function insertFilter(fieldName, operator, value, params) {
 // }
 
 function getVideoOwner(videos, token, callback) {
+	logger.debug("Video.getVideoOwner");
 	if (videos.length === 0) {
 		return callback(videos, null, 200);
 	}
@@ -326,14 +327,17 @@ function getVideoOwner(videos, token, callback) {
 	let results = 0;
 	
 	for (let i = 0; i < videos.length; i++) {
-		delete videos[i].original;
+		delete videos[i].original; // TODO(jliarte): this should be in another place
 		const video = videos[i];
+		logger.debug("...for video id ", video._id);
 		User.get(video.owner, token, false, function (data) {
+			logger.debug("...data is ", data);
 			if (data) {
 				video.ownerData = data;
 			}
 			if (++results === videos.length) {
-				callback(videos, null, 200);
+				logger.debug('returning...');
+				return callback(videos, null, 200);
 			}
 		});
 	}
@@ -350,7 +354,6 @@ function query(params, token, callback) {
 }
 
 function remove(id, token, callback) {
-
 	Store.remove(id, function(data) {
 		if (data) {
 			data._id = id;

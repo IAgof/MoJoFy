@@ -2,7 +2,7 @@ const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
 
 const config = require('../../config');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const Integrity = require('./integrity');
 
 const googleCloud = require('../google-cloud');

@@ -2,7 +2,7 @@
 const gcloud = require('google-cloud');
 
 const config = require('../config');
-const logger = require('../logger');
+const logger = require('../logger')(module);
 const merge = require('util-merge');
 
 const namespace = config.ds_namespace;
@@ -197,7 +197,10 @@ function query(kind, options, cb) {
 
 	query.run(function(err, entities, info) {
 		// We shall do this with this info, to enable cursors...
-		logger.log(info);
+		logger.debug(info);
+		if (err) {
+			logger.error("Error querying datastore ", err);
+		}
 		cb(entities.map(fromDatastore));
 	});
 

@@ -1,6 +1,6 @@
 const CloudStorage = require('cloud-storage');
 const config = require('../../config');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 const storage = new CloudStorage({
 	accessId: config.storage_accessId,

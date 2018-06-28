@@ -1,4 +1,4 @@
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const config = require('../../config');
 const user = require('../user');
 const videoRepository = require('../video');

@@ -1,6 +1,6 @@
 const Model = require('./model');
 const Store = require('./store');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 // Define a maximum number of codes that can a single request generate.
 const MAX_CODES_PER_REQUEST = 50;

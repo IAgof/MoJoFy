@@ -1,7 +1,7 @@
 const Bluebird = require('bluebird');
 const request = require('request');
 
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const PromisifierUtils = require('../../util/promisifier-utils');
 
 const userComponentCB = require('../user');
@@ -55,6 +55,7 @@ module.exports = function (req, res, next) {
 	// 			-> update auth0 user metadata
 	// }
 	if (req.user && req.user.sub) {
+		// TODO(jliarte): 28/06/18 handle user grouping when same email is received
 		// TODO(jliarte): 28/06/18 use Async?
 		userController.getUserId(req.user.sub, (existingUser) => {
 			if (!existingUser) {

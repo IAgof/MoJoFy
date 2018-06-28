@@ -1,4 +1,4 @@
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 const Acl = require('../access/acl');
 const Response = require('../../network/response');

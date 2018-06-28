@@ -1,6 +1,6 @@
 const model = require('./model');
 const Store = require('./store');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 exports.list = list;
 exports.add = add;

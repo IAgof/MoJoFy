@@ -6,7 +6,7 @@ const mime = require('mime');
 const Acl = require('./acl').middleware;
 const Config = require('../../config');
 const Response = require('../../network/response');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const Controller = require('./');
 
 const MAX_UPLOAD_SIZE = Config.max_video_upload_byte_size;

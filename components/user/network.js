@@ -25,6 +25,22 @@ router.get('/exist', function(req, res, next) {
 	});
 });
 
+router.get('/getId', function(req, res, next) {
+	if (!req.user) {
+		return Response.error(req, res, next, 401, 'Unauthorized');
+	}
+	Controller.getUserId(req.user.sub, function(user, err, code) {
+		if (!err) {
+			if (!user) {
+				return Response.error(req, res, next, 404, 'User not found!');
+			}
+			Response.success(req, res, next, (code || 200), { id: user._id } );
+		} else {
+			Response.error(req, res, next, (code || 500), err);
+		}
+	});
+});
+
 router.get('/', function(req, res, next) {
 	Controller.list(req.user, function(data, err, code) {
 		if (!err) {

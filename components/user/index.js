@@ -3,7 +3,7 @@ const FileUpload = require('../file');
 const merge = require('util-merge');
 const Model = require('./model');
 const Pass = require('../access/password');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const config = require('../../config');
 
 const Store = require('./store');
@@ -42,10 +42,10 @@ function get(id, token, includePass, callback) {
 				}
 				if (!data.videoCount) {
 					setVideoCounter(id, function(data) {
-						callback(data, null);
+						return callback(data, null);
 					});
 				} else {
-					callback(data, null);
+					return callback(data, null);
 				}
 			});
 		} else {
@@ -55,6 +55,7 @@ function get(id, token, includePass, callback) {
 }
 
 function getUserId(authId, callback) {
+	logger.debug("user.getUserId method " + authId);
 	const params = {
 		filters: [{
 			field: 'authId',
