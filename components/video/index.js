@@ -32,7 +32,7 @@ function get(id, callback, includeOriginal) {
 	Store.get(id, function(data) {
 		if (data) {
 			data._id = id;
-			if(!includeOriginal) {
+			if (!includeOriginal) {
 				delete data.original;
 			}
 
@@ -61,7 +61,7 @@ function add(data, token, callback) {
 		data.owner = token.sub;
 	}
 
-	if(data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
+	if (data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
 		// Store file in a proper place ^^
 		FileUpload.processUploadedVideo(data.file, function(uploaded, metadata) {
 			addVideoData(data, uploaded, metadata);
@@ -71,7 +71,7 @@ function add(data, token, callback) {
 
 			Store.upsert(model, function(result, id) {
 				if (result, id) {
-					const video = Object.assign({}, model)
+					const video = Object.assign({}, model);
 					video._id = id;
 					generate_download_codes(id);
 					notify_video_upload(video);
@@ -85,7 +85,6 @@ function add(data, token, callback) {
 				}
 			});
 		});
-
 	} else {
 		callback(null, 'Invalid video sent', 400);
 	}
@@ -249,7 +248,7 @@ function list(user, callback, props) {
 			const fieldsToQuery = ['title', 'description', 'tag', 'locationName'];
 			params.query = [];
 
-			for (var i = 0; i < fieldsToQuery.length; i++) {
+			for (let i = 0; i < fieldsToQuery.length; i++) {
 				const q = {
 					field: fieldsToQuery[i],
 					value: props.q
@@ -288,7 +287,7 @@ function list(user, callback, props) {
 			value: token.sub
 		};
 
-		if(!params.filters) {
+		if (!params.filters) {
 			params.filters = [onlyMine];
 		} else {
 			params.filters.push(onlyMine);
@@ -298,7 +297,7 @@ function list(user, callback, props) {
 }
 
 function insertFilter(fieldName, operator, value, params) {
-	if(!params.filters) {
+	if (!params.filters) {
 		params.filters = [];
 	}
 	params.filters.push({
@@ -319,31 +318,31 @@ function insertFilter(fieldName, operator, value, params) {
 // 	Like.add(entity, callback);
 // }
 
-function getVideoOwner(result, token, callback) {
-	if (result.length === 0) {
-		return callback(result, null, 200);
+function getVideoOwner(videos, token, callback) {
+	if (videos.length === 0) {
+		return callback(videos, null, 200);
 	}
 	
 	let results = 0;
 	
-	for (let i = 0; i < result.length; i++) {
-		delete result[i].original;
-		const video = result[i];
+	for (let i = 0; i < videos.length; i++) {
+		delete videos[i].original;
+		const video = videos[i];
 		User.get(video.owner, token, false, function (data) {
 			if (data) {
 				video.ownerData = data;
 			}
-			if (++results === result.length) {
-				callback(result, null, 200);
+			if (++results === videos.length) {
+				callback(videos, null, 200);
 			}
 		});
 	}
 }
 
 function query(params, token, callback) {
-	Store.list(params, function(result) {
-		if(result) {
-			getVideoOwner(result, token, callback);
+	Store.list(params, function(videos) {
+		if (videos) {
+			getVideoOwner(videos, token, callback);
 		} else {
 			callback(null, 'Unable to list videos', 500);
 		}
@@ -353,7 +352,7 @@ function query(params, token, callback) {
 function remove(id, token, callback) {
 
 	Store.remove(id, function(data) {
-		if(data) {
+		if (data) {
 			data._id = id;
 			callback(data, null);
 		} else {
@@ -381,7 +380,7 @@ function download(id, code, owner, callback) {
 		if (valid) {
 			get(id, function (video, error, code) {
 				let responseUrl = null;
-				if(!error && typeof video === 'object') {
+				if (!error && typeof video === 'object') {
 					responseUrl = video.original || video.video;
 				}
 				callback(responseUrl, error, code);
@@ -399,7 +398,7 @@ function setMetadata(data, metadata) {
 
 	let videoStream = -1;
 	for (var i = 0; i < metadata.streams.length; i++) {
-		if(metadata.streams[i].codec_type === 'video') {
+		if (metadata.streams[i].codec_type === 'video') {
 			videoStream = i;
 			break;
 		}
@@ -407,7 +406,7 @@ function setMetadata(data, metadata) {
 
 	data.length = metadata.format.duration;
 	data.size = metadata.format.size;
-	if(videoStream > -1) {
+	if (videoStream > -1) {
 		data.format = metadata.streams[videoStream].codec_name;
 		data.dimensions = metadata.streams[videoStream].width + 'x' + metadata.streams[videoStream].height;
 		data.ratio = metadata.streams[videoStream].display_aspect_ratio;

@@ -28,6 +28,7 @@ router.get('/exist', function(req, res, next) {
 router.get('/', function(req, res, next) {
 	Controller.list(req.user, function(data, err, code) {
 		if (!err) {
+			data.forEach(item => { delete item.authId; });
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -60,6 +61,7 @@ router.put('/', Acl, Upload.single('pic'), function(req, res, next) {
 router.get('/:id', function(req, res, next) {
   Controller.get(req.params.id, req.user, false, function(data, err, code) {
 		if (!err) {
+			delete data.authId;
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);

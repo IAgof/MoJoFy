@@ -1,7 +1,11 @@
+const Bluebird = require('bluebird');
 const request = require('request');
-const logger = require('../../logger');
 
-const userController = require('../user');
+const logger = require('../../logger');
+const PromisifierUtils = require('../../util/promisifier-utils');
+
+const userComponentCB = require('../user');
+const userController = Bluebird.promisifyAll(userComponentCB, { promisifier: PromisifierUtils.noErrPromisifier });
 
 function getUserInfo(authorization) {
 	return new Promise((resolve, reject) => {
@@ -14,7 +18,6 @@ function getUserInfo(authorization) {
 		};
 
 		request(options, function (error, response, userInfo) {
-			logger.debug('calling userinfo endpoint');
 			if (!error && response.statusCode == 200) {
 				resolve(userInfo);
 			} else  {
@@ -22,7 +25,25 @@ function getUserInfo(authorization) {
 			}
 		});
 	});
+}
 
+function createFromUserInfo(req) {
+	return getUserInfo(req.headers.authorization)
+		.then(userInfo => {
+			userInfo = JSON.parse(userInfo);
+			user = {authId: req.user.sub};
+			user.username = userInfo.nickname;
+			user.name = userInfo.name;
+			user.email = userInfo.email;
+			user.verified = userInfo.email_verified;
+			user.updated_at = userInfo.updated_at;
+			user.pic = userInfo.picture;
+
+			return userController.addAsync(user, null);
+		});
+	// .then(user => {
+	// 	logger.debug("Created user model: ", user);
+	// });
 }
 
 module.exports = function (req, res, next) {
@@ -34,30 +55,18 @@ module.exports = function (req, res, next) {
 	// 			-> update auth0 user metadata
 	// }
 	if (req.user && req.user.sub) {
-		logger.debug("Request with user: ", req.user);
-		logger.debug("request headers are: ", req.headers);
-		logger.debug("auth is: ", req.headers.authorization.split(' ')[1]);
-
-		userController.get(req.user.sub, null, false, (existingUser, errorCode) => {
-			logger.debug("existing user is ", existingUser);
+		// TODO(jliarte): 28/06/18 use Async?
+		userController.getUserId(req.user.sub, (existingUser) => {
 			if (!existingUser) {
-				logger.debug("User with id " + req.user.sub + " not found, creating new user...");
-				getUserInfo(req.headers.authorization)
-					.then(userInfo => {
-						userInfo = JSON.parse(userInfo);
-						user = { id: req.user.sub };
-						user.username = userInfo.nickname;
-						user.name = userInfo.name;
-						user.email = userInfo.email;
-						user.verified = userInfo.email_verified;
-						user.updated_at = userInfo.updated_at;
-						user.pic = userInfo.picture;
-
-						logger.debug("Created user model: ", user);
-					});
-
+				logger.debug("User with authId " + req.user.sub + " not found, creating new user...");
+				return createFromUserInfo(req)
+					.then(user => req.user.userProfile = user)
+					.then(() => next());
+			} else {
+				req.user.userProfile = existingUser;
+				return next();
 			}
 		});
 	}
-	next();
+	return next();
 };

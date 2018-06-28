@@ -13,8 +13,11 @@ const logger = new winston.Logger({
         // - Write all logs error (and below) to `error.log`.
         //
         new (winston.transports.Console)({
-            timestamp: tsFormat,
-            colorize: true,
+          timestamp: tsFormat,
+          // TODO(jliarte): 28/06/18 refactor logger https://stackoverflow.com/a/44983602
+          // https://gist.github.com/ludwig/b47b5de4a4c53235825af3b4cef4869a
+          // label: getLabel(callingModule),
+	        colorize: true,
         }),
         // new (winston.transports.File)({ filename: 'winston.log' })
     ]
