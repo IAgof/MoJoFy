@@ -5,7 +5,7 @@ const logger = require('../../logger')(module);
 const PromisifierUtils = require('../../util/promisifier-utils');
 
 const userComponentCB = require('../user');
-const userController = Bluebird.promisifyAll(userComponentCB, { promisifier: PromisifierUtils.noErrPromisifier });
+const userController = Bluebird.promisifyAll(userComponentCB, {promisifier: PromisifierUtils.noErrPromisifier});
 
 function getUserInfo(authorization) {
 	return new Promise((resolve, reject) => {
@@ -20,8 +20,8 @@ function getUserInfo(authorization) {
 		request(options, function (error, response, userInfo) {
 			if (!error && response.statusCode == 200) {
 				resolve(userInfo);
-			} else  {
-				reject({ error: error, code: response.statusCode });
+			} else {
+				reject({error: error, code: response.statusCode});
 			}
 		});
 	});
@@ -41,9 +41,6 @@ function createFromUserInfo(req) {
 
 			return userController.addAsync(user, null);
 		});
-	// .then(user => {
-	// 	logger.debug("Created user model: ", user);
-	// });
 }
 
 module.exports = function (req, res, next) {
@@ -56,18 +53,23 @@ module.exports = function (req, res, next) {
 	// }
 	if (req.user && req.user.sub) {
 		// TODO(jliarte): 28/06/18 handle user grouping when same email is received
-		// TODO(jliarte): 28/06/18 use Async?
-		userController.getUserId(req.user.sub, (existingUser) => {
-			if (!existingUser) {
-				logger.debug("User with authId " + req.user.sub + " not found, creating new user...");
-				return createFromUserInfo(req)
-					.then(user => req.user.userProfile = user)
-					.then(() => next());
-			} else {
-				req.user.userProfile = existingUser;
-				return next();
-			}
-		});
+		userController.getUserIdAsync(req.user.sub)
+			.then(existingUser => {
+				if (!existingUser) {
+					logger.debug("User with authId " + req.user.sub + " not found, creating new user...");
+					return createFromUserInfo(req)
+				} else {
+					return existingUser;
+				}
+			})
+			.then(user => req.user.userProfile = user)
+			.then(() => next())
+			.catch(err => {
+				logger.debug("Error on auth0 user middleware ", err);
+				next();
+			});
+	} else {
+		logger.error("exiting");
+		return next();
 	}
-	return next();
 };

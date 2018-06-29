@@ -39,7 +39,7 @@ Routes(server);
 // TODO(jliarte): 28/06/18 generic error catcher, maybe extract/improve this middleware
 server.use(function (err, req, res, next) {
 	console.log(`Error in method ${req.method}: ${err.message}`);
-	res.status(err.status).json({ error: err.message });
+	res.status(err.status || 500).json({ error: err.message });
 });
 
 server.listen(port);

@@ -201,6 +201,7 @@ function updateNewPoster(updatedFiles, videoId) {
 		});
 }
 
+// TODO(jliarte): 28/06/18 refactor method signature!!
 function list(user, callback, props) {
 	logger.debug("Querying video list...");
 	const params = {};
@@ -210,7 +211,6 @@ function list(user, callback, props) {
 		showOnlyPublishedVideos = false;
 	} 
 	if (props && typeof props === 'object') {
-
 		if (props.limit && typeof props.limit === 'number' && props.limit >= 0) {
 			params.limit = props.limit;
 		}
@@ -329,9 +329,7 @@ function getVideoOwner(videos, token, callback) {
 	for (let i = 0; i < videos.length; i++) {
 		delete videos[i].original; // TODO(jliarte): this should be in another place
 		const video = videos[i];
-		logger.debug("...for video id ", video._id);
 		User.get(video.owner, token, false, function (data) {
-			logger.debug("...data is ", data);
 			if (data) {
 				video.ownerData = data;
 			}
