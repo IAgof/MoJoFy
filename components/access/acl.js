@@ -11,7 +11,9 @@ const Config = require('../../config');
 exports.acl = acl;
 exports.middleware = middleware;
 exports.token = token;
-
+exports.getUser = getUser;
+exports.getUserId = getUserId;
+exports.getUserRole = getUserRole;
 
 // TO_DO: 
 // THIS SHALL BE RECOVERED FROM DATABASE.
@@ -73,7 +75,7 @@ function middleware(req, res, next, operation) {
 	const token = req.user;
 	logger.debug("req user = token is ", req.user);
 
-	const role = token.role || 'guest';
+	const role = getUserRole(req) || 'guest';
 	const resource = req.baseUrl.split('/')[1].toLowerCase();
 	// const action = getAction(req, token);
 	const action = operation || actionMethod(req, token);
@@ -81,7 +83,6 @@ function middleware(req, res, next, operation) {
 	logger.debug('role: ' + role + '; resource: ' + resource + '; action: ' + action + ';');
 
 	acl.query(role, resource, action, function(err, allow) {
-
 		if (err) {
 			Response.error(req, res, next, 500, 'There was an error performing access control');
 		} else {
@@ -155,7 +156,6 @@ function actionMethod(req) {
 }
 
 function token(user) {
-
 	return JWT.sign({
 		iss: Config.jwt_issuer,
 		sub: user._id,
@@ -164,4 +164,28 @@ function token(user) {
 	}, Config.jwt_secret, { 
 		expiresIn: Config.jwt_expires 
 	});
+}
+
+function getUser(req) {
+	let userProfile;
+	if (req.user && req.user.userProfile) {
+		userProfile = req.user.userProfile;
+	}
+	return userProfile;
+}
+
+function getUserId(req) {
+	let id = -1;
+	if (req.user && req.user.userProfile && req.user.userProfile._id) {
+		id = req.user.userProfile._id;
+	}
+	return id;
+}
+
+function getUserRole(req) {
+	let role = '';
+	if (req.user && req.user.userProfile && req.user.userProfile.role) {
+		role = req.user.userProfile.role;
+	}
+	return role;
 }

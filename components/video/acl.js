@@ -1,5 +1,7 @@
 const logger = require('../../logger')(module);
 
+const getUserId = require("../access/acl").getUserId;
+const getUserRole = require("../access/acl").getUserRole;
 const Acl = require('../access/acl');
 const Response = require('../../network/response');
 
@@ -28,8 +30,13 @@ exports.middleware = function(req, res, next) {
 	return false;
 };
 
+// TODO(jliarte): 29/06/18 shoult receive token or user??
 exports.query = function(token, operation, callback) {
-	Acl.acl.query(token.role, 'video', operation, function(err, allow) {
+	let role;
+	if (token.userProfile && token.userProfile.role) {
+		role = token.userProfile.role;
+	}
+	Acl.acl.query(role, 'video', operation, function(err, allow) {
 		callback(allow);
 	});
 	
@@ -37,22 +44,22 @@ exports.query = function(token, operation, callback) {
 };
 
 function put(req, res, next) {
-	var id = req.params.id || req.params._id || null;
-	var action = '';
+	const id = req.params.id || req.params._id || null;
+	let action = '';
 
 	Store.get(id, function(video) {
 		if (!video) {
 			// TODO(jliarte): improve this error handling!
-			return Response.error(req, res, next, 404, 'Video id not found');
+			return Response.error(req, res, next, 404, 'Video not found');
 		}
-		if (video && video.owner === req.user.sub) {
+		if (video && video.owner === getUserId(req)) {
 			action = 'update_own';
 		} else {
 			action = 'update_other';
 		}
 		logger.debug("video ACL action is ", action);
 
-		Acl.acl.query(req.user.role, 'video', action, function (err, allow) {
+		Acl.acl.query(getUserRole(req), 'video', action, function (err, allow) {
 			if (allow) {
 				removePrivilegedFields(req, res, next);
 			} else {
@@ -64,7 +71,7 @@ function put(req, res, next) {
 }
 
 function removePrivilegedFields(req, res, next) {
-	Acl.acl.query(req.user.role, 'video', 'update_privileged_fields', function (err, allow) {
+	Acl.acl.query(getUserRole(req), 'video', 'update_privileged_fields', function (err, allow) {
 		if (!allow) {
 			delete req.body.featured;
 			delete req.body.verified;
@@ -80,18 +87,18 @@ function removePrivilegedFields(req, res, next) {
 }
 
 function remove(req, res, next) {
-	var id = req.params.id || req.params._id || null;
-	var action = '';
+	const id = req.params.id || req.params._id || null;
+	let action = '';
 
 	Store.get(id, function(data) {		
-		if(data && data.owner === req.user.sub) {
+		if (data && data.owner === getUserId(req)) {
 			action = 'remove_own';
 		} else {
 			action = 'remove_other';
 		}
 
-		Acl.acl.query(req.user.role, 'video', action, function(err, allow) {
-			if(allow) {
+		Acl.acl.query(getUserRole(req), 'video', action, function(err, allow) {
+			if (allow) {
 				next();
 			} else {
 				Response.error(req, res, next, 403, 'Unauthorized');
@@ -101,24 +108,22 @@ function remove(req, res, next) {
 }
 
 function download(req, res, next) {
-	var id = req.params.id || req.params._id || null;
-	var action = 'download_other';
+	const id = req.params.id || req.params._id || null;
+	let action = 'download_other';
 
-	if(!req.user) {
+	if (!req.user) {
 		logger.info('User not logged tries to download video');
 		req.user = {};
 		req.query.code = req.query.code || null;
 		next();
-
-	} else {		
-
-		Store.get(id, function(data) {		
-			if(data && data.owner === req.user.sub) {
+	} else {
+		Store.get(id, function(data) {
+			if (data && data.owner === getUserId(req)) {
 				action = 'download_own';
 			}
 
-			Acl.acl.query(req.user.role, 'video', action, function(err, allow) {
-				if(allow) {
+			Acl.acl.query(getUserRole(req), 'video', action, function(err, allow) {
+				if (allow) {
 					logger.info('I am the owner of that video');
 					req.owner = true;
 				} else {

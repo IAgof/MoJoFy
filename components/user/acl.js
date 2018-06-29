@@ -16,10 +16,12 @@ exports.middleware = function(req, res, next) {
 	return false;
 };
 
-exports.query = function(token, operation, callback) {
-	const role = token.role || 'guest';
+exports.query = function(user, operation, callback) {
+	let role = 'guest';
+	if (user.role) {
+		role = user.role;
+	}
 
-	logger.debug("querying Acl.acl");
 	Acl.acl.query(role, 'user', operation, function(err, allow) {
 		callback(allow);
 	});

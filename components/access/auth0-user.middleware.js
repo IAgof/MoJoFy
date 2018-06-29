@@ -69,7 +69,7 @@ module.exports = function (req, res, next) {
 				next();
 			});
 	} else {
-		logger.error("exiting");
+		logger.debug("exiting");
 		return next();
 	}
 };

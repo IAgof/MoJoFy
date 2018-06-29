@@ -1,4 +1,5 @@
 const express = require('express');
+const getUserId = require("../access/acl").getUserId;
 const Acl = require('./acl').middleware;
 const Response = require('../../network/response');
 const Controller = require('./');
@@ -6,13 +7,13 @@ const Controller = require('./');
 const router = express.Router();
 
 router.post('/', Acl,  function(req, res, next) {
-	const uid = req.user.sub || -1;
+	const uid = getUserId(req) || -1;
 	const clientId = req.body.client || null;
 	const videoId = req.body.video || null;
 	const method = req.body.method || null;
 
 	Controller.add(uid, clientId, videoId, method, function(data, err, code) {
-		if(!err) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -22,7 +23,7 @@ router.post('/', Acl,  function(req, res, next) {
 
 router.get('/:id', Acl,  function(req, res, next) {
 	Controller.get(req.params.id, function(data, err, code) {
-		if(!err) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);

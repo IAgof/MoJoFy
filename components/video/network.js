@@ -1,8 +1,9 @@
 const http = require('http');
 const https = require('https');
 const express = require('express');
-const multer  = require('multer');
+const multer = require('multer');
 const mime = require('mime');
+const getUser = require("../access/acl").getUser;
 const Acl = require('./acl').middleware;
 const Config = require('../../config');
 const Response = require('../../network/response');
@@ -11,16 +12,16 @@ const Controller = require('./');
 
 const MAX_UPLOAD_SIZE = Config.max_video_upload_byte_size;
 
-const Upload = multer( { dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE } );
+const Upload = multer({dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE});
 
-const router = express.Router({ mergeParams: true });
+const router = express.Router({mergeParams: true});
 
 // Nested components
 router.use('/product_type', require('../product_type/network'));
 router.use('/lang', require('../video_lang/network'));
 router.use('/category', require('../video_category/network'));
 
-router.get('/', function(req, res, next) {
+router.get('/', function (req, res, next) {
 	let params = {};
 	if (req.query && typeof req.query === 'object') {
 		params.limit = Number(req.query.limit) || 20;
@@ -38,18 +39,18 @@ router.get('/', function(req, res, next) {
 		}
 	}
 
-	Controller.list(req.user, function(data, err, code) {
+	Controller.list(getUser(req), params, function (data, err, code) {
 		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
 		}
-	}, params);
+	});
 });
 
-router.get('/:id/original', Acl, function(req, res, next) {
-	Controller.download(req.params.id, req.query.code, req.owner, function(data, err, code) {
-		if(!err) {
+router.get('/:id/original', Acl, function (req, res, next) {
+	Controller.download(req.params.id, req.query.code, req.owner, function (data, err, code) {
+		if (!err) {
 			const splitUrl = data.split('/');
 			const filename = splitUrl[splitUrl.length - 1];
 			const type = mime.getType(filename);
@@ -62,7 +63,7 @@ router.get('/:id/original', Acl, function(req, res, next) {
 			if (data.startsWith('https')) {
 				transport = https;
 			}
-			transport.get(data, function(file) {
+			transport.get(data, function (file) {
 				file.pipe(res);
 			});
 		} else {
@@ -71,19 +72,20 @@ router.get('/:id/original', Acl, function(req, res, next) {
 	});
 });
 
-router.get('/user/:id', Acl, function(req, res, next) {
-	Controller.query({filters: [{field: 'owner', operator: '=', value: req.params.id}]}, req.user, function(data, err, code) {
-		if(!err) {
-			Response.success(req, res, next, (code || 200), data);
-		} else {
-			Response.error(req, res, next, (code || 500), err);
-		}
-	});
+router.get('/user/:id', Acl, function (req, res, next) {
+	Controller.query({filters: [{field: 'owner', operator: '=', value: req.params.id}]}, getUser(req),
+		function (data, err, code) {
+			if (!err) {
+				Response.success(req, res, next, (code || 200), data);
+			} else {
+				Response.error(req, res, next, (code || 500), err);
+			}
+		});
 });
 
-router.get('/:id', function(req, res, next) {
-  	Controller.get(req.params.id, function(data, err, code) {
-		if(!err) {
+router.get('/:id', function (req, res, next) {
+	Controller.get(req.params.id, function (data, err, code) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -92,11 +94,11 @@ router.get('/:id', function(req, res, next) {
 });
 
 // router.post('/', Acl, Upload.single('file'), function(req, res, next) {
-router.post('/', Upload.single('file'), function(req, res, next) {
+router.post('/', Upload.single('file'), function (req, res, next) {
 	req.body.file = req.file;
 
-	Controller.add(req.body, req.user, function(data, err, code) {
-		if(!err) {
+	Controller.add(req.body, getUser(req), function (data, err, code) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -105,7 +107,7 @@ router.post('/', Upload.single('file'), function(req, res, next) {
 });
 
 // router.put('/', Upload.single('file'), function(req, res, next) {
-router.put('/:id', Acl, Upload.any(), function(req, res, next) {
+router.put('/:id', Acl, Upload.any(), function (req, res, next) {
 	req.body.files = req.files;
 	req.body.id = req.params.id;
 	logger.info("Handling video " + req.params.id + " put");
@@ -117,8 +119,8 @@ router.put('/:id', Acl, Upload.any(), function(req, res, next) {
 		}
 	}
 
-	Controller.update(req.body, req.user, function(data, err, code) {
-		if(!err) {
+	Controller.update(req.body, getUser(req), function (data, err, code) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);
@@ -138,9 +140,9 @@ router.put('/:id', Acl, Upload.any(), function(req, res, next) {
 // });
 
 
-router.delete('/:id', Acl,  function(req, res, next) {
-  	Controller.remove(req.params.id, req.user, function(data, err, code) {
-		if(!err) {
+router.delete('/:id', Acl, function (req, res, next) {
+	Controller.remove(req.params.id, getUser(req), function (data, err, code) {
+		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
 		} else {
 			Response.error(req, res, next, (code || 500), err);

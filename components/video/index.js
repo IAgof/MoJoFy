@@ -1,12 +1,10 @@
 const FileUpload = require('../file');
 
-// const Acl = require('./acl');
 const Model = require('./model');
 const Store = require('./store');
 const logger = require('../../logger')(module);
 const Config = require('../../config');
 
-const Like = require('../like');
 const User = require('../user');
 const DownloadCode = require('../download-code');
 const Notifications = require('../email_notifications');
@@ -20,14 +18,13 @@ exports.update = update;
 exports.remove = remove;
 exports.query = query;
 exports.count = count;
-// exports.like = like;
 exports.download = download;
 
 const DEFAULT_CODES = 5;
 
 
 // Internal functions
-
+// TODO(jliarte): 29/06/18 refactor function signature
 function get(id, callback, includeOriginal) {
 	Store.get(id, function(data) {
 		if (data) {
@@ -54,11 +51,15 @@ function notify_video_upload(video) {
 	Notifications.notifyVideoUploaded(video);
 }
 
-function add(data, token, callback) {
-	logger.debug("Adding video of user ", token);
+function add(data, requestingUser, callback) {
+	logger.debug("Adding video of user ", requestingUser);
 	if (!data.owner) {
-		// TODO(jliarte): 27/06/18 check that there's user!!!!
-		data.owner = token.sub;
+		if (requestingUser && requestingUser._id) {
+			data.owner = requestingUser._id;
+		} else {
+			// TODO(jliarte): 29/06/18 shouldn't this go to router???
+			callback(null, 'Unauthorized: only authorized users can upload videos', 401);
+		}
 	}
 
 	if (data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
@@ -67,7 +68,7 @@ function add(data, token, callback) {
 			addVideoData(data, uploaded, metadata);
 			data.date = new Date();
 			const model = Model.set(data);
-			logger.debug(model);
+			logger.debug("video to create, after modelate: ", model);
 
 			Store.upsert(model, function(result, id) {
 				if (result, id) {
@@ -79,7 +80,7 @@ function add(data, token, callback) {
 					// TODO:(DevStarlight) 24/04/2018 We have set a timeout of 1000ms to give time to process the video 
 					setTimeout(function () {
 						callback(video, null, 201);
-					}, 1000);
+					}, 100);
 				} else {
 					callback(null, 'Unable to add the video', 500);
 				}
@@ -98,7 +99,7 @@ function addVideoData(data, uploaded, metadata) {
 	setMetadata(data, metadata);
 }
 
-function update(data, token, callback) {
+function update(data, requestingUser, callback) {
 	if (!data.id && !data._id) {
 		logger.error("Unable to update video without id!");
 		return callback(null, 'No video id provided', 400);
@@ -201,13 +202,12 @@ function updateNewPoster(updatedFiles, videoId) {
 		});
 }
 
-// TODO(jliarte): 28/06/18 refactor method signature!!
-function list(user, callback, props) {
+function list(user, props, callback) {
 	logger.debug("Querying video list...");
 	const params = {};
 	let showOnlyPublishedVideos = Config.showOnlyPublishedVideos;
 	// user is editor or it is in its own gallery
-	if ((user != undefined) && (user.role == 'editor' || user.sub == props.user)) {
+	if ((user != undefined) && (user.role == 'editor' || user.id == props.user)) {
 		showOnlyPublishedVideos = false;
 	} 
 	if (props && typeof props === 'object') {
@@ -318,7 +318,7 @@ function insertFilter(fieldName, operator, value, params) {
 // 	Like.add(entity, callback);
 // }
 
-function getVideoOwner(videos, token, callback) {
+function getVideoOwner(videos, requestingUser, callback) {
 	logger.debug("Video.getVideoOwner");
 	if (videos.length === 0) {
 		return callback(videos, null, 200);
@@ -329,7 +329,7 @@ function getVideoOwner(videos, token, callback) {
 	for (let i = 0; i < videos.length; i++) {
 		delete videos[i].original; // TODO(jliarte): this should be in another place
 		const video = videos[i];
-		User.get(video.owner, token, false, function (data) {
+		User.get(video.owner, requestingUser, false, function (data) {
 			if (data) {
 				video.ownerData = data;
 			}
@@ -341,17 +341,17 @@ function getVideoOwner(videos, token, callback) {
 	}
 }
 
-function query(params, token, callback) {
+function query(params, requestingUser, callback) {
 	Store.list(params, function(videos) {
 		if (videos) {
-			getVideoOwner(videos, token, callback);
+			getVideoOwner(videos, requestingUser, callback);
 		} else {
 			callback(null, 'Unable to list videos', 500);
 		}
 	});
 }
 
-function remove(id, token, callback) {
+function remove(id, requestingUser, callback) {
 	Store.remove(id, function(data) {
 		if (data) {
 			data._id = id;

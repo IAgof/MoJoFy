@@ -234,6 +234,7 @@ module.exports = {
 	_ns: namespace,
 	_dataset: dataset,
 	_key: Key,
+	// TODO(jliarte): 29/06/18 WTF?!? 
 	// ToDo: Manage indexes!!
 	index: function () { return true; },
 	get: get,
