@@ -27,20 +27,25 @@ function getUserInfo(authorization) {
 	});
 }
 
-function createFromUserInfo(req) {
-	return getUserInfo(req.headers.authorization)
-		.then(userInfo => {
-			userInfo = JSON.parse(userInfo);
-			user = {authId: req.user.sub};
-			user.username = userInfo.nickname;
-			user.name = userInfo.name;
-			user.email = userInfo.email;
-			user.verified = userInfo.email_verified;
-			user.updated_at = userInfo.updated_at;
-			user.pic = userInfo.picture;
+function createOrUpdateUserWithUserInfo(existingUser, userInfo) {
+	if (!existingUser) {
+		existingUser = { email: userInfo.email };
+	}
+	// (jliarte): 2/07/18 Update all fields but email
+	// TODO(jliarte): 2/07/18 manage authId conflicts - associate accounts! 
+	existingUser.authId = userInfo.sub;
+	existingUser.username = userInfo.nickname;
+	existingUser.name = userInfo.name;
+	existingUser.email = userInfo.email;
+	existingUser.verified = userInfo.email_verified;
+	existingUser.updated_at = userInfo.updated_at;
+	existingUser.pic = userInfo.picture;
 
-			return userController.addAsync(user, null);
-		});
+	if (existingUser._id) {
+		return userController.updateAsync(existingUser, null, null);
+	} else {
+		return userController.addAsync(existingUser, null);
+	}
 }
 
 module.exports = function (req, res, next) {
@@ -52,15 +57,24 @@ module.exports = function (req, res, next) {
 	// 			-> update auth0 user metadata
 	// }
 	if (req.user && req.user.sub) {
-		// TODO(jliarte): 28/06/18 handle user grouping when same email is received
-		userController.getUserIdAsync(req.user.sub)
+		const authId = req.user.sub;
+		let userInfo = {};
+		return getUserInfo(req.headers.authorization)
+			.then(data => {
+				userInfo = JSON.parse(data);
+				return userController.getUserIdAsync(authId);
+			})
 			.then(existingUser => {
 				if (!existingUser) {
-					logger.debug("User with authId " + req.user.sub + " not found, creating new user...");
-					return createFromUserInfo(req)
+					logger.debug("User with authId " + authId + " not found, querying by email...");
+					// TODO(jliarte): 28/06/18 handle user grouping when same email is received
+					return userController.getUserByEmailAsync(userInfo.email);
 				} else {
 					return existingUser;
 				}
+			})
+			.then(existingUser => {
+				return createOrUpdateUserWithUserInfo(existingUser, userInfo);
 			})
 			.then(user => req.user.userProfile = user)
 			.then(() => next())

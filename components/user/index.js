@@ -13,6 +13,7 @@ const Video = require('../video');
 
 exports.get = get;
 exports.getUserId = getUserId;
+exports.getUserByEmail = getUserByEmail;
 exports.list = list;
 exports.add = add;
 exports.exist = exist;
@@ -62,6 +63,25 @@ function getUserId(authId, callback) {
 			field: 'authId',
 			operator: '=',
 			value: authId
+		}],
+		limit: 1
+	};
+	query(params, null, false, function (users) {
+		if (!users || users.length === 0) {
+			callback(null);
+		} else {
+			callback(users[0]);
+		}
+	});
+}
+
+function getUserByEmail(email, callback) {
+	logger.debug("user.getUserByEmail method " + email);
+	const params = {
+		filters: [{
+			field: 'email',
+			operator: '=',
+			value: email
 		}],
 		limit: 1
 	};
