@@ -1,6 +1,7 @@
 const Bluebird = require('bluebird');
 const request = require('request');
 
+const auth0_metadata_ns = require('../../config').auth0_metadata_ns;
 const logger = require('../../logger')(module);
 const PromisifierUtils = require('../../util/promisifier-utils');
 
@@ -32,7 +33,7 @@ function createOrUpdateUserWithUserInfo(existingUser, userInfo) {
 		existingUser = { email: userInfo.email };
 	}
 	// (jliarte): 2/07/18 Update all fields but email
-	// TODO(jliarte): 2/07/18 manage authId conflicts - associate accounts! 
+	// TODO(jliarte): 2/07/18 manage authId conflicts - associate accounts!
 	existingUser.authId = userInfo.sub;
 	existingUser.username = userInfo.nickname;
 	existingUser.name = userInfo.name;
@@ -40,6 +41,11 @@ function createOrUpdateUserWithUserInfo(existingUser, userInfo) {
 	existingUser.verified = userInfo.email_verified;
 	existingUser.updated_at = userInfo.updated_at;
 	existingUser.pic = userInfo.picture;
+
+	// TODO(jliarte): 4/07/18 let backend to be the central role info source? now it's auth0
+	if (userInfo[auth0_metadata_ns + 'role'] && userInfo[auth0_metadata_ns + 'role'] != '') {
+		existingUser.role = userInfo[auth0_metadata_ns + 'role'];
+	}
 
 	if (existingUser._id) {
 		return userController.updateAsync(existingUser, null, null);

@@ -17,8 +17,10 @@ const config = {
 	jwt_expires: process.env.JWT_TOKEN_EXPIRATION || '1y',		// Format guide: https://github.com/zeit/ms
 	jwt_issuer: process.env.JWT_ISSUER,
 	auth0_audience: process.env.AUTH0_AUDIENCE,
+	auth0_metadata_ns: process.env.AUTH0_METADATA_NS,
 
-	// Databases
+
+// Databases
 	persistence_db: process.env.BACKEND_PERSISTENT_DB || 'datastore',
 	search_db: process.env.BACKEND_SEARCH_DB || 'elasticsearch',
 	db_table_prefix: process.env.DB_TABLE_PREFIX || 'tableprefix',
