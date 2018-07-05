@@ -203,11 +203,12 @@ function updateNewPoster(updatedFiles, videoId) {
 }
 
 function list(user, props, callback) {
-	logger.debug("Querying video list...");
+	logger.debug("Querying video list... from user ", user);
 	const params = {};
 	let showOnlyPublishedVideos = Config.showOnlyPublishedVideos;
 	// user is editor or it is in its own gallery
-	if ((user != undefined) && (user.role == 'editor' || user.id == props.user)) {
+	let userId = user.id || user._id;
+	if ((user != undefined) && (user.role == 'editor' || userId == props.user)) {
 		showOnlyPublishedVideos = false;
 	} 
 	if (props && typeof props === 'object') {
@@ -274,6 +275,7 @@ function list(user, props, callback) {
 		
 	}
 
+	logger.debug("about to query videos, with params", params);
 	query(params, user, callback);
 
 	/*
