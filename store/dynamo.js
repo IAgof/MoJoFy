@@ -281,7 +281,7 @@ function get(table, key, cb) {
  * @param {dynamoSearchCallback} cb Callback on query results (or error)
  */
 function query(table, params, cb) {
-	logger.debug('[dynamo] querying ', table);
+	logger.debug('[dynamo] querying ', table, " with params ", params);
 	if (typeof params === 'function') {
 		cb = params;
 		params = undefined;

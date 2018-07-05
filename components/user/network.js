@@ -2,6 +2,7 @@ const express = require('express');
 const getUserId = require("../access/acl").getUserId;
 const getUser = require("../access/acl").getUser;
 const Acl = require('./acl').middleware;
+const logger = require('../../logger')(module);
 const Response = require('../../network/response');
 const Controller = require('./');
 const multer = require('multer');
@@ -31,6 +32,8 @@ router.get('/getId', function(req, res, next) {
 	if (!req.user) {
 		return Response.error(req, res, next, 401, 'Unauthorized');
 	}
+	logger.debug("user router GET /getId with req.user ", req.user);
+
 	let authId = req.user.sub;
 	Controller.getUserId(authId, function(user, err, code) {
 		if (!err) {

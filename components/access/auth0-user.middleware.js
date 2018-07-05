@@ -8,7 +8,7 @@ const PromisifierUtils = require('../../util/promisifier-utils');
 const userComponentCB = require('../user');
 const userController = Bluebird.promisifyAll(userComponentCB, {promisifier: PromisifierUtils.noErrPromisifier});
 
-function getUserInfo(authorization) {
+function getUserInfo(authorization, authId) {
 	return new Promise((resolve, reject) => {
 		const options = {
 			url: 'https://vimojo.eu.auth0.com/userinfo',
@@ -19,10 +19,15 @@ function getUserInfo(authorization) {
 		};
 
 		request(options, function (error, response, userInfo) {
-			if (!error && response.statusCode == 200) {
-				resolve(userInfo);
+			if (!error && response && response.statusCode == 200) {
+				logger.debug("got userInfo response, ", JSON.parse(userInfo));
+				resolve(JSON.parse(userInfo));
 			} else {
-				reject({error: error, code: response.statusCode});
+				logger.error("Error retrieving userInfo from auth0 ", error);
+				logger.error("response body", response.body);
+				logger.error("response statusCode", response.statusCode);
+				// (jliarte): 5/07/18 return empty userInfo for flow to continue
+				resolve({ sub: authId });
 			}
 		});
 	});
@@ -34,13 +39,13 @@ function createOrUpdateUserWithUserInfo(existingUser, userInfo) {
 	}
 	// (jliarte): 2/07/18 Update all fields but email
 	// TODO(jliarte): 2/07/18 manage authId conflicts - associate accounts!
-	existingUser.authId = userInfo.sub;
-	existingUser.username = userInfo.nickname;
-	existingUser.name = userInfo.name;
-	existingUser.email = userInfo.email;
-	existingUser.verified = userInfo.email_verified;
-	existingUser.updated_at = userInfo.updated_at;
-	existingUser.pic = userInfo.picture;
+	existingUser.authId = userInfo.sub || existingUser.authId;
+	existingUser.username = userInfo.nickname || existingUser.username;
+	existingUser.name = userInfo.name || existingUser.name ;
+	existingUser.email = userInfo.email || existingUser.email;
+	existingUser.verified = userInfo.email_verified || existingUser.verified;
+	existingUser.updated_at = userInfo.updated_at || existingUser.updated_at;
+	existingUser.pic = userInfo.picture || existingUser.pic;
 
 	// TODO(jliarte): 4/07/18 let backend to be the central role info source? now it's auth0
 	if (userInfo[auth0_metadata_ns + 'role'] && userInfo[auth0_metadata_ns + 'role'] != '') {
@@ -65,9 +70,9 @@ module.exports = function (req, res, next) {
 	if (req.user && req.user.sub) {
 		const authId = req.user.sub;
 		let userInfo = {};
-		return getUserInfo(req.headers.authorization)
+		return getUserInfo(req.headers.authorization, req.user.sub)
 			.then(data => {
-				userInfo = JSON.parse(data);
+				userInfo = data;
 				return userController.getUserIdAsync(authId);
 			})
 			.then(existingUser => {
