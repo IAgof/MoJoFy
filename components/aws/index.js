@@ -18,7 +18,7 @@ function uploadToStorage(fileData, storageFolder) {
 			if (config.aws_region !== 'us-east-1') {
 				replacePath = config.aws_region + '.' + replacePath;
 			}
-			return response.Location.replace(config.storage_bucket + '.' + replacePath, config.cdn_path);
+			return response.Location.replace(replacePath + '/' + config.storage_bucket, config.cdn_path);
 		});
 }
 
@@ -30,7 +30,7 @@ function removeFromStorage(url) {
 				throw error;
 			});
 	} else {
-		logger.error("AWS.removeFromStorage - Unable to remove Provided url [" + url + "]");
+		logger.debug("AWS.removeFromStorage - Unable to remove Provided url [" + url + "] resolving promise");
 		return Promise.resolve();
 	}
 }

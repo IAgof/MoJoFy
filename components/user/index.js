@@ -186,9 +186,10 @@ function update(data, requestingUser, file, callback) {
 	prepare(data, function (model) {
 		model._id = data.id || data._id;
 
-		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
-			if (response) {
-				model.pic = response;
+		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(newPicUrl => {
+			logger.debug("user update res of move uploaded file is [" + newPicUrl + "]");
+			if (newPicUrl) {
+				model.pic = newPicUrl;
 			}
 			updateUser(model, callback);
 		});
@@ -196,6 +197,7 @@ function update(data, requestingUser, file, callback) {
 }
 
 function updateUser(model, callback) {
+	logger.debug("user.userUpdate with model ", model);
 	Store.get(model._id, function (user) {
 		if (!user) {
 			callback(null, 'Unable to update the user', 500);
@@ -209,9 +211,10 @@ function updateUser(model, callback) {
 				merged._id = id;
 				delete merged.password;
 
-				if (user.pic) {
-					FileUpload.removeFromCloudStorage(user.pic);
-				}
+				// TODO(jliarte): 5/07/18 inspect this error from auth0-user middleware
+				// if (user.pic) {
+				// 	FileUpload.removeFromCloudStorage(user.pic);
+				// }
 
 				callback(merged, null, 200);
 			} else {

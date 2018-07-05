@@ -106,7 +106,9 @@ function update(data, requestingUser, callback) {
 	}
 	// TODO(jliarte): seems a modelate bug
 	if (data.date) {
+		logger.error("Received date is ", data.date, " of type ", typeof data.date);
 		data.date = new Date(data.date);
+		logger.error("Parsed date is ", data.date, " of type ", typeof data.date);
 	}
 	// TODO - FIXME (jliarte): modelate errors with booleans!!
 	if (typeof data.verified == "string" && data.verified !== undefined) {
@@ -129,6 +131,7 @@ function update(data, requestingUser, callback) {
 			logger.debug("video fields updated!");
 			model._id = id;
 			processNewFiles(data, videoId)
+				// TODO(jliarte): 5/07/18 this model is not updated if new files are processed!!!
 				.then(res => callback(model, null, 200))
 				.catch(err => {
 					result = {
@@ -157,6 +160,10 @@ function processNewFiles(videoData, videoId) {
 		FileUpload.processUploadedVideo(updatedFiles.newFile, function (uploaded, metadata) {
 			logger.debug("New video file processed with results", uploaded);
 			Store.get(videoId, video => {
+				if (video.date) {
+					// TODO(jliarte): 5/07/18 fix date error updating ES!! modelate again?
+					video.date = new Date(video.date);
+				}
 				let oldVideo = video.video;
 				let oldOriginal = video.original;
 				let oldPoster = video.poster;
@@ -180,13 +187,17 @@ function processNewFiles(videoData, videoId) {
 
 function updateNewPoster(updatedFiles, videoId) {
 	if (!updatedFiles.newPoster) {
-		return;
+		return Promise.resolve();
 	}
 	logger.debug("-------------------- Setting new video poster -------------------- ");
 	return FileUpload.moveUploadedFile(updatedFiles.newPoster, Config.storage_folder.poster)
 		.then(url => {
 			logger.debug("New poster processed with results", url);
 			Store.get(videoId, video => {
+				if (video.date) {
+					// TODO(jliarte): 5/07/18 fix date error updating ES!! modelate again?
+					video.date = new Date(video.date);
+				}
 				let oldPoster = video.poster;
 				video.id = videoId;
 				video.poster = url;
@@ -207,8 +218,7 @@ function list(user, props, callback) {
 	const params = {};
 	let showOnlyPublishedVideos = Config.showOnlyPublishedVideos;
 	// user is editor or it is in its own gallery
-	let userId = user.id || user._id;
-	if ((user != undefined) && (user.role == 'editor' || userId == props.user)) {
+	if ((user != undefined) && (user.role == 'editor' || user._id == props.user || user.id == props.user)) {
 		showOnlyPublishedVideos = false;
 	} 
 	if (props && typeof props === 'object') {

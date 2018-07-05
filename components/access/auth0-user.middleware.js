@@ -70,16 +70,17 @@ module.exports = function (req, res, next) {
 	if (req.user && req.user.sub) {
 		const authId = req.user.sub;
 		let userInfo = {};
-		return getUserInfo(req.headers.authorization, req.user.sub)
-			.then(data => {
-				userInfo = data;
-				return userController.getUserIdAsync(authId);
-			})
+		return userController.getUserIdAsync(authId)
 			.then(existingUser => {
 				if (!existingUser) {
 					logger.debug("User with authId " + authId + " not found, querying by email...");
+					// (jliarte): 5/07/18 only call userInfo if we need email for searching!
 					// TODO(jliarte): 28/06/18 handle user grouping when same email is received
-					return userController.getUserByEmailAsync(userInfo.email);
+					return getUserInfo(req.headers.authorization, req.user.sub)
+						.then(data => {
+							userInfo = data;
+							return userController.getUserByEmailAsync(userInfo.email);
+						});
 				} else {
 					return existingUser;
 				}

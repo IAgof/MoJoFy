@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('express-jwt');
 const cors = require('cors');
+const logger = require('./logger')(module);
 const checkJwt = require('./components/access/auth0-middleware');
 const auth0User = require('./components/access/auth0-user.middleware');
 
@@ -43,7 +44,8 @@ Routes(server);
 
 // TODO(jliarte): 28/06/18 generic error catcher, maybe extract/improve this middleware
 server.use(function (err, req, res, next) {
-	console.log(`Error in method ${req.method}: ${err.message}`);
+	logger.error(`Error in method ${req.method}: ${err.message}`);
+	logger.debug(err);
 	res.status(err.status || 500).json({ error: err.message });
 });
 
