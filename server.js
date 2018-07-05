@@ -29,7 +29,12 @@ server.use(bodyParser.json());
 
 const port = Config.port;
 
-server.use(checkJwt);
+server.use(checkJwt, function (err, req, res, next) {
+	// (jliarte): 5/07/18 avoid JWT expired error!!
+	// see https://github.com/auth0/express-jwt/issues/194
+	if (err.code === 'invalid_token') return next();
+	return next(e);
+});
 server.use(auth0User);
 
 // Router
