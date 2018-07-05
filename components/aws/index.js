@@ -23,11 +23,16 @@ function uploadToStorage(fileData, storageFolder) {
 }
 
 function removeFromStorage(url) {
-	let path = url.split(config.cdn_path + '/')[1];
-	return s3.remove(path)
-		.catch(error => {
-			throw error;
-		});
+	if (url && url.indexOf(config.cdn_path) > -1) {
+		let path = url.split(config.cdn_path + '/')[1];
+		return s3.remove(path)
+			.catch(error => {
+				throw error;
+			});
+	} else {
+		logger.error("AWS.removeFromStorage - Unable to remove Provided url [" + url + "]");
+		return Promise.resolve();
+	}
 }
 
 function getFileBuffer(path) {
