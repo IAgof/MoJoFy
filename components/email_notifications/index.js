@@ -1,4 +1,4 @@
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const config = require('../../config');
 const user = require('../user');
 const videoRepository = require('../video');
@@ -53,7 +53,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 }
 
 function notifyVideoUploaded(video) {
-	user.get(video.owner, null, undefined, function (user) {
+	user.get(video.owner, null, false, function (user) {
 		sendNotificationVideoUploadedMail(user, video);
 	});
 }

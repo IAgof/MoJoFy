@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const Promise = require('bluebird');
 const config = require('../../config');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 AWS.config.setPromisesDependency(Promise);
 

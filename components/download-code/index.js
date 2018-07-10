@@ -1,6 +1,6 @@
 const Model = require('./model');
 const Store = require('./store');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 // Define a maximum number of codes that can a single request generate.
 const MAX_CODES_PER_REQUEST = 50;
@@ -9,13 +9,13 @@ exports.add = addCodes;
 exports.isValid = isValid;
 
 function addCodes(videoId, codes, callback) {
-	if(!videoId) {
+	if (!videoId) {
 		callback(null, 'No video specified', 400);
 	}
 
 	const count = isNaN(Number(codes)) ? 0 : Number(codes);
 
-	if(!codes || codes > MAX_CODES_PER_REQUEST) {
+	if (!codes || codes > MAX_CODES_PER_REQUEST) {
 		callback(null, 'Impossible to generate that ammount of download codes', 400);
 		return false;
 	}
@@ -23,7 +23,7 @@ function addCodes(videoId, codes, callback) {
 	// const generated = [];
 	const generatedCodes = [];
 
-	for (var i = 0; i < count; i++) {
+	for (let i = 0; i < count; i++) {
 		// const code = new Model.set()
 		const code = {
 			video: videoId,
@@ -36,7 +36,7 @@ function addCodes(videoId, codes, callback) {
 		generatedCodes.push(model);
 		// logger.debug("code to generate: ", code);
 		Store.upsert(model, function (result) {
-			if(!result) {
+			if (!result) {
 				callback(null, 'Error generating download codes', 500);
 				return false;
 			}
@@ -46,33 +46,33 @@ function addCodes(videoId, codes, callback) {
 	callback(generatedCodes);
 
 	// function addedCode(result) {
-	// 	if(!result) {
+	// 	if (!result) {
 	// 		callback(null, 'Error generating download codes', 500);
 	// 		return false;
 	// 	}
 	// 	generated.push(result);
 	//
-	// 	if(generated.length === count) {
+	// 	if (generated.length === count) {
 	// 		callback(generated, null);
 	// 	}
 	// }
 }
 
 function getVideoCodes(videoId, callback) {
-	if(!videoId) {
+	if (!videoId) {
 		callback(null, 'No video specified', 400);
 	}
 
-	var params = {
+	const params = {
 		filters: [{
-			field: 'video', 
-			operator: '=', 
+			field: 'video',
+			operator: '=',
 			value: videoId
 		}]
 	};
 
 	Store.query(params, function(list) {
-		if(list && list.length > 0) {
+		if (list && list.length > 0) {
 			callback(list, null);
 		} else {
 			callback(null, 'That video does not have any code', 404);
@@ -84,7 +84,7 @@ function isValid(videoId, code, callback) {
 	getVideoCodes(videoId, function (data) {
 		let result = [];
 
-		if(data) {
+		if (data) {
 			result = data.filter(function (elem) {
 				return (elem.code === code);
 			});

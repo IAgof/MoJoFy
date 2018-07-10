@@ -4,7 +4,7 @@ const ftp = require('../ftp');
 
 const Model = require('./model');
 const Store = require('./store');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 
 /* Exported interface */
@@ -35,7 +35,7 @@ function distribute(uid, clientId, videoId, method, callback) {
 		return false;
 	}
 
-	if(typeof method === 'function') {
+	if (typeof method === 'function') {
 		callback = method;
 		method = 'ftp';
 	}
@@ -78,7 +78,7 @@ function distribute(uid, clientId, videoId, method, callback) {
  *	@param {function}	callback	Function to execute on success or error
  */
 function getVideoDistribution(videoId, callback) {
-	if(typeof callback !== 'function') {
+	if (typeof callback !== 'function') {
 		logger.debug((typeof callback === 'undefined' ? 'No callback specified' : 'Invalid type "'+ typeof callback +'" for callback') +' in "distribute.getVideoDistribution" function. Skipping.');
 		return false;
 	} else if (typeof videoId === 'undefined') {
@@ -149,7 +149,7 @@ function executeDistribution(uid, client, video, method, callback) {
  *	@param {distributeCallback} callback	Function to execute on success or error
  */
 function sendToFtp(uid, client, video, callback) {
-	var title = video.title.replace(/[^A-Za-z0-9]/g, '');
+	const title = video.title.replace(/[^A-Za-z0-9]/g, '');
 
 	ftp.send(client.ftp, video.video, title, function (res) {
 		if (res === false) {
@@ -157,7 +157,7 @@ function sendToFtp(uid, client, video, callback) {
 			return false;
 		}
 
-		var distribution = Model.set({
+		const distribution = Model.set({
 			user: uid,
 			video: video._id,
 			client: client._id,

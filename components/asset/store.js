@@ -1,7 +1,7 @@
 const Bluebird = require('bluebird');
-const PromisifierUtils = require('../../test/utils/promisifier-utils');
+const PromisifierUtils = require('../../util/promisifier-utils');
 
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const config = require('../../config');
 
 const Persistent = require('../../store/' + config.persistence_db);

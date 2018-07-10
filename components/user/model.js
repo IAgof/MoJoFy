@@ -2,11 +2,15 @@
 const Modelate = require('modelate');
 
 const model = {
+	// TODO(jliarte): 27/06/18 should we create indexes for this field?
+	authId: {
+		type: 'string',
+	},
 	name: {
 		type: 'string',
 		length: {
 			min: 1,
-			max: 32
+			max: 100
 		}
 	},
 	username: {
@@ -48,6 +52,10 @@ const model = {
 	pic: {
 		type: 'string',
 		typeStrict: true
+	},
+	updated_at: {
+		type: 'object',
+		date: true
 	}
 };
 

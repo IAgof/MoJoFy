@@ -1,6 +1,6 @@
 const ftp = require("basic-ftp");
 const mime = require('mime');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 const fs = require("fs");
 

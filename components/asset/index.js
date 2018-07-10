@@ -2,7 +2,7 @@ const extend = require('util')._extend;
 
 const store = require('./store');
 
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const Config = require('../../config');
 const FileUpload = require('../file');
 

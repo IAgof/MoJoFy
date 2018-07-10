@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const Nanoid = require('nanoid');
 const config = require('../config');
-const logger = require('../logger');
+const logger = require('../logger')(module);
 const merge = require('util-merge');
 
 /** Converter:
@@ -281,7 +281,7 @@ function get(table, key, cb) {
  * @param {dynamoSearchCallback} cb Callback on query results (or error)
  */
 function query(table, params, cb) {
-	logger.debug('[dynamo] querying ', table);
+	logger.debug('[dynamo] querying ', table, " with params ", params);
 	if (typeof params === 'function') {
 		cb = params;
 		params = undefined;

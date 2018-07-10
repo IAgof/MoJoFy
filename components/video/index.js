@@ -1,12 +1,10 @@
 const FileUpload = require('../file');
 
-// const Acl = require('./acl');
 const Model = require('./model');
 const Store = require('./store');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const Config = require('../../config');
 
-const Like = require('../like');
 const User = require('../user');
 const DownloadCode = require('../download-code');
 const Notifications = require('../email_notifications');
@@ -20,19 +18,18 @@ exports.update = update;
 exports.remove = remove;
 exports.query = query;
 exports.count = count;
-// exports.like = like;
 exports.download = download;
 
 const DEFAULT_CODES = 5;
 
 
 // Internal functions
-
+// TODO(jliarte): 29/06/18 refactor function signature
 function get(id, callback, includeOriginal) {
 	Store.get(id, function(data) {
 		if (data) {
 			data._id = id;
-			if(!includeOriginal) {
+			if (!includeOriginal) {
 				delete data.original;
 			}
 
@@ -54,22 +51,28 @@ function notify_video_upload(video) {
 	Notifications.notifyVideoUploaded(video);
 }
 
-function add(data, token, callback) {
-	if(!data.owner) {
-		data.owner = token.sub;
+function add(data, requestingUser, callback) {
+	logger.debug("Adding video of user ", requestingUser);
+	if (!data.owner) {
+		if (requestingUser && requestingUser._id) {
+			data.owner = requestingUser._id;
+		} else {
+			// TODO(jliarte): 29/06/18 shouldn't this go to router???
+			callback(null, 'Unauthorized: only authorized users can upload videos', 401);
+		}
 	}
 
-	if(data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
+	if (data.file && data.file.mimetype && data.file.mimetype.split('/')[0] === 'video') {
 		// Store file in a proper place ^^
 		FileUpload.processUploadedVideo(data.file, function(uploaded, metadata) {
 			addVideoData(data, uploaded, metadata);
 			data.date = new Date();
 			const model = Model.set(data);
-			logger.debug(model);
+			logger.debug("video to create, after modelate: ", model);
 
 			Store.upsert(model, function(result, id) {
 				if (result, id) {
-					const video = Object.assign({}, model)
+					const video = Object.assign({}, model);
 					video._id = id;
 					generate_download_codes(id);
 					notify_video_upload(video);
@@ -77,13 +80,12 @@ function add(data, token, callback) {
 					// TODO:(DevStarlight) 24/04/2018 We have set a timeout of 1000ms to give time to process the video 
 					setTimeout(function () {
 						callback(video, null, 201);
-					}, 1000);
+					}, 100);
 				} else {
 					callback(null, 'Unable to add the video', 500);
 				}
 			});
 		});
-
 	} else {
 		callback(null, 'Invalid video sent', 400);
 	}
@@ -97,14 +99,16 @@ function addVideoData(data, uploaded, metadata) {
 	setMetadata(data, metadata);
 }
 
-function update(data, token, callback) {
+function update(data, requestingUser, callback) {
 	if (!data.id && !data._id) {
 		logger.error("Unable to update video without id!");
 		return callback(null, 'No video id provided', 400);
 	}
 	// TODO(jliarte): seems a modelate bug
 	if (data.date) {
+		logger.error("Received date is ", data.date, " of type ", typeof data.date);
 		data.date = new Date(data.date);
+		logger.error("Parsed date is ", data.date, " of type ", typeof data.date);
 	}
 	// TODO - FIXME (jliarte): modelate errors with booleans!!
 	if (typeof data.verified == "string" && data.verified !== undefined) {
@@ -127,6 +131,7 @@ function update(data, token, callback) {
 			logger.debug("video fields updated!");
 			model._id = id;
 			processNewFiles(data, videoId)
+				// TODO(jliarte): 5/07/18 this model is not updated if new files are processed!!!
 				.then(res => callback(model, null, 200))
 				.catch(err => {
 					result = {
@@ -155,6 +160,10 @@ function processNewFiles(videoData, videoId) {
 		FileUpload.processUploadedVideo(updatedFiles.newFile, function (uploaded, metadata) {
 			logger.debug("New video file processed with results", uploaded);
 			Store.get(videoId, video => {
+				if (video.date) {
+					// TODO(jliarte): 5/07/18 fix date error updating ES!! modelate again?
+					video.date = new Date(video.date);
+				}
 				let oldVideo = video.video;
 				let oldOriginal = video.original;
 				let oldPoster = video.poster;
@@ -178,13 +187,17 @@ function processNewFiles(videoData, videoId) {
 
 function updateNewPoster(updatedFiles, videoId) {
 	if (!updatedFiles.newPoster) {
-		return;
+		return Promise.resolve();
 	}
 	logger.debug("-------------------- Setting new video poster -------------------- ");
 	return FileUpload.moveUploadedFile(updatedFiles.newPoster, Config.storage_folder.poster)
 		.then(url => {
 			logger.debug("New poster processed with results", url);
 			Store.get(videoId, video => {
+				if (video.date) {
+					// TODO(jliarte): 5/07/18 fix date error updating ES!! modelate again?
+					video.date = new Date(video.date);
+				}
 				let oldPoster = video.poster;
 				video.id = videoId;
 				video.poster = url;
@@ -200,16 +213,15 @@ function updateNewPoster(updatedFiles, videoId) {
 		});
 }
 
-function list(user, callback, props) {
-	logger.debug("Querying video list...");
+function list(user, props, callback) {
+	logger.debug("Querying video list... from user ", user);
 	const params = {};
 	let showOnlyPublishedVideos = Config.showOnlyPublishedVideos;
 	// user is editor or it is in its own gallery
-	if ((user != undefined) && (user.role == 'editor' || user.sub == props.user)) {
+	if ((user != undefined) && (user.role == 'editor' || user._id == props.user || user.id == props.user)) {
 		showOnlyPublishedVideos = false;
 	} 
 	if (props && typeof props === 'object') {
-
 		if (props.limit && typeof props.limit === 'number' && props.limit >= 0) {
 			params.limit = props.limit;
 		}
@@ -247,7 +259,7 @@ function list(user, callback, props) {
 			const fieldsToQuery = ['title', 'description', 'tag', 'locationName'];
 			params.query = [];
 
-			for (var i = 0; i < fieldsToQuery.length; i++) {
+			for (let i = 0; i < fieldsToQuery.length; i++) {
 				const q = {
 					field: fieldsToQuery[i],
 					value: props.q
@@ -273,6 +285,7 @@ function list(user, callback, props) {
 		
 	}
 
+	logger.debug("about to query videos, with params", params);
 	query(params, user, callback);
 
 	/*
@@ -286,7 +299,7 @@ function list(user, callback, props) {
 			value: token.sub
 		};
 
-		if(!params.filters) {
+		if (!params.filters) {
 			params.filters = [onlyMine];
 		} else {
 			params.filters.push(onlyMine);
@@ -296,7 +309,7 @@ function list(user, callback, props) {
 }
 
 function insertFilter(fieldName, operator, value, params) {
-	if(!params.filters) {
+	if (!params.filters) {
 		params.filters = [];
 	}
 	params.filters.push({
@@ -317,41 +330,42 @@ function insertFilter(fieldName, operator, value, params) {
 // 	Like.add(entity, callback);
 // }
 
-function getVideoOwner(result, token, callback) {
-	if (result.length === 0) {
-		return callback(result, null, 200);
+function getVideoOwner(videos, requestingUser, callback) {
+	logger.debug("Video.getVideoOwner");
+	if (videos.length === 0) {
+		return callback(videos, null, 200);
 	}
 	
 	let results = 0;
 	
-	for (var i = 0; i < result.length; i++) {
-		delete result[i].original;
-		const video = result[i];
-		User.get(video.owner, token, undefined, function (data) {
+	for (let i = 0; i < videos.length; i++) {
+		delete videos[i].original; // TODO(jliarte): this should be in another place
+		const video = videos[i];
+		User.get(video.owner, requestingUser, false, function (data) {
 			if (data) {
 				video.ownerData = data;
 			}
-			if (++results === result.length) {
-				callback(result, null, 200);
+			if (++results === videos.length) {
+				logger.debug('returning...');
+				return callback(videos, null, 200);
 			}
 		});
 	}
 }
 
-function query(params, token, callback) {
-	Store.list(params, function(result) {
-		if(result) {
-			getVideoOwner(result, token, callback);
+function query(params, requestingUser, callback) {
+	Store.list(params, function(videos) {
+		if (videos) {
+			getVideoOwner(videos, requestingUser, callback);
 		} else {
 			callback(null, 'Unable to list videos', 500);
 		}
 	});
 }
 
-function remove(id, token, callback) {
-
+function remove(id, requestingUser, callback) {
 	Store.remove(id, function(data) {
-		if(data) {
+		if (data) {
 			data._id = id;
 			callback(data, null);
 		} else {
@@ -379,7 +393,7 @@ function download(id, code, owner, callback) {
 		if (valid) {
 			get(id, function (video, error, code) {
 				let responseUrl = null;
-				if(!error && typeof video === 'object') {
+				if (!error && typeof video === 'object') {
 					responseUrl = video.original || video.video;
 				}
 				callback(responseUrl, error, code);
@@ -397,7 +411,7 @@ function setMetadata(data, metadata) {
 
 	let videoStream = -1;
 	for (var i = 0; i < metadata.streams.length; i++) {
-		if(metadata.streams[i].codec_type === 'video') {
+		if (metadata.streams[i].codec_type === 'video') {
 			videoStream = i;
 			break;
 		}
@@ -405,7 +419,7 @@ function setMetadata(data, metadata) {
 
 	data.length = metadata.format.duration;
 	data.size = metadata.format.size;
-	if(videoStream > -1) {
+	if (videoStream > -1) {
 		data.format = metadata.streams[videoStream].codec_name;
 		data.dimensions = metadata.streams[videoStream].width + 'x' + metadata.streams[videoStream].height;
 		data.ratio = metadata.streams[videoStream].display_aspect_ratio;

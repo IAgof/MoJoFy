@@ -5,7 +5,7 @@ const multer  = require('multer');
 const MAX_UPLOAD_SIZE = Config.max_video_upload_byte_size;
 const Upload = multer( { dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE } );
 
-const logger = require('../../logger');
+const logger = require('../../logger')(module)
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 
