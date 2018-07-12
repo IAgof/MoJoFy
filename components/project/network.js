@@ -1,6 +1,8 @@
+// components/project/network.js
+
 const Controller = require('./');
 
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const express = require('express');
 const router = express.Router();
 
@@ -20,7 +22,7 @@ router.get('/', (req, res, next) => {
 });
 
 router.use((err, req, res, next) => {
-	logger.error(`Error in method ${req.method}: ${err.message}`)
+	logger.error(`Error in method ${req.method}: ${err.message}`);
 	res.status(err.status).json({ error: err.message });
 });
 

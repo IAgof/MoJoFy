@@ -1,6 +1,8 @@
+// components/project/index.js
+
 const extend = require('util')._extend;
 
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 
 const Model = require('./model');
 

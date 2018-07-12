@@ -18,7 +18,13 @@
     "type": "git",
     "url": "git+https://github.com/IAgof/MoJoFy.git"
   },
-  "author": "Carlos Hernandez Martin (@CodingCarlos)",
+  "contributors": [
+    "Carlos Hernandez Martin (@CodingCarlos)",
+    "Jesús Huerta @DevStarLight",
+    "Javier Liarte @javierLiarte <jliarte@videona.com>",
+    "Álvaro Martínez <a.martinez@videona.com>",
+    "Ruth del Toro <r.toro@videona.com>"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/IAgof/MoJoFy/issues"

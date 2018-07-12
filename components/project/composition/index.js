@@ -1,12 +1,10 @@
+// components/project/composition/index.js
+
 const extend = require('util')._extend;
 
 const store = require('./store');
-
-const logger = require('../../logger');
-const Config = require('../../config');
-const FileUpload = require('../file');
-
 const Model = require('./model');
+const logger = require('../../../logger')(module);
 
 function add(newCompositionData, user) {
 	logger.info("User ", user);
@@ -14,14 +12,15 @@ function add(newCompositionData, user) {
 	newComposition = extend(newCompositionData, {});
 	if (user) {
 		// TODO: don't overwrite
-		newComposition.created_by = user.sub;
+		newComposition.created_by = user._id;
 	} else {
-		// TODO: reject? composition without user!
+		// TODO: reject? asset without user!
 	}
 
 	if (!newCompositionData.date) {
 		newComposition.date = new Date();
 	}
+
 	const compositionModel = Model.set(newComposition);
 	logger.debug("composition model after modelate: ", compositionModel);
 	return store.add(compositionModel)

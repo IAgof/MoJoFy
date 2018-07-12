@@ -1,27 +1,29 @@
+// components/project/composition/store.js
+
 const Bluebird = require('bluebird');
-const PromisifierUtils = require('../../util/promisifier-utils');
+const PromisifierUtils = require('../../../util/promisifier-utils');
 
-const logger = require('../../logger')(module);
-const config = require('../../config');
+const logger = require('../../../logger')(module);
+const config = require('../../../config');
 
-const Persistent = require('../../store/' + config.persistence_db);
+const Persistent = require('../../../store/' + config.persistence_db);
 const assetRepo = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierUtils.noErrPromisifier });
 
-const type = 'asset';
+const type = 'composition';
 
 // TODO(jliarte): 11/07/18 check needed indexes!
-Persistent.index(type, []), logger.debug;
+Persistent.index(type, [], logger.debug);
 
-function upsert(newAsset) {
+function upsert(newComposition) {
 	return new Promise((resolve, reject) => {
 		const id = newComposition.id || newComposition._id || null;
 		delete newComposition.id;
 		delete newComposition._id;
 
-		logger.debug("asset store upsert to ", config.persistence_db);
+		logger.debug("composition store upsert to ", config.persistence_db);
 		Persistent.add(type, newComposition, id, function(result, id) {
-			// logger.debug("asset store add persistent result ", result);
-			// logger.debug("asset store add persistent id ", id);
+			logger.debug("composition store add persistent result ", result);
+			logger.debug("composition store add persistent id ", id);
 			if (result) {
 				resolve(id);
 			} else {

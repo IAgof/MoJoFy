@@ -1,3 +1,5 @@
+// components/project/model.js
+
 const Modelate = require('modelate');
 
 const model = {
@@ -10,6 +12,9 @@ const model = {
 	date: {
 		type: 'object',
 		date: true
+	},
+	poster: {
+		type: 'string'
 	},
 	creation_date: {
 		type: 'object',

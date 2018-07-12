@@ -1,7 +1,9 @@
+// components/project/store.js
+
 const Bluebird = require('bluebird');
 const PromisifierUtils = require('../../test/utils/promisifier-utils');
 
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const config = require('../../config');
 
 const Persistent = require('../../store/' + config.persistence_db);
@@ -9,7 +11,8 @@ const projectRepo = Bluebird.promisifyAll(Persistent, {promisifier: PromisifierU
 
 const type = 'project';
 
-Persistent.index(type, []), logger.debug;
+// TODO(jliarte): 11/07/18 check needed indexes!
+Persistent.index(type, [], logger.debug);
 
 function upsert(newProject) {
 	return new Promise((resolve, reject) => {

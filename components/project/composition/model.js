@@ -1,7 +1,10 @@
+// components/project/composition/model.js
+
 const Modelate = require('modelate');
 
 const model = {
-	uuid: {
+	// TODO/FIXME(jliarte): 10/07/18 needed while datastore store does not support string IDs (do for other project/composition models!)
+	uuid:  {
 		type: 'string'
 	},
 	title: {
@@ -10,33 +13,23 @@ const model = {
 	description: {
 		type: 'string'
 	},
-	lastModification: {
-		type: 'string'
-	},
-	projectPath: {
+	remoteProjectPath: {
 		type: 'string'
 	},
 	quality: {
 		type: 'string'
 	},
-	project: {
-		type: 'string',
-	},
 	resolution: {
-		type: 'string',
+		type: 'string'
 	},
 	frameRate: {
-		type: 'string',
+		type: 'string'
 	},
 	duration: {
-		type: 'integer'
+		type: 'number'
 	},
-	pathLastVideoExported: {
-		type: 'string'
-	},
-	dateLastVideoExported: {
-		type: 'string'
-	},
+	// pathLastVideoExported:
+	// dateLastVideoExported:
 	isAudioFadeTransitionActivated: {
 		type: 'boolean'
 	},
@@ -46,11 +39,14 @@ const model = {
 	isWatermarkActivated: {
 		type: 'boolean'
 	},
-// public RealmList<RealmVideo> videos;
-// public RealmList<RealmMusic> musics;
-// public RealmList<RealmTrack> tracks;
-	productType {
+	productType: {
 		type: 'string'
+	},
+	poster: {
+		type: 'string'
+	},
+	project: {
+		type: 'string',
 	},
 	date: {
 		type: 'object',
@@ -64,9 +60,17 @@ const model = {
 		type: 'object',
 		date: true
 	},
+	// // TODO(jliarte): 10/07/18 store last modification from app?
+	// lastModification: {
+	// 	type: 'object',
+	// 	date: true
+	// },
 	created_by: {
 		type: 'string'
 	}
+	// public RealmList<RealmTrack> tracks;
+	//    public RealmList<RealmVideo> videos;
+	//    public RealmList<RealmMusic> musics;
 };
 
 const Model = new Modelate('Composition').set(model);

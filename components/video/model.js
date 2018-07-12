@@ -1,4 +1,4 @@
-var Modelate = require('modelate');
+const Modelate = require('modelate');
 
 const model = {
 	owner: {
