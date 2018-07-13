@@ -10,13 +10,13 @@ function add(newProjectData, user) {
 	logger.info("User ", user);
 	logger.debug("...created new project ", newProjectData);
 	return new Promise((resolve, reject) => {
-		newComposition = extend(newProjectData, {});
+		let newProject = extend(newProjectData, {});
 		if (!newProjectData.date) {
-			newComposition.date = new Date();
+			newProject.date = new Date();
 		}
 		// TODO: don't overwrite
-		newComposition.created_by = user.sub; // token.sub
-		const projectModel = Model.set(newComposition);
+		newProject.created_by = user.sub; // token.sub
+		const projectModel = Model.set(newProject);
 		logger.debug("project model after modelate: ", projectModel);
 
 		return store.add(projectModel);

@@ -19,6 +19,7 @@ const routes = function (server) {
 	// nested routes
 	require(component('project')).use('/:projectId/asset', require(component('asset')));
 	require(component('project')).use('/:projectId/composition', require(component('project/composition')));
+	require(component('project')).use('/:projectId/composition/:compositionId/track', require(component('project/track')));
 
 	return server;
 };

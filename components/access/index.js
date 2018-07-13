@@ -1,3 +1,4 @@
+// components/access/index.js
 
 const Acl = require('./acl');
 const Pass = require('./password');
