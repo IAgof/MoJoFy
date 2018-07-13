@@ -3,6 +3,9 @@
 const Modelate = require('modelate');
 
 const model = {
+	uuid: {
+		type: 'string'
+	},
 	name: {
 		type: 'string'
 	},

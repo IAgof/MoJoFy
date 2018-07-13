@@ -1,7 +1,5 @@
 // components/project/composition/index.js
 
-const extend = require('util')._extend;
-
 const logger = require('../../../logger')(module);
 const store = require('./store');
 const Model = require('./model');
@@ -29,7 +27,7 @@ function setCompositionTracks(compositionData, composition, user) {
 function add(newCompositionData, user) {
 	logger.info("User ", user);
 	logger.debug("...created new composition ", newCompositionData);
-	let newComposition = extend(newCompositionData, {});
+	let newComposition = Object.assign({}, newCompositionData);
 	if (user) {
 		// TODO: don't overwrite
 		newComposition.created_by = user._id;

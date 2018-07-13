@@ -2,7 +2,7 @@
 process.env.NODE_ENV = 'test';
 
 const Bluebird = require('bluebird');
-const PromisifierUtils = require('../../../util/promisifier-utils')
+const PromisifierUtils = require('../../../util/promisifier-utils');
 
 const userStoreCB = require('../../../components/user/store');
 const userComponentCB = require('../../../components/user');

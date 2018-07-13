@@ -155,11 +155,19 @@ function remove(kind, id, cb) {
 
 }
 
+function removeMulti(kind, ids) {
+	let keys = [];
+	if (ids && ids.length > 0) {
+		keys = ids.map(id => Key(kind, id));
+	}
+	return dataset.delete(keys)
+}
+
+
 /**
  *	 
  */
 function query(kind, options, cb) {
-
 	if (!kind) {
 		cb(false);
 		return false;
@@ -251,5 +259,6 @@ module.exports = {
 	add: upsert,
 	update: upsert,
 	upsert: upsert,
-	remove: remove
+	remove: remove,
+	_removeMulti: removeMulti
 };

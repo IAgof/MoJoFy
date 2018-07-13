@@ -95,6 +95,7 @@ router.get('/:id', function (req, res, next) {
 
 // router.post('/', Acl, Upload.single('file'), function(req, res, next) {
 router.post('/', Upload.single('file'), function (req, res, next) {
+	logger.debug("POST /video by ", req.user);
 	req.body.file = req.file;
 
 	Controller.add(req.body, getUser(req), function (data, err, code) {

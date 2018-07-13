@@ -1,7 +1,7 @@
 // components/project/store.js
 
 const Bluebird = require('bluebird');
-const PromisifierUtils = require('../../test/utils/promisifier-utils');
+const PromisifierUtils = require('../../util/promisifier-utils');
 
 const logger = require('../../logger')(module);
 const config = require('../../config');
@@ -14,8 +14,10 @@ const type = 'project';
 // TODO(jliarte): 11/07/18 check needed indexes!
 Persistent.index(type, [], logger.debug);
 
-function upsert(newProject) {
+function upsert(newProjectData) {
 	return new Promise((resolve, reject) => {
+		let newProject = Object.assign({}, newProjectData);
+
 		const id = newProject.id || newProject._id || null;
 		delete newProject.id;
 		delete newProject._id;

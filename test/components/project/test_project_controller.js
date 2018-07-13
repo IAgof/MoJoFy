@@ -1,16 +1,10 @@
-//During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
-
-const Bluebird = require('bluebird');
-const PromisifierUtils = require('../../utils/promisifier-utils')
-
-const userStoreCB = require('../../../components/user/store');
-const userComponentCB = require('../../../components/user');
-
-const userStore = Bluebird.promisifyAll(userStoreCB, {promisifier: PromisifierUtils.noErrPromisifier});
-const userComponent = Bluebird.promisifyAll(userComponentCB, {promisifier: PromisifierUtils.noErrPromisifier});
+// During the test the env variable is set to test
 
 const projectStore = require('../../../components/project/store');
+const projectCtrl = require('../../../components/project');
+const datastore = require('../../../store/datastore');
+const config = require('../../../config');
 
 //Require the dev-dependencies
 const chai = require('chai');
@@ -18,39 +12,46 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const should = chai.should();
 
-function removeAllProjectsAsync() {
-	return projectStore.list()
+function removeAllProjects() {
+	return projectStore.list() // TODO(jliarte): 13/07/18 insert { limit: } ?
 		.then((projects) => {
-			if (projects.length == 0) {
-				return Promise.resolve();
+			if (projects && projects.length > 0) {
+				console.log("retrieved projects is ", projects);
+				const ids = projects.map( project => project._id );
+				return datastore._removeMulti('project', ids).then(res => console.log("res deleting projects ", res));
 			}
-			let projectsLenght = projects.length;
-			console.log("removing existing projects ", projectsLenght, projects);
-			return Promise.all(projects.map(user => projectStore.remove(user._id))).then(console.log);
+			return Promise.resolve();
 		});
 }
 
-describe('Projects', () => {
+describe('Project controller', () => {
 	/*
 		* Test project store
 		*/
-	describe('Project store upsert', () => {
-		beforeEach(removeAllProjectsAsync);
+	describe('add', () => {
+		beforeEach(removeAllProjects);
+		// afterEach(removeAllProjects);
 
 		it('it should create a project', () => {
 			const project = {
+				uuid: 'projectId',
 				name: 'myproject',
+				location: 'madrid',
+				date: new Date(),
+				poster: 'poster/path',
+				created_by: 'userId'
 			};
-			console.log("calling project store upsert with project ", project);
-
-			return projectStore.upsert(project)
-				.then(createdProject => {
-					console.log("project created ", createdProject);
+			return projectCtrl.add(project)
+				.then(createdProjectId => {
+					console.log("project created ", createdProjectId);
 					return projectStore.list();
 				})
 				.then(projects => {
 					console.log("retrieved projects are ", projects);
 					projects.should.have.length(1);
+					if (config.persistence_db != 'datastore') {
+						projects[0].id = projects[0]._id;
+					}
 					delete projects[0]._id;
 					delete projects[0].creation_date;
 					delete projects[0].modification_date;
@@ -60,25 +61,43 @@ describe('Projects', () => {
 				});
 		});
 
-		it('it should set creation and modification date on a new project', () => {
-			const project = {
-				name: 'newproject',
-			};
-			console.log("calling project store upsert with project ", project);
-
-			return projectStore.upsert(project)
-				.then(createdProject => {
-					console.log("project created ", createdProject);
-					return projectStore.list();
-				})
-				.then(projects => {
-					console.log("retrieved projects are ", projects);
-					projects.should.have.length(1);
-					delete projects[0]._id;
-					projects[0].should.have.property("creation_date");
-					projects[0].should.have.property("modification_date");
-				});
-		});
+		// it('it should assign a id if not provided', () => {
+		// 	const project = {
+		// 		name: 'myproject',
+		// 	};
+		// 	console.log("calling project store upsert with project ", project);
+		//
+		// 	return projectStore.upsert(project)
+		// 		.then(createdProject => {
+		// 			console.log("project created ", createdProject);
+		// 			return projectStore.list();
+		// 		})
+		// 		.then(projects => {
+		// 			console.log("retrieved projects are ", projects);
+		// 			projects.should.have.length(1);
+		// 			projects[0].should.have.property('_id');
+		// 		});
+		// });
+		//
+		// it('it should set creation and modification date on a new project', () => {
+		// 	const project = {
+		// 		name: 'newproject',
+		// 	};
+		// 	console.log("calling project store upsert with project ", project);
+		//
+		// 	return projectStore.upsert(project)
+		// 		.then(createdProject => {
+		// 			console.log("project created ", createdProject);
+		// 			return projectStore.list();
+		// 		})
+		// 		.then(projects => {
+		// 			console.log("retrieved projects are ", projects);
+		// 			projects.should.have.length(1);
+		// 			delete projects[0]._id;
+		// 			projects[0].should.have.property("creation_date");
+		// 			projects[0].should.have.property("modification_date");
+		// 		});
+		// });
 
 		// it('it should create a project with id', () => {
 		// 	const project = {

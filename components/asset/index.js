@@ -1,5 +1,3 @@
-const extend = require('util')._extend;
-
 const store = require('./store');
 
 const logger = require('../../logger')(module);
@@ -11,7 +9,7 @@ const Model = require('./model');
 function add(newAssetData, user) {
 	logger.info("User ", user);
 	logger.debug("...created new asset ", newAssetData);
-	newComposition = extend(newAssetData, {});
+	newComposition = Object.assign({}, newAssetData);
 	if (user) {
 		// TODO: don't overwrite
 		newComposition.created_by = user.sub;

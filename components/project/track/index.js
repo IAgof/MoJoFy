@@ -1,7 +1,5 @@
 // components/project/track/index.js
 
-const extend = require('util')._extend;
-
 const store = require('./store');
 const Model = require('./model');
 const logger = require('../../../logger')(module);
@@ -9,7 +7,7 @@ const logger = require('../../../logger')(module);
 function add(newTrackData, user) {
 	logger.info("User ", user);
 	logger.debug("...created new track ", newTrackData);
-	let newTrack = extend(newTrackData, {});
+	let newTrack = Object.assign({}, newTrackData);
 	if (user) {
 		// TODO: don't overwrite
 		newTrack.created_by = user._id;
