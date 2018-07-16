@@ -2,6 +2,7 @@ const Bluebird = require('bluebird');
 const request = require('request');
 
 const auth0_metadata_ns = require('../../config').auth0_metadata_ns;
+const config = require('../../config');
 const logger = require('../../logger')(module);
 const PromisifierUtils = require('../../util/promisifier-utils');
 
@@ -11,7 +12,7 @@ const userController = Bluebird.promisifyAll(userComponentCB, {promisifier: Prom
 function getUserInfo(authorization, authId) {
 	return new Promise((resolve, reject) => {
 		const options = {
-			url: 'https://vimojo.eu.auth0.com/userinfo',
+			url: config.auth0_base_uri + '/userinfo',
 			headers: {
 				'Authorization': authorization,
 				'Content-Type': 'application/json'
@@ -89,11 +90,10 @@ module.exports = function (req, res, next) {
 				return createOrUpdateUserWithUserInfo(existingUser, userInfo);
 			})
 			.then(user => req.user.userProfile = user)
-			.then(() => next())
 			.catch(err => {
 				logger.debug("Error on auth0 user middleware ", err);
-				next();
-			});
+			})
+			.finally(() => next());
 	} else {
 		logger.debug("exiting");
 		return next();
