@@ -12,7 +12,7 @@ function add(newTrackData, user) {
 		// TODO: don't overwrite
 		newTrack.created_by = user._id;
 	} else {
-		// TODO: reject? asset without user!
+		// TODO: reject? track without user!
 	}
 
 	if (!newTrackData.date) {

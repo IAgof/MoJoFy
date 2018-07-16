@@ -7,7 +7,7 @@ const logger = require('../../logger')(module);
 const config = require('../../config');
 
 const Persistent = require('../../store/' + config.persistence_db);
-const projectRepo = Bluebird.promisifyAll(Persistent, {promisifier: PromisifierUtils.noErrPromisifier});
+const Repository = Bluebird.promisifyAll(Persistent, {promisifier: PromisifierUtils.noErrPromisifier});
 
 const type = 'project';
 
@@ -37,7 +37,7 @@ function upsert(newProjectData) {
 }
 
 function list() {
-	return projectRepo.queryAsync(type, {});
+	return Repository.queryAsync(type, {});
 }
 
 function get(id) {
@@ -46,11 +46,11 @@ function get(id) {
 			resolve(data);
 		});
 	});
-	// return projectRepo.getAsync(id);
+	// return Repository.getAsync(id);
 }
 
 function remove(id) {
-	return projectRepo.removeAsync(type, id);
+	return Repository.removeAsync(type, id);
 }
 
 

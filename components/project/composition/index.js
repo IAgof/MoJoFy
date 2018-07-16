@@ -32,7 +32,7 @@ function add(newCompositionData, user) {
 		// TODO: don't overwrite
 		newComposition.created_by = user._id;
 	} else {
-		// TODO: reject? asset without user!
+		// TODO: reject? composition without user!
 	}
 
 	setCompositionDate(newCompositionData, newComposition);

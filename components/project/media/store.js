@@ -9,22 +9,22 @@ const config = require('../../../config');
 const Persistent = require('../../../store/' + config.persistence_db);
 const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierUtils.noErrPromisifier });
 
-const type = 'composition';
+const type = 'media';
 
 // TODO(jliarte): 11/07/18 check needed indexes!
 Persistent.index(type, [], logger.debug);
 
-function upsert(newCompositionData) {
-	let newComposition = Object.assign({}, newCompositionData);
+function upsert(newMediaData) {
+	let newMedia = Object.assign({}, newMediaData);
 	return new Promise((resolve, reject) => {
-		const id = newComposition.id || newComposition._id || null;
-		delete newComposition.id;
-		delete newComposition._id;
+		const id = newMedia.id || newMedia._id || null;
+		delete newMedia.id;
+		delete newMedia._id;
 
-		logger.debug("composition store upsert to ", config.persistence_db);
-		Persistent.add(type, newComposition, id, function(result, id) {
-			logger.debug("composition store add persistent result ", result);
-			logger.debug("composition store add persistent id ", id);
+		logger.debug("media store upsert to ", config.persistence_db);
+		Persistent.add(type, newMedia, id, function(result, id) {
+			logger.debug("media store add persistent result ", result);
+			logger.debug("media store add persistent id ", id);
 			if (result) {
 				resolve(id);
 			} else {
