@@ -1,13 +1,14 @@
 // components/project/track/model.js
 
 const Modelate = require('modelate');
+const modelUtil = require('../../../store/model-util');
 
 const model = {
 // TODO/FIXME(jliarte): 10/07/18 needed while datastore store does not support string IDs (do for other project/composition models!)
 	uuid:  {
 		type: 'string'
 	},
-	trackId: {
+	trackIndex: {
 		type: 'number'
 	},
 	volume: {
@@ -42,13 +43,24 @@ const model = {
 	//    public RealmList<RealmMusic> musics;
 };
 
+const defaults = {
+	trackIndex: 0,
+	volume: 1,
+	mute: false,
+	position: 0,
+	compositionId: '',
+};
+
+const  noDefaultsFields = ['uuid', 'created_by'];
+
 const Model = new Modelate('Track').set(model);
 
 function set(data) {
-	return Model.modelate(data);
+	return modelUtil.set(data, Model, defaults, noDefaultsFields);
 }
 
 module.exports = {
 	model: model,
+	_defaults: defaults,
 	set: set
 };

@@ -13,12 +13,16 @@ function add(newProjectData, user) {
 	}
 	// TODO: don't overwrite
 	if (user) {
-		newProject.created_by = user.sub; // token.sub
+		newProject.created_by = user._id;
 	}
 	const projectModel = Model.set(newProject);
 	logger.debug("project model after modelate: ", projectModel);
 
-	return store.add(projectModel);
+	return store.add(projectModel)
+		.then(projectId => {
+			projectModel._id = projectId;
+			return projectModel;
+		});
 
 	// getEventById(newEvent.id)
 	// 	.then(existingEvent => {

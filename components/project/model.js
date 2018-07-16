@@ -1,6 +1,7 @@
 // components/project/model.js
 
 const Modelate = require('modelate');
+const modelUtil = require('../../store/model-util');
 
 const model = {
 	uuid: {
@@ -32,13 +33,22 @@ const model = {
 	}
 };
 
+const defaults = {
+	name: '',
+	location: '',
+	poster: ''
+};
+
+const noDefaultsFields = ['uuid', 'created_by'];
+
 const Model = new Modelate('Project').set(model);
 
 function set(data) {
-	return Model.modelate(data);
+	return modelUtil.set(data, Model, defaults, noDefaultsFields);
 }
 
 module.exports = {
 	model: model,
+	_defaults: defaults,
 	set: set
 };

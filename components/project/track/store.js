@@ -14,14 +14,15 @@ const type = 'track';
 // TODO(jliarte): 11/07/18 check needed indexes!
 Persistent.index(type, [], logger.debug);
 
-function upsert(newTrack) {
+function upsert(newTrackData) {
+	const newTrack = Object.assign({}, newTrackData);
 	return new Promise((resolve, reject) => {
-		const id = newComposition.id || newComposition._id || null;
-		delete newComposition.id;
-		delete newComposition._id;
+		const id = newTrack.id || newTrack._id || null;
+		delete newTrack.id;
+		delete newTrack._id;
 
 		logger.debug("track store upsert to ", config.persistence_db);
-		Persistent.add(type, newComposition, id, function(result, id) {
+		Persistent.add(type, newTrack, id, function(result, id) {
 			logger.debug("track store add persistent result ", result);
 			logger.debug("track store add persistent id ", id);
 			if (result) {

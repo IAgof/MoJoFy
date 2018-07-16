@@ -3,7 +3,7 @@
 const logger = require('../../../logger')(module);
 const store = require('./store');
 const Model = require('./model');
-const tracKCtrl = require('../track');
+const trackCtrl = require('../track');
 
 function setCompositionDate(compositionData, composition) {
 	if (!compositionData.date) {
@@ -12,12 +12,12 @@ function setCompositionDate(compositionData, composition) {
 	// TODO(jliarte): 13/07/18 else the same?
 }
 
-function setCompositionTracks(compositionData, composition, user) {
+function createCompositionTracks(compositionData, compositionId, user) {
 	if (compositionData.tracks && compositionData.tracks.length > 0) {
-		logger.debug("setting composition " + composition._id + " tracks ", compositionData.tracks);
+		logger.debug("setting composition " + compositionId + " tracks ", compositionData.tracks);
 		return Promise.all(compositionData.tracks.map(track => {
-			track.compositionId = composition._id;
-			return tracKCtrl.add(track, user);
+			track.compositionId = compositionId;
+			return trackCtrl.add(track, user);
 		}));
 	} else {
 		return Promise.resolve();
@@ -36,12 +36,15 @@ function add(newCompositionData, user) {
 	}
 
 	setCompositionDate(newCompositionData, newComposition);
-	setCompositionTracks(newCompositionData, newComposition, user);
 
 	const compositionModel = Model.set(newComposition);
 	logger.debug("composition model after modelate: ", compositionModel);
 	return store.add(compositionModel)
-		.then(() => { return compositionModel });
+		.then((compositionId) => {
+			compositionModel._id = compositionId;
+			createCompositionTracks(newCompositionData, compositionId, user); // TODO(jliarte): 14/07/18 should we also chain?
+			return compositionModel;
+		});
 }
 
 function list() {

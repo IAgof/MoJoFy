@@ -8,7 +8,7 @@ function add(newTrackData, user) {
 	logger.info("User ", user);
 	logger.debug("...created new track ", newTrackData);
 	let newTrack = Object.assign({}, newTrackData);
-	if (user) {
+	if (user && user._id) {
 		// TODO: don't overwrite
 		newTrack.created_by = user._id;
 	} else {

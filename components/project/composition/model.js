@@ -1,6 +1,7 @@
 // components/project/composition/model.js
 
 const Modelate = require('modelate');
+const modelUtil = require('../../../store/model-util');
 
 const model = {
 	// TODO/FIXME(jliarte): 10/07/18 needed while datastore store does not support string IDs (do for other project/composition models!)
@@ -30,13 +31,13 @@ const model = {
 	},
 	// pathLastVideoExported:
 	// dateLastVideoExported:
-	isAudioFadeTransitionActivated: {
+	audioFadeTransitionActivated: {
 		type: 'boolean'
 	},
-	isVideoFadeTransitionActivated: {
+	videoFadeTransitionActivated: {
 		type: 'boolean'
 	},
-	isWatermarkActivated: {
+	watermarkActivated: {
 		type: 'boolean'
 	},
 	productType: {
@@ -45,7 +46,7 @@ const model = {
 	poster: {
 		type: 'string'
 	},
-	project: {
+	projectId: {
 		type: 'string',
 	},
 	date: {
@@ -73,13 +74,37 @@ const model = {
 	//    public RealmList<RealmMusic> musics;
 };
 
+
+const defaults = {
+	title: '',
+	description: '',
+	remoteProjectPath: '',
+	quality: '',
+	resolution: '',
+	frameRate: '',
+	duration: 0,
+	audioFadeTransitionActivated: false,
+	videoFadeTransitionActivated: false,
+	watermarkActivated: false,
+	productType: '',
+	poster: '',
+	projectId: '', // TODO(jliarte): 14/07/18 set or not?
+	// date: {
+	// 	type: 'object',
+	// 	date: true
+	// },
+};
+
+const  noDefaultsFields = ['uuid', 'created_by'];
+
 const Model = new Modelate('Composition').set(model);
 
 function set(data) {
-	return Model.modelate(data);
+	return modelUtil.set(data, Model, defaults, noDefaultsFields);
 }
 
 module.exports = {
 	model: model,
+	_defaults: defaults,
 	set: set
 };

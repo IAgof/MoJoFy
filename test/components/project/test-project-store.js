@@ -2,7 +2,8 @@ process.env.NODE_ENV = 'test';
 // During the test the env variable is set to test
 
 const projectStore = require('../../../components/project/store');
-const datastore = require('../../../store/datastore');
+
+const testUtil = require('../../test-util');
 
 //Require the dev-dependencies
 const chai = require('chai');
@@ -11,15 +12,7 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 function removeAllProjects() {
-	return projectStore.list() // TODO(jliarte): 13/07/18 insert { limit: } ?
-		.then((projects) => {
-			if (projects && projects.length > 0) {
-				// console.log("retrieved projects is ", projects);
-				const ids = projects.map( project => project._id );
-				return datastore._removeMulti('project', ids).then(res => console.log("res deleting projects ", res));
-			}
-			return Promise.resolve();
-		});
+	return testUtil.removeAllEntities('project');
 }
 
 describe('Project store', () => {
@@ -87,6 +80,38 @@ describe('Project store', () => {
 					projects[0].should.have.property("modification_date");
 				});
 		});
+
+		// TODO(jliarte): 15/07/18 whould we return entity here? we'll probably need a query... :m
+		// it('it should return created project', () => {
+		// 	let createdProject;
+		// 	const project = {
+		// 		uuid: 'projectId',
+		// 		name: 'myproject',
+		// 		location: 'madrid',
+		// 		date: new Date(),
+		// 		poster: 'poster/path',
+		// 		created_by: 'userId'
+		// 	};
+		// 	return projectStore.add(project)
+		// 		.then(result => {
+		// 			console.log("project created ", result);
+		// 			createdProject = result;
+		// 			return projectStore.list();
+		// 		})
+		// 		.then(projects => {
+		// 			console.log("retrieved projects are ", projects);
+		// 			projects.should.have.length(1);
+		// 			if (config.persistence_db != 'datastore') {
+		// 				projects[0].id = projects[0]._id;
+		// 			}
+		// 			delete projects[0].creation_date;
+		// 			delete projects[0].modification_date;
+		// 			console.log("expected ", createdProject);
+		// 			console.log("actual", projects[0]);
+		// 			projects[0].should.deep.equal(createdProject); // _id
+		// 		});
+		// });
+
 
 	});
 

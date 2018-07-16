@@ -14,7 +14,8 @@ const type = 'composition';
 // TODO(jliarte): 11/07/18 check needed indexes!
 Persistent.index(type, [], logger.debug);
 
-function upsert(newComposition) {
+function upsert(newCompositionData) {
+	let newComposition = Object.assign({}, newCompositionData);
 	return new Promise((resolve, reject) => {
 		const id = newComposition.id || newComposition._id || null;
 		delete newComposition.id;
