@@ -60,6 +60,6 @@ function remove(id, callback) {
 		callback(data);
 	});
 	Search.remove(type, id, function (data) {
-		logger.debug("Removed vieo from search: ", data);
+		logger.debug("Removed video from search: ", data);
 	});
 }

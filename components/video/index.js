@@ -364,10 +364,22 @@ function query(params, requestingUser, callback) {
 }
 
 function remove(id, requestingUser, callback) {
-	Store.remove(id, function(data) {
+	Store.get(id, function(data) {
 		if (data) {
-			data._id = id;
-			callback(data, null);
+			const video = data.video;
+			const originalVideo = data.original;
+			const poster = data.poster;
+			Store.remove(id, function(data) {
+				if (data) {
+					data._id = id;
+					FileUpload.removeFromCloudStorage(video);
+					FileUpload.removeFromCloudStorage(originalVideo);
+					FileUpload.removeFromCloudStorage(poster);
+					callback(data, null);
+				} else {
+					callback(null, 'That video does not exist', 404);
+				}
+			});
 		} else {
 			callback(null, 'That video does not exist', 404);
 		}
