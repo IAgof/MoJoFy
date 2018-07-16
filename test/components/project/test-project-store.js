@@ -81,38 +81,6 @@ describe('Project store', () => {
 				});
 		});
 
-		// TODO(jliarte): 15/07/18 whould we return entity here? we'll probably need a query... :m
-		// it('it should return created project', () => {
-		// 	let createdProject;
-		// 	const project = {
-		// 		uuid: 'projectId',
-		// 		name: 'myproject',
-		// 		location: 'madrid',
-		// 		date: new Date(),
-		// 		poster: 'poster/path',
-		// 		created_by: 'userId'
-		// 	};
-		// 	return projectStore.add(project)
-		// 		.then(result => {
-		// 			console.log("project created ", result);
-		// 			createdProject = result;
-		// 			return projectStore.list();
-		// 		})
-		// 		.then(projects => {
-		// 			console.log("retrieved projects are ", projects);
-		// 			projects.should.have.length(1);
-		// 			if (config.persistence_db != 'datastore') {
-		// 				projects[0].id = projects[0]._id;
-		// 			}
-		// 			delete projects[0].creation_date;
-		// 			delete projects[0].modification_date;
-		// 			console.log("expected ", createdProject);
-		// 			console.log("actual", projects[0]);
-		// 			projects[0].should.deep.equal(createdProject); // _id
-		// 		});
-		// });
-
-
 	});
 
 });

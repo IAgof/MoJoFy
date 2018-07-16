@@ -69,7 +69,7 @@ describe('Project controller', () => {
 				});
 		});
 
-		it('it should assign a user if present', () => { // TODO(jliarte): 14/07/18 change to throw error?
+		it('it should assign a user if present', () => {
 			const project = {
 			};
 			const user = { _id: 'userId' };

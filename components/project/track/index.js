@@ -22,7 +22,10 @@ function add(newTrackData, user) {
 	const trackModel = Model.set(newTrack);
 	logger.debug("track model after modelate: ", trackModel);
 	return store.add(trackModel)
-		.then(() => { return trackModel });
+		.then((trackId) => {
+			trackModel._id = trackId;
+			return trackModel
+		});
 }
 
 function list() {

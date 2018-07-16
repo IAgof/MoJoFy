@@ -87,7 +87,7 @@ describe('Composition controller', () => {
 				});
 		});
 
-		it('it should assign a user if present', () => { // TODO(jliarte): 14/07/18 change to throw error?
+		it('it should assign a user if present', () => {
 			const composition = {
 			};
 			const user = { _id: 'userId' };
