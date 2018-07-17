@@ -7,6 +7,7 @@ const Config = require('../../config');
 
 const DownloadCode = require('../download-code');
 const Notifications = require('../email_notifications');
+const userCtrl = require('../user');
 
 // Exposed functions
 

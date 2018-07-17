@@ -43,7 +43,7 @@ function upsert(data, callback) {
 	// Cache.get(type, id, function(data) {
 	// 	if(!data) {
 			Persistent.add(type, data, id, function(result, id) {
-				callback(result, id);
+				typeof callback === 'function' && callback(result, id);
 			});
 	// 	} else {
 	// 		callback(data);
