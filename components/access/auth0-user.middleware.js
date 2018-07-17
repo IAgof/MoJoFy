@@ -10,6 +10,7 @@ const userComponentCB = require('../user');
 const userController = Bluebird.promisifyAll(userComponentCB, {promisifier: PromisifierUtils.noErrPromisifier});
 
 function getUserInfo(authorization, authId) {
+	logger.debug("Getting user info for authId " + authId + " at ", config.auth0_base_uri);
 	return new Promise((resolve, reject) => {
 		const options = {
 			url: config.auth0_base_uri + '/userinfo',
@@ -90,10 +91,11 @@ module.exports = function (req, res, next) {
 				return createOrUpdateUserWithUserInfo(existingUser, userInfo);
 			})
 			.then(user => req.user.userProfile = user)
+			.then(() => next())
 			.catch(err => {
 				logger.debug("Error on auth0 user middleware ", err);
-			})
-			.finally(() => next());
+				next();
+			});
 	} else {
 		logger.debug("exiting");
 		return next();
