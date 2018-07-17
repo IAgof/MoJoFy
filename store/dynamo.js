@@ -333,9 +333,9 @@ function remove(table, key, cb) {
 	docClient.delete(params, function(err, data) {
 		if (err) {
 			logger.error("Unable to query. Error:", JSON.stringify(err, null, 2));
-			typeof cb === 'function' && cb('Error!', null);
+			typeof cb === 'function' && cb(false, 'Error!'); // TODO(jliarte): 17/07/18 at least match callback api among different store imlpementations!!! ¬¬
 		} else {
-			typeof cb === 'function' && cb(null, data);
+			typeof cb === 'function' && cb(data, null);
 		}
 	});
 }

@@ -1,4 +1,4 @@
-// test/components/video/test-video-index.js
+// test/components/video/test-video-controller.js
 
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
@@ -21,6 +21,10 @@ const videoStoreSpy = {
 	count: sinon.spy()
 };
 
+const userCtrlSpy = {
+	decreaseVideoCounter: sinon.spy()
+};
+
 const fileUploadSpy = {
 	processUploadedVideo: sinon.spy(),
 	moveUploadedFile: sinon.spy,
@@ -30,6 +34,7 @@ const fileUploadSpy = {
 // TODO(jliarte): 16/07/18 setup in beforeEach?
 const videoCtrlCB = proxyquire('../../../components/video', {
 	'./store': videoStoreSpy,
+	'../user': userCtrlSpy,
 	'../file': fileUploadSpy
 });
 const videoCtrl = Bluebird.promisifyAll(videoCtrlCB, { promisifier: PromisifierUtils.noErrPromisifier });
@@ -113,6 +118,36 @@ describe('Video Store', () => {
 					sinon.assert.calledWith(fileUploadSpy.removeFromCloudStorage, posterUri);
 				});
 		});
+
+		it('it should decrease video owner video counter', () => {
+			let createdVideoId;
+			const videoOwner = 42;
+			const video = {
+				title: 'Video title',
+				owner: videoOwner
+			};
+			console.log("calling video store upsert with ", video);
+
+			return videoStore.upsertAsync(video)
+				.then(res => {
+					createdVideoId = res;
+					console.log("video created ", res);
+					console.log("calling video remove with ", createdVideoId);
+					return videoStore.listDataStoreAsync({});
+				})
+				.then(videos => {
+					console.log("retrieved videos are ", videos);
+					videos.should.have.length(1);
+					createdVideoId = videos[0]._id;
+					return videoCtrl.removeAsync(createdVideoId, null);
+				})
+				.then(res => {
+					console.log("video removed called ", res);
+					sinon.assert.called(userCtrlSpy.decreaseVideoCounter);
+					sinon.assert.calledWith(userCtrlSpy.decreaseVideoCounter, videoOwner);
+				});
+		});
+
 
 	});
 
