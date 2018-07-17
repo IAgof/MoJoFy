@@ -364,6 +364,7 @@ function query(params, requestingUser, callback) {
 }
 
 function remove(id, requestingUser, callback) {
+	logger.debug("Video.remove id " + id + " by user ", requestingUser);
 	Store.get(id, function(data) {
 		if (data) {
 			const video = data.video;

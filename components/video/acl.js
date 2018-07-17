@@ -90,17 +90,19 @@ function remove(req, res, next) {
 	const id = req.params.id || req.params._id || null;
 	let action = '';
 
-	Store.get(id, function(data) {		
-		if (data && data.owner === getUserId(req)) {
+	Store.get(id, function(data) {
+		if (data && data.owner == getUserId(req)) { // TODO(jliarte): 17/07/18 allow strings to be casted!
 			action = 'remove_own';
 		} else {
 			action = 'remove_other';
 		}
 
 		Acl.acl.query(getUserRole(req), 'video', action, function(err, allow) {
+			logger.debug("acl - user " + getUserId(req) + " with role " + getUserRole(req) + " performing " + action);
 			if (allow) {
 				next();
 			} else {
+				logger.debug("not allowed!");
 				Response.error(req, res, next, 403, 'Unauthorized');
 			}
 		});
