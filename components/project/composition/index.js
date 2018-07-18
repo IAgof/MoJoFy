@@ -42,7 +42,7 @@ function add(newCompositionData, user) {
 	return store.add(compositionModel)
 		.then((compositionId) => {
 			compositionModel._id = compositionId;
-			createCompositionTracks(newCompositionData, compositionId, user); // TODO(jliarte): 14/07/18 should we also chain?
+			createCompositionTracks(newCompositionData, compositionId, user); // TODO(jliarte): 14/07/18 should we also chain and assign tracks to composition?
 			return compositionModel;
 		});
 }

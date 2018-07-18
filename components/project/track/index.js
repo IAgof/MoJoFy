@@ -1,8 +1,21 @@
 // components/project/track/index.js
 
+const logger = require('../../../logger')(module);
 const store = require('./store');
 const Model = require('./model');
-const logger = require('../../../logger')(module);
+const mediaCtrl = require('../media');
+
+function createTrackMedias(trackData, trackId, user) {
+	if (trackData.medias && trackData.medias.length > 0) {
+		logger.debug("setting track " + trackId + " medias", trackData.medias);
+		return Promise.all(trackData.medias.map(media => {
+			media.trackId = trackId;
+			return mediaCtrl.add(media, user);
+		}));
+	} else {
+		return Promise.resolve();
+	}
+}
 
 function add(newTrackData, user) {
 	logger.info("User ", user);
@@ -24,6 +37,7 @@ function add(newTrackData, user) {
 	return store.add(trackModel)
 		.then((trackId) => {
 			trackModel._id = trackId;
+			createTrackMedias(newTrackData, trackId, user); // TODO(jliarte): 14/07/18 should we also chain and assign medias to track?
 			return trackModel
 		});
 }

@@ -29,6 +29,7 @@ function upsert(newMediaData) {
 				resolve(id);
 			} else {
 				// TODO: when does error occur????
+				logger.error("Error upserting media into ", config.persistence_db);
 				reject();
 			}
 		});
