@@ -1,4 +1,4 @@
-// components/project/composition/model.js
+// components/project/media/model.js
 
 const Modelate = require('modelate');
 const modelUtil = require('../../../store/model-util');

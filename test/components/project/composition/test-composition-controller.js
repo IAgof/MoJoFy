@@ -184,4 +184,56 @@ describe('Composition controller', () => {
 
 	});
 
+	describe('update', () => {
+		beforeEach(removeAllCompositions);
+
+		it('it should update an existing composition', () => {
+			let createdCompositionId;
+			const composition = {
+				title: 'mycomposition',
+				description: 'desc',
+			};
+			const newCompositionData = {
+				title: 'mycomposition',
+				description: 'desc',
+				remoteProjectPath: 'remote/prj/path',
+				quality: 'poor',
+				resolution: 'fhd',
+				frameRate: '30',
+				duration: 42,
+				audioFadeTransitionActivated: true,
+				videoFadeTransitionActivated: false,
+				watermarkActivated: true,
+				productType: 'p1,p2',
+				poster: 'poster/parh',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId'
+			};
+
+			return compositionStore.add(composition)
+				.then(id => {
+					console.log("Composition created with id ", id);
+					createdCompositionId = id;
+					newCompositionData.id = createdCompositionId;
+					newCompositionData.uuid = createdCompositionId;
+					return compositionCtrl.update(newCompositionData);
+				})
+				.then(updatedComposition => {
+					console.log("res updating composition ", updatedComposition);
+					return compositionCtrl.list();
+				})
+				.then(compositions => {
+					compositions.should.have.length(1);
+					delete compositions[0].creation_date;
+					delete compositions[0].modification_date;
+					delete compositions[0]._id;
+					delete newCompositionData.id;
+					compositions[0].should.deep.equal(newCompositionData);
+				})
+
+		});
+
+	});
+
 });

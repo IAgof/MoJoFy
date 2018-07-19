@@ -21,7 +21,7 @@ function upsert(newCompositionData) {
 		delete newComposition.id;
 		delete newComposition._id;
 
-		logger.debug("composition store upsert to ", config.persistence_db);
+		logger.debug("composition store upsert id [" + id + "] to ", config.persistence_db);
 		Persistent.add(type, newComposition, id, function(result, id) {
 			logger.debug("composition store add persistent result ", result);
 			logger.debug("composition store add persistent id ", id);

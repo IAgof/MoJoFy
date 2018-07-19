@@ -25,7 +25,7 @@ function createCompositionTracks(compositionData, compositionId, user) {
 }
 
 function add(newCompositionData, user) {
-	logger.info("User ", user);
+	logger.info("compositionCtrl.add by User ", user);
 	logger.debug("...created new composition ", newCompositionData);
 	let newComposition = Object.assign({}, newCompositionData);
 	if (user) {
@@ -47,11 +47,37 @@ function add(newCompositionData, user) {
 		});
 }
 
+function update(compositionData, user) {
+	logger.info("compositionCtrl.update by User ", user);
+	logger.debug("...updated composition id [" + compositionData.id + "]", compositionData);
+	let composition = Object.assign({}, compositionData);
+	if (user && !composition.created_by) {
+		// TODO: don't overwrite
+		composition.created_by = user._id;
+	} else {
+		// TODO: reject? composition without user!
+	}
+
+	setCompositionDate(compositionData, composition);
+
+	const compositionModel = Model.set(composition);
+	compositionModel.id = compositionData.id || compositionData._id;
+	logger.debug("composition model after modelate: ", compositionModel);
+	return store.upsert(compositionModel)
+		.then((compositionId) => {
+			compositionModel._id = compositionId;
+			// TODO(jliarte): 19/07/18 change for update when uuid collision is managed
+			createCompositionTracks(compositionData, compositionId, user); // TODO(jliarte): 14/07/18 should we also chain and assign tracks to composition?
+			return compositionModel;
+		});
+}
+
 function list() {
 	return store.list();
 }
 
 module.exports = {
 	add,
+	update,
 	list
 };
