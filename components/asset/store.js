@@ -12,14 +12,15 @@ const type = 'asset';
 // TODO(jliarte): 11/07/18 check needed indexes!
 Persistent.index(type, []), logger.debug;
 
-function upsert(newAsset) {
+function upsert(newAssetData) {
+	let newAsset = Object.assign({}, newAssetData);
 	return new Promise((resolve, reject) => {
-		const id = newComposition.id || newComposition._id || null;
-		delete newComposition.id;
-		delete newComposition._id;
+		const id = newAsset.id || newAsset._id || null;
+		delete newAsset.id;
+		delete newAsset._id;
 
 		logger.debug("asset store upsert to ", config.persistence_db);
-		Persistent.add(type, newComposition, id, function(result, id) {
+		Persistent.add(type, newAsset, id, function(result, id) {
 			// logger.debug("asset store add persistent result ", result);
 			// logger.debug("asset store add persistent id ", id);
 			if (result) {
