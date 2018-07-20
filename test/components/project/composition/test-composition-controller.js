@@ -4,7 +4,6 @@ process.env.NODE_ENV = 'test';
 const compositionStore = require('../../../../components/project/composition/store');
 const compositionCtrl = require('../../../../components/project/composition');
 const trackStore = require('../../../../components/project/track/store');
-const config = require('../../../../config');
 
 const testUtil = require('../../../test-util');
 
@@ -33,8 +32,7 @@ describe('Composition controller', () => {
 
 		it('it should create a composition', () => {
 			const composition = {
-				// id: 'compositionId',
-				uuid: 'compositionId',
+				id: 'compositionId',
 				title: 'mycomposition',
 				description: 'desc',
 				remoteProjectPath: 'remote/prj/path',
@@ -54,15 +52,12 @@ describe('Composition controller', () => {
 			return compositionCtrl.add(composition)
 				.then(createdComposition => {
 					console.log("composition created ", createdComposition);
-					return compositionStore.list();
+					return compositionCtrl.list();
 				})
 				.then(compositions => {
 					console.log("retrieved compositions are ", compositions);
 					compositions.should.have.length(1);
-					if (config.persistence_db != 'datastore') {
-						compositions[0].id = compositions[0]._id;
-					}
-					delete composition.id;
+					compositions[0].id = compositions[0]._id;
 					delete compositions[0]._id;
 					delete compositions[0].creation_date;
 					delete compositions[0].modification_date;
@@ -123,7 +118,6 @@ describe('Composition controller', () => {
 			let createdComposition;
 			const composition = {
 				id: 'compositionId',
-				uuid: 'compositionId',
 				title: 'mycomposition',
 				description: 'desc',
 			};
@@ -136,34 +130,32 @@ describe('Composition controller', () => {
 				.then(compositions => {
 					console.log("retrieved compositions are ", compositions);
 					compositions.should.have.length(1);
-					if (config.persistence_db != 'datastore') {
-						compositions[0].id = compositions[0]._id;
-					}
 					delete compositions[0].creation_date;
 					delete compositions[0].modification_date;
 					console.log("expected ", createdComposition);
 					console.log("actual", compositions[0]);
-					compositions[0].should.deep.equal(createdComposition); // _id
+					compositions[0].should.deep.equal(createdComposition);
 				});
 		});
 
 		it('it should create a track if present', () => {
 			let compositionId;
 			const track = {
-				uuid: 'trackIndex',
+				id: 'trackId',
 				position: 1,
 				trackIndex: 2,
 				volume: 0.5,
 				mute: false
 			};
 			const composition = {
-				uuid: 'compositionId',
+				id: 'compositionId',
 				title: 'mycomposition',
 				tracks: [
 					track
 				]
 			};
 			return compositionCtrl.add(composition)
+				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500))) // TODO(jliarte): 18/07/18 wait since track creation is not chained
 				.then(createdComposition => {
 					console.log("composition created ", createdComposition);
 					compositionId = createdComposition._id;
@@ -173,6 +165,7 @@ describe('Composition controller', () => {
 					console.log("retrieved tracks are ", tracks);
 					tracks.should.have.length(1);
 					track.compositionId = compositionId;
+					tracks[0].id = tracks[0]._id;
 					delete tracks[0]._id;
 					delete tracks[0].creation_date;
 					delete tracks[0].modification_date;
@@ -216,7 +209,6 @@ describe('Composition controller', () => {
 					console.log("Composition created with id ", id);
 					createdCompositionId = id;
 					newCompositionData.id = createdCompositionId;
-					newCompositionData.uuid = createdCompositionId;
 					return compositionCtrl.update(newCompositionData);
 				})
 				.then(updatedComposition => {

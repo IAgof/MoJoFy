@@ -37,9 +37,9 @@ function add(newTrackData, user) {
 	trackModel.id = newTrack.id || newTrack._id || null; // TODO(jliarte): 20/07/18 manage id collisions
 	return store.add(trackModel)
 		.then((trackId) => {
-			delete trackModel.id;
 			trackModel._id = trackId;
 			createTrackMedias(newTrackData, trackId, user); // TODO(jliarte): 14/07/18 should we also chain and assign medias to track?
+			delete trackModel.id;
 			return trackModel
 		});
 }

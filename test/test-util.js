@@ -7,11 +7,10 @@ const datastore = Bluebird.promisifyAll(ds, { promisifier: PromisifierUtils.noEr
 
 function removeAllEntities(type) {
 	return datastore.queryAsync(type, {}) // TODO(jliarte): 13/07/18 insert { limit: } ?
-		.then((tracks) => {
-			if (tracks && tracks.length > 0) {
-				console.log("retrieved tracks  ", tracks);
-				const ids = tracks.map( project => project._id );
-				return datastore._removeMulti(type, ids).then(res => console.log("res deleting tracks ", res));
+		.then((entities) => {
+			if (entities && entities.length > 0) {
+				const ids = entities.map( project => project._id );
+				return datastore._removeMulti(type, ids).then(res => console.log("res deleting entities ", res));
 			}
 			return Promise.resolve();
 		});

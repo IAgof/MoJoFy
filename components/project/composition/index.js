@@ -39,10 +39,13 @@ function add(newCompositionData, user) {
 
 	const compositionModel = Model.set(newComposition);
 	logger.debug("composition model after modelate: ", compositionModel);
+	compositionModel.id = newComposition.id || newComposition._id || null; // TODO(jliarte): 20/07/18 manage id collisions
+
 	return store.add(compositionModel)
 		.then((compositionId) => {
 			compositionModel._id = compositionId;
 			createCompositionTracks(newCompositionData, compositionId, user); // TODO(jliarte): 14/07/18 should we also chain and assign tracks to composition?
+			delete compositionModel.id;
 			return compositionModel;
 		});
 }
@@ -68,6 +71,7 @@ function update(compositionData, user) {
 			compositionModel._id = compositionId;
 			// TODO(jliarte): 19/07/18 change for update when uuid collision is managed
 			createCompositionTracks(compositionData, compositionId, user); // TODO(jliarte): 14/07/18 should we also chain and assign tracks to composition?
+			delete compositionModel.id;
 			return compositionModel;
 		});
 }

@@ -35,8 +35,6 @@ const model = {
 	created_by: {
 		type: 'string'
 	}
-	//    public RealmList<RealmVideo> videos;
-	//    public RealmList<RealmMusic> musics;
 };
 
 const defaults = {

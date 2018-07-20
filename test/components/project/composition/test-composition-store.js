@@ -21,8 +21,7 @@ describe('Composition store', () => {
 
 		it('it should create a composition', () => {
 			const composition = {
-				// id: 'compositionId',
-				uuid: 'compositionId',
+				id: 'compositionId',
 				title: 'mycomposition',
 				description: 'desc',
 				remoteProjectPath: 'remote/prj/path',
@@ -40,13 +39,15 @@ describe('Composition store', () => {
 				created_by: 'userId'
 			};
 			return compositionStore.upsert(composition)
-				.then(createdComposition => {
-					console.log("composition created ", createdComposition);
+				.then(createdCompositionId => {
+					console.log("composition created id", createdCompositionId);
+					createdCompositionId.should.equal(composition.id);
 					return compositionStore.list();
 				})
 				.then(compositions => {
 					console.log("retrieved compositions are ", compositions);
 					compositions.should.have.length(1);
+					delete composition.id;
 					delete compositions[0]._id;
 					delete compositions[0].creation_date;
 					delete compositions[0].modification_date;
