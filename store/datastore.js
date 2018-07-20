@@ -4,6 +4,7 @@ const gcloud = require('google-cloud');
 const config = require('../config');
 const logger = require('../logger')(module);
 const merge = require('util-merge');
+const uuidv4 = require('uuid/v4');
 
 const namespace = config.ds_namespace;
 const dataset = gcloud.datastore({
@@ -19,13 +20,14 @@ function Key(kind, id) {
 		path.push(Number(id));
 	} else if (id) {
 		path.push(id);
+	} else if (config.ds_string_index) {
+			path.push(uuidv4());
 	}
 
 	return dataset.key({
 		namespace: namespace,
 		path: path
 	});
-
 }
 
 /**
@@ -229,7 +231,7 @@ function query(kind, options, cb) {
  *
  *	Datastore format:
  *	{
- *		key: [kind, id],
+ *		key: [kind, id|name],
  *		data: {
  *			property: value
  *		}
@@ -237,12 +239,12 @@ function query(kind, options, cb) {
  *
  *	Application format:
  *	{
- *		_id: id,
+ *		_id: id|name,
  *		property: value
  *	}
  */
 function fromDatastore (obj) {
-  obj._id = obj[gcloud.datastore.KEY].id;
+  obj._id = obj[gcloud.datastore.KEY].id || obj[gcloud.datastore.KEY].name;
   return obj;
 }
 

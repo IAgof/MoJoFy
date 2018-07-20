@@ -30,6 +30,7 @@ const config = {
 	ds_namespace: process.env.BACKEND_DATASTORE_NAMESPACE,
 	ds_projectId: process.env.BACKEND_GOOGLE_CLOUD_PROJECT_ID,
 	ds_keyFilename: 'datastore-key.json',
+	ds_string_index: true,
 
 	// 'Elsasticsearch'
 	elastic_index: process.env.ELASTIC_INDEX || 'test',
