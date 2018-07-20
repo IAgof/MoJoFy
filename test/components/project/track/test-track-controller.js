@@ -4,7 +4,6 @@ process.env.NODE_ENV = 'test';
 const trackStore = require('../../../../components/project/track/store');
 const trackCtrl = require('../../../../components/project/track');
 const mediaStore = require('../../../../components/project/media/store');
-const config = require('../../../../config');
 
 const testUtil = require('../../../test-util');
 
@@ -29,8 +28,7 @@ describe('Track controller', () => {
 
 		it('it should create a track', () => {
 			const track = {
-				// id: 'trackId',
-				uuid: 'trackId',
+				id: 'trackId',
 				trackIndex: 0,
 				volume: 0.4,
 				mute: true,
@@ -41,15 +39,12 @@ describe('Track controller', () => {
 			return trackCtrl.add(track)
 				.then(createdTrack => {
 					console.log("track created ", createdTrack);
-					return trackStore.list();
+					return trackCtrl.list();
 				})
 				.then(tracks => {
 					console.log("retrieved tracks are ", tracks);
 					tracks.should.have.length(1);
-					if (config.persistence_db != 'datastore') {
-						tracks[0].id = tracks[0]._id;
-					}
-					delete track.id;
+					tracks[0].id = tracks[0]._id;
 					delete tracks[0]._id;
 					delete tracks[0].creation_date;
 					delete tracks[0].modification_date;
@@ -110,7 +105,6 @@ describe('Track controller', () => {
 			let createdTrack;
 			const track = {
 				id: 'trackId',
-				uuid: 'trackId',
 				trackIndex: 0,
 				volume: 0.4,
 				mute: true,
@@ -127,9 +121,6 @@ describe('Track controller', () => {
 				.then(tracks => {
 					console.log("retrieved tracks are ", tracks);
 					tracks.should.have.length(1);
-					if (config.persistence_db != 'datastore') {
-						tracks[0].id = tracks[0]._id;
-					}
 					delete tracks[0].creation_date;
 					delete tracks[0].modification_date;
 					console.log("expected ", createdTrack);
@@ -141,8 +132,7 @@ describe('Track controller', () => {
 		it('it should create medias if present', () => {
 			let createdTrack;
 			const media1 = {
-				// id:  'media1Id',
-				uuid: 'media1Id',
+				id:  'media1Id',
 				mediaType: 'video',
 				position: 0,
 				mediaPath: 'media/1/path',
@@ -158,8 +148,7 @@ describe('Track controller', () => {
 				transcodeFinished: false
 			};
 			const media2 = {
-				// id:  'media1Id',
-				uuid: 'media1Id',
+				id:  'media2Id',
 				mediaType: 'video',
 				position: 0,
 				mediaPath: 'media/1/path',
@@ -176,8 +165,7 @@ describe('Track controller', () => {
 			};
 			let createdTrackId;
 			const track = {
-				// id: 'trackId',
-				uuid: 'trackId',
+				id: 'trackId',
 				medias: [ media1, media2 ]
 			};
 			return trackCtrl.add(track)
@@ -195,13 +183,12 @@ describe('Track controller', () => {
 				.then(medias => {
 					console.log("retrieved medias are ", medias);
 					medias.should.have.length(2);
-					if (config.persistence_db != 'datastore') {
-						medias[0].id = medias[0]._id;
-					}
+					medias[0].id = medias[0]._id;
 					delete medias[0]._id;
 					delete medias[0].creation_date;
 					delete medias[0].modification_date;
 					media1.trackId = createdTrackId;
+					medias[1].id = medias[1]._id;
 					delete medias[1]._id;
 					delete medias[1].creation_date;
 					delete medias[1].modification_date;

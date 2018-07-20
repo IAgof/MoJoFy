@@ -23,8 +23,7 @@ describe('Media controller', () => {
 
 		it('it should create a media', () => {
 			const media = {
-				// id: 'mediaId',
-				uuid: 'mediaId',
+				id: 'mediaId',
 				mediaType: 'video',
 				position: 1,
 				mediaPath: 'media/path',
@@ -42,17 +41,14 @@ describe('Media controller', () => {
 				created_by: 'userId'
 			};
 			return mediaCtrl.add(media)
-				.then(createdMedia => {
-					console.log("media created ", createdMedia);
-					return mediaStore.list();
+				.then(createdMediaId => {
+					console.log("media created id ", createdMediaId);
+					return mediaCtrl.list();
 				})
 				.then(medias => {
 					console.log("retrieved medias are ", medias);
 					medias.should.have.length(1);
-					if (config.persistence_db != 'datastore') {
-						medias[0].id = medias[0]._id;
-					}
-					delete media.id;
+					medias[0].id = medias[0]._id;
 					delete medias[0]._id;
 					delete medias[0].creation_date;
 					delete medias[0].modification_date;
@@ -113,7 +109,6 @@ describe('Media controller', () => {
 			let createdMedia;
 			const media = {
 				id: 'mediaId',
-				uuid: 'mediaId',
 				mediaType: 'video',
 				position: 1,
 				mediaPath: 'media/path',
@@ -139,9 +134,6 @@ describe('Media controller', () => {
 				.then(medias => {
 					console.log("retrieved medias are ", medias);
 					medias.should.have.length(1);
-					if (config.persistence_db != 'datastore') {
-						medias[0].id = medias[0]._id;
-					}
 					delete medias[0].creation_date;
 					delete medias[0].modification_date;
 					console.log("expected ", createdMedia);

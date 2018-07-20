@@ -4,10 +4,6 @@ const Modelate = require('modelate');
 const modelUtil = require('../../../store/model-util');
 
 const model = {
-	// TODO/FIXME(jliarte): 10/07/18 needed while datastore store does not support string IDs (do for other project/composition models!)
-	uuid:  {
-		type: 'string'
-	},
 	mediaType: {
 		type: 'string'
 	},
@@ -88,7 +84,7 @@ const defaults = {
 	// },
 };
 
-const  noDefaultsFields = ['uuid', 'stopTime', 'transcodeFinished', 'created_by'];
+const  noDefaultsFields = ['stopTime', 'transcodeFinished', 'created_by'];
 
 const Model = new Modelate('Media').set(model);
 

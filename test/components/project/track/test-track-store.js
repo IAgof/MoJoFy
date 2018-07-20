@@ -21,8 +21,7 @@ describe('Track store', () => {
 
 		it('it should create a track', () => {
 			const track = {
-				// id: 'trackId',
-				uuid: 'trackId',
+				id: 'trackId',
 				trackIndex: 0,
 				volume: 0.4,
 				mute: true,
@@ -31,14 +30,16 @@ describe('Track store', () => {
 				created_by: 'userId'
 			};
 			return trackStore.upsert(track)
-				.then(createdTrack => {
-					console.log("track created ", createdTrack);
+				.then(createdTrackId => {
+					console.log("track created id", createdTrackId);
+					createdTrackId.should.equal(track.id);
 					return trackStore.list();
 				})
 				.then(tracks => {
 					console.log("retrieved tracks are ", tracks);
 					tracks.should.have.length(1);
 					delete tracks[0]._id;
+					delete track.id;
 					delete tracks[0].creation_date;
 					delete tracks[0].modification_date;
 					console.log("expected ", track);
@@ -49,7 +50,7 @@ describe('Track store', () => {
 
 		it('it should assign a id if not provided', () => {
 			const track = {
-				uuid: 'tarckId',
+				positoin: 0,
 			};
 			return trackStore.upsert(track)
 				.then(createdTrack => {
@@ -65,7 +66,7 @@ describe('Track store', () => {
 
 		it('it should set creation and modification date on a new track', () => {
 			const track = {
-				uuid: 'trackId',
+				position: 0,
 			};
 			return trackStore.upsert(track)
 				.then(createdTrack => {

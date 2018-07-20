@@ -4,10 +4,6 @@ const Modelate = require('modelate');
 const modelUtil = require('../../../store/model-util');
 
 const model = {
-// TODO/FIXME(jliarte): 10/07/18 needed while datastore store does not support string IDs (do for other project/composition models!)
-	uuid:  {
-		type: 'string'
-	},
 	trackIndex: {
 		type: 'number'
 	},
@@ -51,7 +47,7 @@ const defaults = {
 	compositionId: '',
 };
 
-const  noDefaultsFields = ['uuid', 'created_by'];
+const  noDefaultsFields = ['created_by'];
 
 const Model = new Modelate('Track').set(model);
 

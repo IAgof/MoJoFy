@@ -21,8 +21,7 @@ describe('Media store', () => {
 
 		it('it should create a media', () => {
 			const media = {
-				// id: 'mediaId',
-				uuid: 'mediaId',
+				id: 'mediaId',
 				mediaType: 'video',
 				position: 1,
 				mediaPath: 'media/path',
@@ -47,6 +46,7 @@ describe('Media store', () => {
 				.then(medias => {
 					console.log("retrieved medias are ", medias);
 					medias.should.have.length(1);
+					medias[0].id = medias[0]._id;
 					delete medias[0]._id;
 					delete medias[0].creation_date;
 					delete medias[0].modification_date;
@@ -58,7 +58,7 @@ describe('Media store', () => {
 
 		it('it should assign a id if not provided', () => {
 			const media = {
-				uuid: 'mediaId',
+				mediaPath: 'media/path',
 			};
 			return mediaStore.upsert(media)
 				.then(createdMedia => {
@@ -74,7 +74,7 @@ describe('Media store', () => {
 
 		it('it should set creation and modification date on a new media', () => {
 			const media = {
-				uuid: 'mediaId',
+				mediaPath: 'media/path',
 			};
 			return mediaStore.upsert(media)
 				.then(createdMedia => {

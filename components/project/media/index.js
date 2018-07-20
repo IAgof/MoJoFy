@@ -17,8 +17,10 @@ function add(newMediaData, user) {
 
 	const mediaModel = Model.set(newMedia);
 	logger.debug("media model after modelate: ", mediaModel);
+	mediaModel.id = newMedia.id || newMedia._id || null; // TODO(jliarte): 20/07/18 manage id collisions
 	return store.add(mediaModel)
 		.then((mediaId) => {
+			delete mediaModel.id;
 			mediaModel._id = mediaId;
 			return mediaModel;
 		});
