@@ -27,7 +27,7 @@ describe('Project controller', () => {
 
 		it('it should create a project', () => {
 			const project = {
-				uuid: 'projectId',
+				id: 'projectId',
 				name: 'myproject',
 				location: 'madrid',
 				date: new Date(),
@@ -42,9 +42,7 @@ describe('Project controller', () => {
 				.then(projects => {
 					console.log("retrieved projects are ", projects);
 					projects.should.have.length(1);
-					if (config.persistence_db != 'datastore') {
-						projects[0].id = projects[0]._id;
-					}
+					projects[0].id = projects[0]._id;
 					delete projects[0]._id;
 					delete projects[0].creation_date;
 					delete projects[0].modification_date;
@@ -104,7 +102,7 @@ describe('Project controller', () => {
 		it('it should return created project', () => {
 			let createdProject;
 			const project = {
-				uuid: 'projectId',
+				id: 'projectId',
 				name: 'myproject',
 				location: 'madrid',
 				date: new Date(),
@@ -115,14 +113,11 @@ describe('Project controller', () => {
 				.then(result => {
 					console.log("project created ", result);
 					createdProject = result;
-					return projectStore.list();
+					return projectCtrl.list();
 				})
 				.then(projects => {
 					console.log("retrieved projects are ", projects);
 					projects.should.have.length(1);
-					if (config.persistence_db != 'datastore') {
-						projects[0].id = projects[0]._id;
-					}
 					delete projects[0].creation_date;
 					delete projects[0].modification_date;
 					console.log("expected ", createdProject);

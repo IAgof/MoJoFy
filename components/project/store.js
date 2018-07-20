@@ -22,7 +22,7 @@ function upsert(newProjectData) {
 		delete newProject.id;
 		delete newProject._id;
 
-		logger.debug("project store upsert to ", config.persistence_db);
+		logger.debug("project store upsert id [" + id + "] to ", config.persistence_db);
 		Persistent.add(type, newProject, id, function(result, id) {
 			logger.debug("Project store add persistent result ", result);
 			logger.debug("Project store add persistent id ", id);

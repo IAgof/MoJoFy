@@ -4,9 +4,6 @@ const Modelate = require('modelate');
 const modelUtil = require('../../store/model-util');
 
 const model = {
-	uuid: {
-		type: 'string'
-	},
 	name: {
 		type: 'string'
 	},
@@ -39,7 +36,7 @@ const defaults = {
 	poster: ''
 };
 
-const noDefaultsFields = ['uuid', 'created_by'];
+const noDefaultsFields = ['created_by'];
 
 const Model = new Modelate('Project').set(model);
 

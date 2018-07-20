@@ -17,9 +17,11 @@ function add(newProjectData, user) {
 	}
 	const projectModel = Model.set(newProject);
 	logger.debug("project model after modelate: ", projectModel);
+	projectModel.id = newProject.id || newProject._id || null; // TODO(jliarte): 20/07/18 manage id collisions
 
 	return store.add(projectModel)
 		.then(projectId => {
+			delete projectModel.id;
 			projectModel._id = projectId;
 			return projectModel;
 		});
