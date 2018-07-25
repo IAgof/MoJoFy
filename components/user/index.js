@@ -20,7 +20,7 @@ exports.exist = exist;
 exports.update = update;
 exports.query = query;
 exports.updateVideoCounter = updateVideoCounter;
-
+exports.decreaseVideoCounter = decreaseVideoCounter;
 
 // Internal functions
 
@@ -323,6 +323,30 @@ function setVideoCounter(data, callback) {
 				callback(data);
 			}
 		});
+	});
+}
+
+/**
+ * Decrease user videoCount field
+ *
+ * @param userId user id
+ * @param callback
+ * @returns {boolean}
+ */
+function decreaseVideoCounter(userId, callback) {
+	logger.debug("User.decreaseVideoCounter of ", userId);
+	Store.get(userId, function (data) {
+		if (data) {
+			if (data.videoCount) {
+				data.id = userId;
+				data.videoCount--;
+				Store.upsert(data, callback);
+			} else {
+				callback(false);
+			}
+		} else {
+			callback(false);
+		}
 	});
 }
 

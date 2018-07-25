@@ -1,3 +1,5 @@
+// components/video/model.js
+
 const Modelate = require('modelate');
 
 const model = {

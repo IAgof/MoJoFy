@@ -142,6 +142,7 @@ router.put('/:id', Acl, Upload.any(), function (req, res, next) {
 
 
 router.delete('/:id', Acl, function (req, res, next) {
+	logger.debug("DELETE /video " + req.params.id);
 	Controller.remove(req.params.id, getUser(req), function (data, err, code) {
 		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
