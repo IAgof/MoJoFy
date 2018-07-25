@@ -34,7 +34,7 @@ server.use(checkJwt, function (err, req, res, next) {
 	// (jliarte): 5/07/18 avoid JWT expired error!!
 	// see https://github.com/auth0/express-jwt/issues/194
 	if (err.code === 'invalid_token') return next();
-	return next(e);
+	return next(err);
 });
 server.use(auth0User);
 

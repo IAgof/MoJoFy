@@ -72,13 +72,12 @@ function middleware(req, res, next, operation) {
 		return false;
 	}
 
-	const token = req.user;
 	logger.debug("req user = token is ", req.user);
 
 	const role = getUserRole(req) || 'guest';
 	const resource = req.baseUrl.split('/')[1].toLowerCase();
 	// const action = getAction(req, token);
-	const action = operation || actionMethod(req, token);
+	const action = operation || actionMethod(req);
 
 	logger.debug('role: ' + role + '; resource: ' + resource + '; action: ' + action + ';');
 
