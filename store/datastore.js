@@ -170,7 +170,7 @@ function removeMulti(kind, ids) {
  *	 
  */
 function query(kind, options, cb) {
-	if (!kind) {
+    if (!kind) {
 		cb(false);
 		return false;
 	}
@@ -214,18 +214,18 @@ function query(kind, options, cb) {
 		});
 	}
 
-	query.run(function(err, entities, info) {
+    query.run(function(err, entities, info) {
 		// We shall do this with this info, to enable cursors...
 		logger.debug(info);
 		if (err) {
 			logger.error("Error querying datastore ", err);
 		}
-		cb(entities.map(fromDatastore));
+		cb(entities.map(setEntityId));
 	});
 
 }
 
-/** fromDatastore
+/** setEntityId
  *	Translates from Datastore's entity format to
  *	the format expected by the application.
  *
@@ -243,8 +243,8 @@ function query(kind, options, cb) {
  *		property: value
  *	}
  */
-function fromDatastore (obj) {
-  obj._id = obj[gcloud.datastore.KEY].id || obj[gcloud.datastore.KEY].name;
+function setEntityId (obj) {
+    obj._id = obj[gcloud.datastore.KEY].id || obj[gcloud.datastore.KEY].name;
   return obj;
 }
 

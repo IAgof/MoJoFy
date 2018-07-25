@@ -1,3 +1,5 @@
+// components/asset/store.js
+
 const Bluebird = require('bluebird');
 const PromisifierUtils = require('../../util/promisifier-utils');
 
@@ -5,7 +7,7 @@ const logger = require('../../logger')(module);
 const config = require('../../config');
 
 const Persistent = require('../../store/' + config.persistence_db);
-const assetRepo = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierUtils.noErrPromisifier });
+const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierUtils.noErrPromisifier });
 
 const type = 'asset';
 
@@ -34,7 +36,7 @@ function upsert(newAssetData) {
 }
 
 function list() {
-	return assetRepo.queryAsync(type, {});
+	return Repository.queryAsync(type, {});
 }
 
 function get(id) {
@@ -43,11 +45,11 @@ function get(id) {
 			resolve(data);
 		});
 	});
-	// return assetRepo.getAsync(id);
+	// return Repository.getAsync(id);
 }
 
 function remove(id) {
-	return assetRepo.removeAsync(type, id);
+	return Repository.removeAsync(type, id);
 }
 
 

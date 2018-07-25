@@ -1,3 +1,5 @@
+// components/asset/network.js
+
 const Controller = require('./');
 const Config = require('../../config');
 

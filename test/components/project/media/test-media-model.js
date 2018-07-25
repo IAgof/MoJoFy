@@ -22,8 +22,8 @@ describe('Media model', () => {
 		it('it should set default values for empty fields', () => {
 			const media = {
 			};
-			modelatedProject = Media.set(media);
-			modelatedProject.should.deep.equal(Media._defaults);
+			let modelatedMedia = Media.set(media);
+			modelatedMedia.should.deep.equal(Media._defaults);
 		});
 
 		// it('it should create a default date value if not present', () => {

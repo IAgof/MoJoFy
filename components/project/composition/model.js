@@ -91,7 +91,7 @@ const defaults = {
 	// },
 };
 
-const  noDefaultsFields = ['created_by'];
+const noDefaultsFields = ['created_by'];
 
 const Model = new Modelate('Composition').set(model);
 

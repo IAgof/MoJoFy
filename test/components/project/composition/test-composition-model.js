@@ -22,8 +22,8 @@ describe('Composition model', () => {
 		it('it should set default values for empty fields', () => {
 			const composition = {
 			};
-			modelatedProject = Composition.set(composition);
-			modelatedProject.should.deep.equal(Composition._defaults);
+			let modelatedComposition = Composition.set(composition);
+			modelatedComposition.should.deep.equal(Composition._defaults);
 		});
 
 		// it('it should create a default date value if not present', () => {

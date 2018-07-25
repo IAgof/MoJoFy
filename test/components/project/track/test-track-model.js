@@ -22,8 +22,8 @@ describe('Track model', () => {
 		it('it should set default values for empty fields', () => {
 			const composition = {
 			};
-			modelatedProject = Track.set(composition);
-			modelatedProject.should.deep.equal(Track._defaults);
+			let modelatedTrack = Track.set(composition);
+			modelatedTrack.should.deep.equal(Track._defaults);
 		});
 
 		// it('it should create a default date value if not present', () => {

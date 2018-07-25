@@ -22,7 +22,7 @@ describe('Project model', () => {
 		it('it should set default values for empty fields', () => {
 			const project = {
 			};
-			modelatedProject = Project.set(project);
+			let modelatedProject = Project.set(project);
 			modelatedProject.should.deep.equal(Project._defaults);
 		});
 

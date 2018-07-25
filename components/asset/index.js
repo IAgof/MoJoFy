@@ -1,3 +1,5 @@
+// components/asset/index.js
+
 const store = require('./store');
 
 const logger = require('../../logger')(module);
@@ -9,32 +11,37 @@ const Model = require('./model');
 function add(newAssetData, user) {
 	logger.info("User ", user);
 	logger.debug("...created new asset ", newAssetData);
-	newComposition = Object.assign({}, newAssetData);
+	let newAsset = Object.assign({}, newAssetData);
 	if (user) {
 		// TODO: don't overwrite
-		newComposition.created_by = user.sub;
+		newAsset.created_by = user._id;
 	} else {
 		// TODO: reject? asset without user!
 	}
 
 	if (!newAssetData.date) {
-		newComposition.date = new Date();
+		newAsset.date = new Date();
 	}
 	// TODO: all mimetypes
-	logger.debug("Asset file is ", newComposition.file);
-	return FileUpload.moveUploadedFile(newComposition.file, Config.storage_folder.asset)
+	logger.debug("Asset file is ", newAsset.file);
+	return FileUpload.moveUploadedFile(newAsset.file, Config.storage_folder.asset)
 		.then(url => {
 			logger.debug("New asset processed with results", url);
 			if (url) {
-				newComposition.uri = url;
-				newComposition.filename = newComposition.file.originalname;
-				newComposition.mimetype = newComposition.file.mimetype;
+				newAsset.uri = url;
+				newAsset.filename = newAsset.file.originalname;
+				newAsset.mimetype = newAsset.file.mimetype;
 			}
 
-			const assetModel = Model.set(newComposition);
+			const assetModel = Model.set(newAsset);
 			logger.debug("asset model after modelate: ", assetModel);
-			return store.add(assetModel)
-				.then(() => { return assetModel });
+            assetModel.id = newAssetData.id || newAssetData._id || null; // TODO(jliarte): 20/07/18 manage id collisions
+            return store.add(assetModel)
+				.then((assetId) => {
+					delete assetModel.id;
+					assetModel._id = assetId;
+					return assetModel
+				});
 		});
 }
 

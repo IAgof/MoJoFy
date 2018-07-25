@@ -1,4 +1,7 @@
+// components/asset/model.js
+
 const Modelate = require('modelate');
+const modelUtil = require('../../store/model-util');
 
 const model = {
 	name: {
@@ -19,7 +22,7 @@ const model = {
 	uri: {
 		type: 'string'
 	},
-	project: {
+	projectId: {
 		type: 'string',
 	},
 	date: {
@@ -39,13 +42,24 @@ const model = {
 	}
 };
 
+const defaults = {
+    name: '',
+    filename: '',
+    mimetype: '',
+    uri: '',
+    projectId: '',
+};
+
+const  noDefaultsFields = ['type', 'hash', 'date', 'created_by'];
+
 const Model = new Modelate('Asset').set(model);
 
 function set(data) {
-	return Model.modelate(data);
+    return modelUtil.set(data, Model, defaults, noDefaultsFields);
 }
 
 module.exports = {
 	model: model,
+    _defaults: defaults,
 	set: set
 };
