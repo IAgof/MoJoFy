@@ -5,8 +5,15 @@ const store = require('./store');
 const logger = require('../../logger')(module);
 const Config = require('../../config');
 const FileUpload = require('../file');
+const mediaCtrl = require('../project/media');
 
 const Model = require('./model');
+
+function updateMediaAsset(newAssetData, assetId) {
+    if (newAssetData.mediaId && newAssetData.mediaId != "") {
+        mediaCtrl.updateMediaAsset(newAssetData.mediaId, assetId);
+    }
+}
 
 function add(newAssetData, user) {
 	logger.info("User ", user);
@@ -38,6 +45,7 @@ function add(newAssetData, user) {
             assetModel.id = newAssetData.id || newAssetData._id || null; // TODO(jliarte): 20/07/18 manage id collisions
             return store.add(assetModel)
 				.then((assetId) => {
+					updateMediaAsset(newAssetData, assetId);
 					delete assetModel.id;
 					assetModel._id = assetId;
 					return assetModel
@@ -49,7 +57,25 @@ function list() {
 	return store.list();
 }
 
+function remove(id) {
+	let deletedAsset;
+	return store.get(id)
+		.then(asset => {
+			deletedAsset = asset;
+			return store.remove(id);
+		}).then(res => {
+			logger.debug("removing asset [" + id + "] result ", res);
+			if (res) {
+				deletedAsset._id = id;
+				return deletedAsset;
+			} else {
+				return false; // TODO(jliarte): 26/07/18 reject, resolve or throw?
+			}
+		});
+}
+
 module.exports = {
 	add,
-	list
+	list,
+	remove
 };

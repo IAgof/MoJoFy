@@ -46,6 +46,9 @@ const model = {
 	trackId: {
 		type: 'string',
 	},
+    assetId: {
+		type: 'string',
+	},
 	creation_date: {
 		type: 'object',
 		date: true
@@ -77,7 +80,8 @@ const defaults = {
 	startTime: 0,
 	// stopTime: ???
 	videoError: '',
-	trackId: '', // TODO(jliarte): 14/07/18 set or not?
+    trackId: '', // TODO(jliarte): 14/07/18 set or not?
+    assetId: '', // TODO(jliarte): 25/07/18 set or not?
 	// date: {
 	// 	type: 'object',
 	// 	date: true

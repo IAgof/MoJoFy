@@ -14,15 +14,15 @@ const type = 'media';
 // TODO(jliarte): 11/07/18 check needed indexes!
 Persistent.index(type, [], logger.debug);
 
-function upsert(newMediaData) {
-	let newMedia = Object.assign({}, newMediaData);
+function upsert(mediaData) {
+	let media = Object.assign({}, mediaData);
 	return new Promise((resolve, reject) => {
-		const id = newMedia.id || newMedia._id || null;
-		delete newMedia.id;
-		delete newMedia._id;
+		const id = media.id || media._id || null;
+		delete media.id;
+		delete media._id;
 
 		logger.debug("media store upsert to ", config.persistence_db);
-		Persistent.add(type, newMedia, id, function(result, id) {
+		Persistent.upsert(type, media, id, function(result, id) {
 			logger.debug("media store add persistent result ", result);
 			logger.debug("media store add persistent id ", id);
 			if (result) {

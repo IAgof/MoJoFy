@@ -4,6 +4,8 @@ const logger = require('../../../logger')(module);
 const store = require('./store');
 const Model = require('./model');
 
+const assetCtrl = require('../../asset');
+
 function add(newMediaData, user) {
 	logger.info("User ", user);
 	logger.debug("...created new media ", newMediaData);
@@ -30,7 +32,23 @@ function list() {
 	return store.list();
 }
 
+function updateMediaAsset(mediaId, assetId) {
+	return store.get(mediaId)
+		.then(media => {
+			if (media) {
+				if (media.assetId && media.assetId != "") {
+					assetCtrl.remove(media.assetId);
+				}
+				media.id = mediaId;
+				media.assetId = assetId;
+				return store.upsert(media);
+			}
+			return Promise.resolve();
+		});
+}
+
 module.exports = {
 	add,
-	list
+	list,
+	updateMediaAsset
 };

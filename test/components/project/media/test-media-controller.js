@@ -1,10 +1,18 @@
 process.env.NODE_ENV = 'test';
 // During the test the env variable is set to test
 
-const mediaStore = require('../../../../components/project/media/store');
-const mediaCtrl = require('../../../../components/project/media');
-const config = require('../../../../config');
+const proxyquire = require('proxyquire');
+const sinon = require('sinon');
 
+const assetControllerSpy = {
+	faked: true,
+	remove: sinon.stub().returns(Promise.resolve())
+};
+
+const mediaStore = require('../../../../components/project/media/store');
+const mediaCtrl = proxyquire('../../../../components/project/media', {
+	'../../asset': assetControllerSpy
+});
 const testUtil = require('../../../test-util');
 
 //Require the dev-dependencies
@@ -21,7 +29,7 @@ describe('Media controller', () => {
 	describe('add', () => {
 		beforeEach(removeAllMedias);
 
-		it('it should create a media', () => {
+		it('should create a media', () => {
 			const media = {
 				id: 'mediaId',
 				mediaType: 'video',
@@ -38,6 +46,7 @@ describe('Media controller', () => {
 				videoError: 'no error',
 				transcodeFinished: true,
 				trackId: 'trackId',
+                assetId: 'assetId',
 				created_by: 'userId'
 			};
 			return mediaCtrl.add(media)
@@ -58,7 +67,7 @@ describe('Media controller', () => {
 				});
 		});
 
-		it('it should assign a id if not present', () => {
+		it('should assign a id if not present', () => {
 			const media = {
 			};
 			return mediaCtrl.add(media)
@@ -73,7 +82,7 @@ describe('Media controller', () => {
 				});
 		});
 
-		it('it should assign a user if present', () => {
+		it('should assign a user if present', () => {
 			const media = {
 			};
 			const user = { _id: 'userId' };
@@ -90,7 +99,7 @@ describe('Media controller', () => {
 				});
 		});
 
-		it('it should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
+		it('should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
 			const media = {
 			};
 			return mediaCtrl.add(media)
@@ -105,7 +114,7 @@ describe('Media controller', () => {
 				});
 		});
 
-		it('it should return created media', () => {
+		it('should return created media', () => {
 			let createdMedia;
 			const media = {
 				id: 'mediaId',
@@ -123,6 +132,7 @@ describe('Media controller', () => {
 				videoError: 'no error',
 				transcodeFinished: true,
 				trackId: 'trackId',
+                assetId: 'assetId',
 				created_by: 'userId'
 			};
 			return mediaCtrl.add(media)
@@ -144,4 +154,86 @@ describe('Media controller', () => {
 
 	});
 
+    describe('updateMediaAsset', () => {
+        beforeEach(removeAllMedias);
+
+        it('should set assetId for existing media with empty assetId', () => {
+        	let createdMedia;
+            const assetId = 'assetId';
+            const media = {
+                id: 'mediaId',
+                mediaType: 'video',
+                position: 1,
+                mediaPath: 'media/path',
+                volume: 0.2,
+                remoteTempPath: 'remote/tmp',
+                clipText: 'hello',
+                clipTextPosition: 'up',
+                hasText: true,
+                trimmed: true,
+                startTime: 240,
+                stopTime: 8900,
+                videoError: 'no error',
+                transcodeFinished: true,
+                trackId: 'trackId',
+                assetId: '',
+                created_by: 'userId'
+            };
+            return mediaCtrl.add(media)
+                .then(result => {
+                    console.log("media created ", result);
+                    createdMedia = result;
+                    return mediaCtrl.updateMediaAsset(createdMedia._id, assetId);
+                })
+				.then(value => {
+                    return mediaStore.list();
+                })
+                .then(medias => {
+                    console.log("retrieved medias are ", medias);
+                    medias.should.have.length(1);
+                    medias[0].assetId.should.equal(assetId);
+                });
+        });
+
+        it('should update assetId for existing media with assigned assetId and remove old asset', () => {
+            let createdMedia;
+            const assetId = 'assetId';
+            const media = {
+                id: 'mediaId',
+                mediaType: 'video',
+                position: 1,
+                mediaPath: 'media/path',
+                volume: 0.2,
+                remoteTempPath: 'remote/tmp',
+                clipText: 'hello',
+                clipTextPosition: 'up',
+                hasText: true,
+                trimmed: true,
+                startTime: 240,
+                stopTime: 8900,
+                videoError: 'no error',
+                transcodeFinished: true,
+                trackId: 'trackId',
+                assetId: 'otherAssetId',
+                created_by: 'userId'
+            };
+            return mediaCtrl.add(media)
+                .then(result => {
+                    console.log("media created ", result);
+                    createdMedia = result;
+                    return mediaCtrl.updateMediaAsset(createdMedia._id, assetId);
+                })
+                .then(value => {
+                    return mediaStore.list();
+                })
+                .then(medias => {
+                    console.log("retrieved medias are ", medias);
+                    medias.should.have.length(1);
+                    medias[0].assetId.should.equal(assetId);
+                    sinon.assert.called(assetControllerSpy.remove);
+                    sinon.assert.calledWith(assetControllerSpy.remove, media.assetId);
+                });
+        });
+
+    });
 });

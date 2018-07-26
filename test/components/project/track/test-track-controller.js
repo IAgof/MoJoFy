@@ -26,7 +26,7 @@ describe('Track controller', () => {
 		beforeEach(removeAllTracks);
 		beforeEach(removeAllMedias);
 
-		it('it should create a track', () => {
+		it('should create a track', () => {
 			const track = {
 				id: 'trackId',
 				trackIndex: 0,
@@ -54,7 +54,7 @@ describe('Track controller', () => {
 				});
 		});
 
-		it('it should assign a id if not present', () => {
+		it('should assign a id if not present', () => {
 			const track = {
 			};
 			return trackCtrl.add(track)
@@ -69,7 +69,7 @@ describe('Track controller', () => {
 				});
 		});
 
-		it('it should assign a user if present', () => {
+		it('should assign a user if present', () => {
 			const track = {
 			};
 			const user = { _id: 'userId' };
@@ -86,7 +86,7 @@ describe('Track controller', () => {
 				});
 		});
 
-		it('it should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
+		it('should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
 			const track = {
 			};
 			return trackCtrl.add(track)
@@ -101,7 +101,7 @@ describe('Track controller', () => {
 				});
 		});
 
-		it('it should return created track', () => {
+		it('should return created track', () => {
 			let createdTrack;
 			const track = {
 				id: 'trackId',
@@ -129,7 +129,7 @@ describe('Track controller', () => {
 				});
 		});
 
-		it('it should create medias if present', () => {
+		it('should create medias if present', () => {
 			let createdTrack;
 			const media1 = {
 				id:  'media1Id',
@@ -145,7 +145,8 @@ describe('Track controller', () => {
 				startTime: 0,
 				stopTime: 120980,
 				videoError: '',
-				transcodeFinished: false
+				transcodeFinished: false,
+				assetId: 'assetId.1'
 			};
 			const media2 = {
 				id:  'media2Id',
@@ -161,7 +162,8 @@ describe('Track controller', () => {
 				startTime: 0,
 				stopTime: 120980,
 				videoError: '',
-				transcodeFinished: false
+				transcodeFinished: false,
+				assetId: 'assetId.2'
 			};
 			let createdTrackId;
 			const track = {
