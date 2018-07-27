@@ -10,13 +10,13 @@ const mediaCtrl = require('../project/media');
 const Model = require('./model');
 
 function updateMediaAsset(newAssetData, assetId) {
-    if (newAssetData.mediaId && newAssetData.mediaId != "") {
-        mediaCtrl.updateMediaAsset(newAssetData.mediaId, assetId);
-    }
+	if (newAssetData.mediaId && newAssetData.mediaId != "") {
+		mediaCtrl.updateMediaAsset(newAssetData.mediaId, assetId);
+	}
 }
 
 function add(newAssetData, user) {
-	logger.info("User ", user);
+	logger.info("assetCtrl.add by user ", user);
 	logger.debug("...created new asset ", newAssetData);
 	let newAsset = Object.assign({}, newAssetData);
 	if (user) {
@@ -42,8 +42,8 @@ function add(newAssetData, user) {
 
 			const assetModel = Model.set(newAsset);
 			logger.debug("asset model after modelate: ", assetModel);
-            assetModel.id = newAssetData.id || newAssetData._id || null; // TODO(jliarte): 20/07/18 manage id collisions
-            return store.add(assetModel)
+			assetModel.id = newAssetData.id || newAssetData._id || null; // TODO(jliarte): 20/07/18 manage id collisions
+			return store.add(assetModel)
 				.then((assetId) => {
 					updateMediaAsset(newAssetData, assetId);
 					delete assetModel.id;
@@ -53,11 +53,24 @@ function add(newAssetData, user) {
 		});
 }
 
-function list() {
+function get(id, user) {
+	logger.info("assetCtrl.get [" + id + "] by user ", user);
+	return store.get(id)
+		.then(asset => {
+			if (asset) {
+				asset._id = id;
+			}
+			return asset;
+		});
+}
+
+function list(user) {
+	logger.info("assetCtrl.list by user ", user);
 	return store.list();
 }
 
 function remove(id) {
+	logger.info("assetCtrl.remove [" + id + "]");
 	let deletedAsset;
 	return store.get(id)
 		.then(asset => {
@@ -76,6 +89,7 @@ function remove(id) {
 
 module.exports = {
 	add,
+	get,
 	list,
 	remove
 };

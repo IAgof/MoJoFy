@@ -5,6 +5,7 @@ const PromisifierUtils = require('../../../util/promisifier-utils');
 
 const logger = require('../../../logger')(module);
 const config = require('../../../config');
+const insertFilter = require('../../../store/store-util').insertFilter;
 
 const Persistent = require('../../../store/' + config.persistence_db);
 const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierUtils.noErrPromisifier });
@@ -52,11 +53,22 @@ function remove(id) {
 	return Repository.removeAsync(type, id);
 }
 
+function query(params) {
+	const queryParams = {};
+	if (params.track) {
+		// build filter by specification
+		if (params.track.compositionId && typeof params.track.compositionId === 'string') {
+			insertFilter('compositionId', '=', params.track.compositionId, queryParams);
+		}
+	}
+	return Repository.queryAsync(type, queryParams);
+}
 
 module.exports = {
 	add: upsert,
 	upsert,
 	list,
 	get,
+	query,
 	remove
 };

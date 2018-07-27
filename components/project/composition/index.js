@@ -76,12 +76,37 @@ function update(compositionData, user) {
 		});
 }
 
-function list() {
+function list(user) {
+	logger.info("compositionCtrl.list by User ", user);
 	return store.list();
+}
+
+function get(id, cascade, user) {
+	logger.info("compositionCtrl.get id [" + id + "] by User ", user);
+	let composition;
+	return store.get(id)
+		.then(retrievedComposition => {
+			composition = retrievedComposition;
+			if (retrievedComposition) {
+				retrievedComposition._id = id;
+			}
+			if (cascade) {
+				return trackCtrl.query({ track: { compositionId: id }, cascade: cascade });
+			} else {
+				return [];
+			}
+		})
+		.then(tracks => {
+			if (tracks && tracks.length > 0) {
+				composition.tracks = tracks;
+			}
+			return composition;
+		});
 }
 
 module.exports = {
 	add,
 	update,
-	list
+	list,
+	get
 };

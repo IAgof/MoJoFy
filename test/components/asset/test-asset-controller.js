@@ -7,14 +7,14 @@ const proxyquire = require('proxyquire');
 const sinon = require('sinon');
 
 const mediaControllerSpy = {
-    faked: true,
-    // remove: sinon.stub().callsArgWith(1, true),
-    updateMediaAsset: sinon.stub().returns(Promise.resolve())
+	faked: true,
+	// remove: sinon.stub().callsArgWith(1, true),
+	updateMediaAsset: sinon.stub().returns(Promise.resolve())
 };
 
 const assetStore = require('../../../components/asset/store');
 const assetCtrl = proxyquire('../../../components/asset', {
-    '../project/media': mediaControllerSpy
+	'../project/media': mediaControllerSpy
 });
 
 const testUtil = require('../../test-util');
@@ -31,20 +31,20 @@ function removeAllAssets() {
 
 describe('Asset controller', () => {
 	describe('add', () => {
-		beforeEach(removeAllAssets.bind(null)); // TODO(jliarte): 25/07/18 don't know why error happens: TypeError: Cannot read property 'call' of undefined
+		beforeEach(removeAllAssets);
 
 		it('should create an asset', () => {
 			const asset = {
 				id: 'assetId',
-                name: 'asset name',
-                type: 'video',
-                hash: 'sahflkdsagflkjdsafglkudsafdsa',
-                filename: 'file.name',
-                mimetype: 'mime/type',
-                uri: 'asset/uuri',
-                projectId: 'projectId',
-                date: new Date(),
-                created_by: 'userId'
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId'
 			};
 			return assetCtrl.add(asset)
 				.then(createdAsset => {
@@ -54,10 +54,7 @@ describe('Asset controller', () => {
 				.then(assets => {
 					console.log("retrieved assets are ", assets);
 					assets.should.have.length(1);
-					assets[0].id = assets[0]._id;
-					delete assets[0]._id;
-					delete assets[0].creation_date;
-					delete assets[0].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(assets[0]);
 					console.log("expected ", asset);
 					console.log("actual", assets[0]);
 					assets[0].should.deep.equal(asset); // _id
@@ -65,8 +62,7 @@ describe('Asset controller', () => {
 		});
 
 		it('should assign a id if not present', () => {
-			const asset = {
-			};
+			const asset = {};
 			return assetCtrl.add(asset)
 				.then(createdAsset => {
 					console.log("asset created ", createdAsset);
@@ -80,9 +76,8 @@ describe('Asset controller', () => {
 		});
 
 		it('should assign a user if present', () => {
-			const asset = {
-			};
-			const user = { _id: 'userId' };
+			const asset = {};
+			const user = {_id: 'userId'};
 			return assetCtrl.add(asset, user)
 				.then(createdAsset => {
 					console.log("asset created ", createdAsset);
@@ -97,8 +92,7 @@ describe('Asset controller', () => {
 		});
 
 		it('should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
-			const asset = {
-			};
+			const asset = {};
 			return assetCtrl.add(asset)
 				.then(createdAsset => {
 					console.log("asset created ", createdAsset);
@@ -113,19 +107,19 @@ describe('Asset controller', () => {
 
 		it('should return created asset', () => {
 			let createdAsset;
-            const asset = {
-                id: 'assetId',
-                name: 'asset name',
-                type: 'video',
-                hash: 'sahflkdsagflkjdsafglkudsafdsa',
-                filename: 'file.name',
-                mimetype: 'mime/type',
-                uri: 'asset/uuri',
-                projectId: 'projectId',
-                date: new Date(),
-                created_by: 'userId'
-            };
-            return assetCtrl.add(asset)
+			const asset = {
+				id: 'assetId',
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId'
+			};
+			return assetCtrl.add(asset)
 				.then(result => {
 					console.log("asset created ", result);
 					createdAsset = result;
@@ -142,67 +136,98 @@ describe('Asset controller', () => {
 				});
 		});
 
-        it('should update media asset to existing media', () => {
-            let createdAssetId;
-            const mediaId = 'mediaId';
-            const asset = {
-                id: 'assetId',
-                name: 'asset name',
-                type: 'video',
-                hash: 'sahflkdsagflkjdsafglkudsafdsa',
-                filename: 'file.name',
-                mimetype: 'mime/type',
-                uri: 'asset/uuri',
-                projectId: 'projectId',
-                date: new Date(),
-                created_by: 'userId',
+		it('should update media asset to existing media', () => {
+			let createdAssetId;
+			const mediaId = 'mediaId';
+			const asset = {
+				id: 'assetId',
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId',
 				mediaId: mediaId
-            };
-            return assetCtrl.add(asset)
-                .then(result => {
-                    console.log("asset created ", result);
-                    return assetStore.list();
-                })
-                .then(assets => {
-                    console.log("retrieved assets are ", assets);
-                    assets.should.have.length(1);
-                    createdAssetId = assets[0]._id;
-                    sinon.assert.called(mediaControllerSpy.updateMediaAsset);
-                    sinon.assert.calledWith(mediaControllerSpy.updateMediaAsset, mediaId, createdAssetId);
-                });
-        });
-    });
-
-    describe('remove', () => {
-        beforeEach(removeAllAssets);
-        // beforeEach(removeAllAssets.bind(null)); // TODO(jliarte): 25/07/18 don't know why error happens: TypeError: Cannot read property 'call' of undefined
-
-        it('should remove existing asset', () => {
-            const asset1 = {
-                id: 'assetId1',
-            };
-            const asset2 = {
-                id: 'assetId2',
-            };
-            return assetCtrl.add(asset1)
-                .then(result => {
-                    console.log("asset created ", result);
-                    return assetCtrl.add(asset2);
-                })
+			};
+			return assetCtrl.add(asset)
 				.then(result => {
-                    console.log("asset created ", result);
-                    return assetCtrl.remove(asset1.id);
-                })
+					console.log("asset created ", result);
+					return assetStore.list();
+				})
+				.then(assets => {
+					console.log("retrieved assets are ", assets);
+					assets.should.have.length(1);
+					createdAssetId = assets[0]._id;
+					sinon.assert.called(mediaControllerSpy.updateMediaAsset);
+					sinon.assert.calledWith(mediaControllerSpy.updateMediaAsset, mediaId, createdAssetId);
+				});
+		});
+	});
+
+	describe('remove', () => {
+		beforeEach(removeAllAssets);
+		// beforeEach(removeAllAssets.bind(null)); // TODO(jliarte): 25/07/18 don't know why error happens: TypeError: Cannot read property 'call' of undefined
+
+		it('should remove existing asset', () => {
+			const asset1 = {
+				id: 'assetId1',
+			};
+			const asset2 = {
+				id: 'assetId2',
+			};
+			return assetCtrl.add(asset1)
+				.then(result => {
+					console.log("asset created ", result);
+					return assetCtrl.add(asset2);
+				})
+				.then(result => {
+					console.log("asset created ", result);
+					return assetCtrl.remove(asset1.id);
+				})
 				.then(removedAsset => {
 					removedAsset._id.should.equal(asset1.id);
-                    return assetStore.list();
-                })
-                .then(assets => {
-                    console.log("retrieved assets are ", assets);
-                    assets.should.have.length(1);
-                    assets[0]._id.should.equal(asset2.id);
-                });
-        });
+					return assetStore.list();
+				})
+				.then(assets => {
+					console.log("retrieved assets are ", assets);
+					assets.should.have.length(1);
+					assets[0]._id.should.equal(asset2.id);
+				});
+		});
 
-    });
+	});
+
+	describe('get', () => {
+		beforeEach(removeAllAssets);
+
+		it('should return specified asset by id', () => {
+			const asset = {
+				id: 'assetId',
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId'
+			};
+			return assetCtrl.add(asset)
+				.then(createdAsset => {
+					console.log("asset created id ", createdAsset);
+					return assetCtrl.get(createdAsset._id);
+				})
+				.then(retrievedAsset => {
+					console.log("retrieved asset is ", retrievedAsset);
+					testUtil.prepareRetrievedEntityToCompare(retrievedAsset);
+					retrievedAsset.should.deep.equal(asset);
+				});
+		});
+
+	});
+
 });

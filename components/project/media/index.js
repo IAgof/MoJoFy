@@ -7,7 +7,7 @@ const Model = require('./model');
 const assetCtrl = require('../../asset');
 
 function add(newMediaData, user) {
-	logger.info("User ", user);
+	logger.info("mediaCtrl.add by User ", user);
 	logger.debug("...created new media ", newMediaData);
 	let newMedia = Object.assign({}, newMediaData);
 	if (user) {
@@ -28,11 +28,40 @@ function add(newMediaData, user) {
 		});
 }
 
-function list() {
+function list(user) {
+	logger.info("mediaCtrl.list by User ", user);
 	return store.list();
 }
 
+function setMediaAsset(medias, mediaAssets) {
+	for (let i = 0; i < medias.length; i++) {
+		if (mediaAssets[i]) {
+			medias[i].asset = mediaAssets[i];
+		}
+	}
+}
+
+function query(params, user) {
+	logger.info("mediaCtrl.updateMediaAsset by User ", user);
+	logger.debug("with params ", params);
+	let medias = [];
+	return store.query(params)
+		.then(retrievedMedias => {
+			medias = retrievedMedias;
+			if (params.cascade) {
+				return Promise.all(retrievedMedias.map(media => assetCtrl.get(media.assetId)));
+			}
+		})
+		.then(mediaAssets => {
+			if (mediaAssets) {
+				setMediaAsset(medias, mediaAssets);
+			}
+			return medias;
+		});
+}
+
 function updateMediaAsset(mediaId, assetId) {
+	logger.info("mediaCtrl.updateMediaAsset media [" + mediaId + "] - asset [" + assetId + "]");
 	return store.get(mediaId)
 		.then(media => {
 			if (media) {
@@ -50,5 +79,6 @@ function updateMediaAsset(mediaId, assetId) {
 module.exports = {
 	add,
 	list,
+	query,
 	updateMediaAsset
 };

@@ -5,6 +5,7 @@ const PromisifierUtils = require('../../../util/promisifier-utils');
 
 const logger = require('../../../logger')(module);
 const config = require('../../../config');
+const insertFilter = require('../../../store/store-util').insertFilter;
 
 const Persistent = require('../../../store/' + config.persistence_db);
 const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierUtils.noErrPromisifier });
@@ -49,15 +50,26 @@ function get(id) {
 	// return Repository.getAsync(id);
 }
 
+function query(params) {
+	const queryParams = {};
+	if (params.media) {
+		// build filter by specification
+		if (params.media.trackId && typeof params.media.trackId === 'string') {
+			insertFilter('trackId', '=', params.media.trackId, queryParams);
+		}
+	}
+	return Repository.queryAsync(type, queryParams);
+}
+
 function remove(id) {
 	return Repository.removeAsync(type, id);
 }
-
 
 module.exports = {
 	add: upsert,
 	upsert,
 	list,
+	query,
 	get,
 	remove
 };

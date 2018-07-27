@@ -425,7 +425,7 @@ function setMetadata(data, metadata) {
 	}
 
 	let videoStream = -1;
-	for (var i = 0; i < metadata.streams.length; i++) {
+	for (let i = 0; i < metadata.streams.length; i++) {
 		if (metadata.streams[i].codec_type === 'video') {
 			videoStream = i;
 			break;

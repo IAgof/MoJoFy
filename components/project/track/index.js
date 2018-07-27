@@ -18,7 +18,7 @@ function createTrackMedias(trackData, trackId, user) {
 }
 
 function add(newTrackData, user) {
-	logger.info("User ", user);
+	logger.info("trackController.add by User ", user);
 	logger.debug("...created new track ", newTrackData);
 	let newTrack = Object.assign({}, newTrackData);
 	if (user && user._id) {
@@ -44,11 +44,42 @@ function add(newTrackData, user) {
 		});
 }
 
-function list() {
+function list(user) {
+	logger.info("trackController.list by User ", user);
 	return store.list();
+}
+
+function setTrackMedias(tracks, mediaTracks) {
+	for (let i = 0; i < tracks.length; i++) {
+		if (mediaTracks[i] && mediaTracks[i].length > 0) {
+			tracks[i].medias = mediaTracks[i];
+		}
+	}
+}
+
+function query(params, user) {
+	logger.info("trackController.query by User ", user);
+	logger.debug("with params ", params);
+	let tracks = [];
+	return store.query(params)
+		.then(retrievedTracks => {
+			tracks = retrievedTracks;
+			if (params.cascade) {
+				logger.error("track query cascade");
+				return Promise.all(retrievedTracks.map(track => mediaCtrl
+					.query({ media: { trackId: track._id}, cascade: true })));
+			}
+		})
+		.then(mediaTracks => {
+			if (mediaTracks) {
+				setTrackMedias(tracks, mediaTracks);
+			}
+			return tracks;
+		});
 }
 
 module.exports = {
 	add,
-	list
+	list,
+	query
 };

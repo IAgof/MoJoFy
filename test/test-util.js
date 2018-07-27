@@ -16,6 +16,14 @@ function removeAllEntities(type) {
 		});
 }
 
+function prepareRetrievedEntityToCompare(entity) {
+	entity.id = entity._id;
+	delete entity._id;
+	delete entity.creation_date;
+	delete entity.modification_date;
+}
+
 module.exports = {
-	removeAllEntities
+	removeAllEntities,
+	prepareRetrievedEntityToCompare
 };

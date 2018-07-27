@@ -19,7 +19,7 @@ describe('Track store', () => {
 	describe('upsert', () => {
 		beforeEach(removeAllTracks);
 
-		it('it should create a track', () => {
+		it('should create a track', () => {
 			const track = {
 				id: 'trackId',
 				trackIndex: 0,
@@ -48,7 +48,7 @@ describe('Track store', () => {
 				});
 		});
 
-		it('it should assign a id if not provided', () => {
+		it('should assign a id if not provided', () => {
 			const track = {
 				positoin: 0,
 			};
@@ -64,7 +64,7 @@ describe('Track store', () => {
 				});
 		});
 
-		it('it should set creation and modification date on a new track', () => {
+		it('should set creation and modification date on a new track', () => {
 			const track = {
 				position: 0,
 			};
@@ -84,4 +84,35 @@ describe('Track store', () => {
 
 	});
 
+	describe('query', () => {
+		beforeEach(removeAllTracks);
+
+		it('should get track with specified compositionId', () => {
+			const track = {
+				id: 'trackId',
+				trackIndex: 0,
+				volume: 0.4,
+				mute: true,
+				position: 1,
+				compositionId: 'compositionId',
+				created_by: 'userId'
+			};
+			return trackStore.upsert(track)
+				.then(createdTrackId => {
+					console.log("track created id", createdTrackId);
+					return trackStore.query({ track: { compositionId: track.compositionId } });
+				})
+				.then(tracks => {
+					console.log("retrieved tracks are ", tracks);
+					tracks.should.have.length(1);
+					tracks[0].id = tracks[0]._id;
+					delete tracks[0]._id;
+					delete tracks[0].creation_date;
+					delete tracks[0].modification_date;
+					tracks[0].should.deep.equal(track); // _id
+				});
+		});
+
+	});
+	
 });

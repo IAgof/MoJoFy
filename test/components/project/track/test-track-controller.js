@@ -185,20 +185,122 @@ describe('Track controller', () => {
 				.then(medias => {
 					console.log("retrieved medias are ", medias);
 					medias.should.have.length(2);
-					medias[0].id = medias[0]._id;
-					delete medias[0]._id;
-					delete medias[0].creation_date;
-					delete medias[0].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(medias[0]);
 					media1.trackId = createdTrackId;
-					medias[1].id = medias[1]._id;
-					delete medias[1]._id;
-					delete medias[1].creation_date;
-					delete medias[1].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(medias[1]);
 					media2.trackId = createdTrackId;
 					medias.should.deep.include(media1); // _id
 					medias.should.deep.include(media2); // _id
 				});
 		});
+
+	});
+
+	describe('query', () => {
+		beforeEach(removeAllTracks);
+
+		it('should return track with compositionId filter', () => {
+			const track = {
+				id: 'trackId',
+				trackIndex: 0,
+				volume: 0.4,
+				mute: true,
+				position: 1,
+				compositionId: 'compositionId',
+				created_by: 'userId'
+			};
+			return trackStore.add(track)
+				.then(res => {
+					console.log("created track res ", res);
+					return trackCtrl.query({ track: { compositionId: track.compositionId } });
+				})
+				.then(tracks => {
+					console.log("retrieved tracks are: ", tracks);
+					tracks.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(tracks[0]);
+					tracks[0].should.deep.equal(track);
+					return trackCtrl.query({ track: { compositionId: 'notfound' } });
+				})
+				.then(tracks => {
+					console.log("retrieved tracks are: ", tracks);
+					tracks.should.have.length(0);
+				});
+		});
+
+		it('should return track with compositionId filter and corresponding medias if cascade', () => {
+			const media1 = {
+				id:  'media1Id',
+				mediaType: 'video',
+				position: 0,
+				mediaPath: 'media/1/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/1/path',
+				clipText: '',
+				clipTextPosition: '',
+				hasText: false,
+				trimmed: false,
+				startTime: 0,
+				stopTime: 120980,
+				videoError: '',
+				transcodeFinished: false,
+				assetId: 'assetId.1'
+			};
+			const media2 = {
+				id:  'media2Id',
+				mediaType: 'video',
+				position: 0,
+				mediaPath: 'media/1/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/1/path',
+				clipText: '',
+				clipTextPosition: '',
+				hasText: false,
+				trimmed: false,
+				startTime: 0,
+				stopTime: 120980,
+				videoError: '',
+				transcodeFinished: false,
+				assetId: 'assetId.2'
+			};
+			const track = {
+				id: 'trackId',
+				trackIndex: 0,
+				volume: 0.4,
+				mute: true,
+				position: 1,
+				compositionId: 'compositionId',
+				created_by: 'userId',
+				medias: [ media1, media2 ]
+			};
+			return trackCtrl.add(track)
+				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500)))
+				.then(res => {
+					console.log("created track res ", res);
+					return trackCtrl.query({ track: { compositionId: track.compositionId }, cascade: true });
+				})
+				.then(tracks => {
+					console.log("retrieved tracks are: ", tracks);
+					tracks.should.have.length(1);
+
+					tracks[0].should.have.property('medias');
+					tracks[0].medias.should.have.length(2);
+
+					const retrievedMedia1 = tracks[0].medias.filter(item => item._id === media1.id)[0];
+					console.error("ret me 1 ", retrievedMedia1);
+					testUtil.prepareRetrievedEntityToCompare(retrievedMedia1);
+					retrievedMedia1.should.deep.equal(media1);
+					const retrievedMedia2 = tracks[0].medias.filter(item => item._id === media2.id)[0];
+					testUtil.prepareRetrievedEntityToCompare(retrievedMedia2);
+					retrievedMedia2.should.deep.equal(media2);
+
+					return trackCtrl.query({ track: { compositionId: 'notfound' } });
+				})
+				.then(tracks => {
+					console.log("retrieved tracks are: ", tracks);
+					tracks.should.have.length(0);
+				});
+		});
+
 
 	});
 

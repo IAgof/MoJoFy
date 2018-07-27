@@ -13,6 +13,8 @@ const mediaStore = require('../../../../components/project/media/store');
 const mediaCtrl = proxyquire('../../../../components/project/media', {
 	'../../asset': assetControllerSpy
 });
+const assetStore = require('../../../../components/asset/store');
+
 const testUtil = require('../../../test-util');
 
 //Require the dev-dependencies
@@ -46,7 +48,7 @@ describe('Media controller', () => {
 				videoError: 'no error',
 				transcodeFinished: true,
 				trackId: 'trackId',
-                assetId: 'assetId',
+				assetId: 'assetId',
 				created_by: 'userId'
 			};
 			return mediaCtrl.add(media)
@@ -57,10 +59,7 @@ describe('Media controller', () => {
 				.then(medias => {
 					console.log("retrieved medias are ", medias);
 					medias.should.have.length(1);
-					medias[0].id = medias[0]._id;
-					delete medias[0]._id;
-					delete medias[0].creation_date;
-					delete medias[0].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(medias[0]);
 					console.log("expected ", media);
 					console.log("actual", medias[0]);
 					medias[0].should.deep.equal(media); // _id
@@ -68,8 +67,7 @@ describe('Media controller', () => {
 		});
 
 		it('should assign a id if not present', () => {
-			const media = {
-			};
+			const media = {};
 			return mediaCtrl.add(media)
 				.then(createdMedia => {
 					console.log("media created ", createdMedia);
@@ -83,9 +81,8 @@ describe('Media controller', () => {
 		});
 
 		it('should assign a user if present', () => {
-			const media = {
-			};
-			const user = { _id: 'userId' };
+			const media = {};
+			const user = {_id: 'userId'};
 			return mediaCtrl.add(media, user)
 				.then(createdMedia => {
 					console.log("media created ", createdMedia);
@@ -100,8 +97,7 @@ describe('Media controller', () => {
 		});
 
 		it('should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
-			const media = {
-			};
+			const media = {};
 			return mediaCtrl.add(media)
 				.then(createdMedia => {
 					console.log("media created ", createdMedia);
@@ -132,7 +128,7 @@ describe('Media controller', () => {
 				videoError: 'no error',
 				transcodeFinished: true,
 				trackId: 'trackId',
-                assetId: 'assetId',
+				assetId: 'assetId',
 				created_by: 'userId'
 			};
 			return mediaCtrl.add(media)
@@ -154,86 +150,188 @@ describe('Media controller', () => {
 
 	});
 
-    describe('updateMediaAsset', () => {
-        beforeEach(removeAllMedias);
+	describe('updateMediaAsset', () => {
+		beforeEach(removeAllMedias);
 
-        it('should set assetId for existing media with empty assetId', () => {
-        	let createdMedia;
-            const assetId = 'assetId';
-            const media = {
-                id: 'mediaId',
-                mediaType: 'video',
-                position: 1,
-                mediaPath: 'media/path',
-                volume: 0.2,
-                remoteTempPath: 'remote/tmp',
-                clipText: 'hello',
-                clipTextPosition: 'up',
-                hasText: true,
-                trimmed: true,
-                startTime: 240,
-                stopTime: 8900,
-                videoError: 'no error',
-                transcodeFinished: true,
-                trackId: 'trackId',
-                assetId: '',
-                created_by: 'userId'
-            };
-            return mediaCtrl.add(media)
-                .then(result => {
-                    console.log("media created ", result);
-                    createdMedia = result;
-                    return mediaCtrl.updateMediaAsset(createdMedia._id, assetId);
-                })
+		it('should set assetId for existing media with empty assetId', () => {
+			let createdMedia;
+			const assetId = 'assetId';
+			const media = {
+				id: 'mediaId',
+				mediaType: 'video',
+				position: 1,
+				mediaPath: 'media/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/tmp',
+				clipText: 'hello',
+				clipTextPosition: 'up',
+				hasText: true,
+				trimmed: true,
+				startTime: 240,
+				stopTime: 8900,
+				videoError: 'no error',
+				transcodeFinished: true,
+				trackId: 'trackId',
+				assetId: '',
+				created_by: 'userId'
+			};
+			return mediaCtrl.add(media)
+				.then(result => {
+					console.log("media created ", result);
+					createdMedia = result;
+					return mediaCtrl.updateMediaAsset(createdMedia._id, assetId);
+				})
 				.then(value => {
-                    return mediaStore.list();
-                })
-                .then(medias => {
-                    console.log("retrieved medias are ", medias);
-                    medias.should.have.length(1);
-                    medias[0].assetId.should.equal(assetId);
-                });
-        });
+					return mediaStore.list();
+				})
+				.then(medias => {
+					console.log("retrieved medias are ", medias);
+					medias.should.have.length(1);
+					medias[0].assetId.should.equal(assetId);
+				});
+		});
 
-        it('should update assetId for existing media with assigned assetId and remove old asset', () => {
-            let createdMedia;
-            const assetId = 'assetId';
-            const media = {
-                id: 'mediaId',
-                mediaType: 'video',
-                position: 1,
-                mediaPath: 'media/path',
-                volume: 0.2,
-                remoteTempPath: 'remote/tmp',
-                clipText: 'hello',
-                clipTextPosition: 'up',
-                hasText: true,
-                trimmed: true,
-                startTime: 240,
-                stopTime: 8900,
-                videoError: 'no error',
-                transcodeFinished: true,
-                trackId: 'trackId',
-                assetId: 'otherAssetId',
-                created_by: 'userId'
-            };
-            return mediaCtrl.add(media)
-                .then(result => {
-                    console.log("media created ", result);
-                    createdMedia = result;
-                    return mediaCtrl.updateMediaAsset(createdMedia._id, assetId);
-                })
-                .then(value => {
-                    return mediaStore.list();
-                })
-                .then(medias => {
-                    console.log("retrieved medias are ", medias);
-                    medias.should.have.length(1);
-                    medias[0].assetId.should.equal(assetId);
-                    sinon.assert.called(assetControllerSpy.remove);
-                    sinon.assert.calledWith(assetControllerSpy.remove, media.assetId);
-                });
-        });
+		it('should update assetId for existing media with assigned assetId and remove old asset', () => {
+			let createdMedia;
+			const assetId = 'assetId';
+			const media = {
+				id: 'mediaId',
+				mediaType: 'video',
+				position: 1,
+				mediaPath: 'media/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/tmp',
+				clipText: 'hello',
+				clipTextPosition: 'up',
+				hasText: true,
+				trimmed: true,
+				startTime: 240,
+				stopTime: 8900,
+				videoError: 'no error',
+				transcodeFinished: true,
+				trackId: 'trackId',
+				assetId: 'otherAssetId',
+				created_by: 'userId'
+			};
+			return mediaCtrl.add(media)
+				.then(result => {
+					console.log("media created ", result);
+					createdMedia = result;
+					return mediaCtrl.updateMediaAsset(createdMedia._id, assetId);
+				})
+				.then(value => {
+					return mediaStore.list();
+				})
+				.then(medias => {
+					console.log("retrieved medias are ", medias);
+					medias.should.have.length(1);
+					medias[0].assetId.should.equal(assetId);
+					sinon.assert.called(assetControllerSpy.remove);
+					sinon.assert.calledWith(assetControllerSpy.remove, media.assetId);
+				});
+		});
 
-    });
+	});
+
+	describe('query', () => {
+		beforeEach(removeAllMedias);
+
+		it('should get media with specified trackId', () => {
+			const media = {
+				id: 'mediaId',
+				mediaType: 'video',
+				position: 1,
+				mediaPath: 'media/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/tmp',
+				clipText: 'hello',
+				clipTextPosition: 'up',
+				hasText: true,
+				trimmed: true,
+				startTime: 240,
+				stopTime: 8900,
+				videoError: 'no error',
+				transcodeFinished: true,
+				trackId: 'trackId',
+				assetId: 'assetId',
+				created_by: 'userId'
+			};
+			return mediaCtrl.add(media)
+				.then(createdMediaId => {
+					console.log("media created id ", createdMediaId);
+					return mediaCtrl.query({ media: { trackId: media.trackId } });
+				})
+				.then(medias => {
+					console.log("retrieved medias are ", medias);
+					medias.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(medias[0]);
+					console.log("expected ", media);
+					console.log("actual", medias[0]);
+					medias[0].should.deep.equal(media);
+					return mediaCtrl.query({ media: { trackId: "notFound" } });
+				})
+				.then(medias => {
+					console.log("retrieved medias are ", medias);
+					medias.should.have.length(0);
+				});
+		});
+
+		it('should get media with specified trackId and corresponding asset if cascade', () => {
+			const asset = {
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId',
+			};
+			const media = {
+				id: 'mediaId',
+				mediaType: 'video',
+				position: 1,
+				mediaPath: 'media/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/tmp',
+				clipText: 'hello',
+				clipTextPosition: 'up',
+				hasText: true,
+				trimmed: true,
+				startTime: 240,
+				stopTime: 8900,
+				videoError: 'no error',
+				transcodeFinished: true,
+				trackId: 'trackId',
+				created_by: 'userId',
+			};
+			return assetStore.add(asset)
+				.then(createdAssetId => {
+					console.log("created asset id ", createdAssetId);
+					media.assetId = createdAssetId;
+					return mediaCtrl.add(media)
+				})
+				.then(createdMedia => {
+					console.log("media created ", createdMedia);
+					return mediaCtrl.query({ media: { trackId: media.trackId }, cascade: true });
+				})
+				.then(medias => {
+					console.log("retrieved medias are ", medias);
+					medias.should.have.length(1);
+
+					medias[0].should.have.property('asset');
+					testUtil.prepareRetrievedEntityToCompare(medias[0].asset);
+					delete medias[0].asset.id;
+					medias[0].asset.should.deep.equal(asset);
+					return mediaCtrl.query({ media: { trackId: "notFound" } });
+				})
+				.then(medias => {
+					console.log("retrieved medias are ", medias);
+					medias.should.have.length(0);
+				});
+		});
+
+	});
+
 });
