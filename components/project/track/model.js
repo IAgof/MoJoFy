@@ -10,7 +10,7 @@ const model = {
 	volume: {
 		type: 'number'
 	},
-	mute: {
+	muted: {
 		type: 'boolean'
 	},
 	position: {
@@ -40,7 +40,7 @@ const model = {
 const defaults = {
 	trackIndex: 0,
 	volume: 1,
-	mute: false,
+	muted: false,
 	position: 0,
 	compositionId: '',
 };

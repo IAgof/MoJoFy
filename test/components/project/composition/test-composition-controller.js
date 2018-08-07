@@ -142,7 +142,7 @@ describe('Composition controller', () => {
 				position: 1,
 				trackIndex: 2,
 				volume: 0.5,
-				mute: false
+				muted: false
 			};
 			const composition = {
 				id: 'compositionId',
@@ -365,7 +365,7 @@ describe('Composition controller', () => {
 				position: 0,
 				trackIndex: 1,
 				volume: 0.5,
-				mute: false,
+				muted: false,
 				medias: [media1, media2]
 			};
 			const track2 = {
@@ -373,7 +373,7 @@ describe('Composition controller', () => {
 				position: 1,
 				trackIndex: 2,
 				volume: 0.5,
-				mute: true
+				muted: true
 			};
 
 			const composition = {

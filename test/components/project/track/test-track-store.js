@@ -24,7 +24,7 @@ describe('Track store', () => {
 				id: 'trackId',
 				trackIndex: 0,
 				volume: 0.4,
-				mute: true,
+				muted: true,
 				position: 1,
 				compositionId: 'compositionId',
 				created_by: 'userId'
@@ -92,7 +92,7 @@ describe('Track store', () => {
 				id: 'trackId',
 				trackIndex: 0,
 				volume: 0.4,
-				mute: true,
+				muted: true,
 				position: 1,
 				compositionId: 'compositionId',
 				created_by: 'userId'
