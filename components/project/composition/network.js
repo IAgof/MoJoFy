@@ -26,11 +26,33 @@ router.post('/', (req, res, next) => {
 });
 
 router.get('/', (req, res, next) => {
-	Controller.list()
+	let user = getUser(req);
+	logger.info("GET composition list from user " + (user ? user._id : user));
+	let params = {};
+	if (req.query && typeof req.query === 'object') {
+		params.orderBy = req.query.orderBy || 'modification_date'; // TODO(jliarte): 7/08/18 should default order be set here?
+	}
+	Controller.list(user, params)
 		.then((compositions) => {
 			res.status(200).json(compositions);
 		});
 });
+
+router.get('/:compositionId', (req, res, next) => {
+	const user = getUser(req);
+	logger.info("GET composition from user " + (user ? user._id : user));
+	const compositionId = req.params.compositionId || undefined;
+
+	let cascade = false;
+	if (req.query && typeof req.query === 'object') {
+		cascade = req.query.cascade || false; // TODO(jliarte): 7/08/18 should default cascade be set here?
+	}
+	Controller.get(compositionId, cascade, user)
+		.then((composition) => {
+			res.status(200).json(composition);
+		});
+});
+
 
 router.put('/:compositionId', (req, res, next) => {
 	let user = getUser(req);
@@ -43,6 +65,7 @@ router.put('/:compositionId', (req, res, next) => {
 		// TODO(jliarte): 12/07/18 extract helper? - ACL?
 		return res.status(401).json( { error: "Unauthorized!" } );
 	}
+	// TODO(jliarte): 7/08/18 should use compositionId param!
 	Controller.update(req.body, user)
 		.then(updatedComposition => {
 			res.status(201).json(updatedComposition);

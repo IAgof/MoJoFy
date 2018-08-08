@@ -35,8 +35,12 @@ function upsert(newCompositionData) {
 	});
 }
 
-function list() {
-	return Repository.queryAsync(type, {});
+function list(params) {
+	let options = {};
+	if (params) {
+		options = params;
+	}
+	return Repository.queryAsync(type, options);
 }
 
 function get(id) {

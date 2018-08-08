@@ -27,7 +27,7 @@ describe('Composition controller', () => {
 		beforeEach(removeAllCompositions);
 		beforeEach(removeAllTracks);
 
-		it('it should create a composition', () => {
+		it('should create a composition', () => {
 			const composition = {
 				id: 'compositionId',
 				title: 'mycomposition',
@@ -54,17 +54,14 @@ describe('Composition controller', () => {
 				.then(compositions => {
 					console.log("retrieved compositions are ", compositions);
 					compositions.should.have.length(1);
-					compositions[0].id = compositions[0]._id;
-					delete compositions[0]._id;
-					delete compositions[0].creation_date;
-					delete compositions[0].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
 					console.log("expected ", composition);
 					console.log("actual", compositions[0]);
 					compositions[0].should.deep.equal(composition); // _id
 				});
 		});
 
-		it('it should assign a id if not present', () => {
+		it('should assign a id if not present', () => {
 			const composition = {
 			};
 			return compositionCtrl.add(composition)
@@ -79,7 +76,7 @@ describe('Composition controller', () => {
 				});
 		});
 
-		it('it should assign a user if present', () => {
+		it('should assign a user if present', () => {
 			const composition = {
 			};
 			const user = { _id: 'userId' };
@@ -96,7 +93,7 @@ describe('Composition controller', () => {
 				});
 		});
 
-		it('it should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
+		it('should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
 			const composition = {
 			};
 			return compositionCtrl.add(composition)
@@ -111,7 +108,7 @@ describe('Composition controller', () => {
 				});
 		});
 
-		it('it should return created composition', () => {
+		it('should return created composition', () => {
 			let createdComposition;
 			const composition = {
 				id: 'compositionId',
@@ -135,7 +132,7 @@ describe('Composition controller', () => {
 				});
 		});
 
-		it('it should create a track if present', () => {
+		it('should create a track if present', () => {
 			let compositionId;
 			const track = {
 				id: 'trackId',
@@ -162,10 +159,7 @@ describe('Composition controller', () => {
 					console.log("retrieved tracks are ", tracks);
 					tracks.should.have.length(1);
 					track.compositionId = compositionId;
-					tracks[0].id = tracks[0]._id;
-					delete tracks[0]._id;
-					delete tracks[0].creation_date;
-					delete tracks[0].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(tracks[0]);
 					console.log("expected ", composition);
 					console.log("actual", tracks[0]);
 					tracks[0].should.deep.equal(track); // _id
@@ -177,7 +171,7 @@ describe('Composition controller', () => {
 	describe('update', () => {
 		beforeEach(removeAllCompositions);
 
-		it('it should update an existing composition', () => {
+		it('should update an existing composition', () => {
 			let createdCompositionId;
 			const composition = {
 				title: 'mycomposition',
@@ -214,10 +208,7 @@ describe('Composition controller', () => {
 				})
 				.then(compositions => {
 					compositions.should.have.length(1);
-					delete compositions[0].creation_date;
-					delete compositions[0].modification_date;
-					delete compositions[0]._id;
-					delete newCompositionData.id;
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
 					compositions[0].should.deep.equal(newCompositionData);
 				})
 
@@ -229,7 +220,7 @@ describe('Composition controller', () => {
 		beforeEach(removeAllCompositions);
 		// TODO(jliarte): 26/07/18 list composition - include a param for getting all composition details in cascade?
 
-		it('it should get all compositions', () => {
+		it('should get all compositions', () => {
 			const composition1 = {
 				id: 'compositionId.1',
 				title: 'mycomposition',
@@ -278,18 +269,50 @@ describe('Composition controller', () => {
 				.then(compositions => {
 					console.log("retrieved compositions are ", compositions);
 					compositions.should.have.length(2);
-					compositions[0].id = compositions[0]._id;
-					delete compositions[0]._id;
-					delete compositions[0].creation_date;
-					delete compositions[0].modification_date;
-					compositions[1].id = compositions[1]._id;
-					delete compositions[1]._id;
-					delete compositions[1].creation_date;
-					delete compositions[1].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
+					testUtil.prepareRetrievedEntityToCompare(compositions[1]);
 					compositions.should.deep.include(composition1);
 					compositions.should.deep.include(composition2);
 				});
 		});
+
+		it('should order compositions by modification_date', () => {
+			const composition1 = {
+				id: 'compositionId.1',
+			};
+			const days = 1;
+			const composition2 = {
+				id: 'compositionId.2',
+			};
+			return compositionStore.add(composition1)
+				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500))) // (jliarte): 8/08/18 wait for composition2 modification date be 500ms greater than composition1
+				.then(createdComposition => {
+					console.log("composition created ", createdComposition);
+					return compositionStore.add(composition2);
+				})
+				.then(createdComposition => {
+					console.log("composition created ", createdComposition);
+					return compositionCtrl.list(undefined, { orderBy: 'modification_date' });
+				})
+				.then(compositions => {
+					console.log("retrieved compositions are ", compositions);
+					compositions.should.have.length(2);
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
+					testUtil.prepareRetrievedEntityToCompare(compositions[1]);
+					compositions[0].should.deep.equal(composition1);
+					compositions[1].should.deep.equal(composition2);
+					return compositionCtrl.list(undefined, { orderBy: '-modification_date' });
+				})
+				.then(compositions => {
+					console.log("retrieved compositions are ", compositions);
+					compositions.should.have.length(2);
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
+					testUtil.prepareRetrievedEntityToCompare(compositions[1]);
+					compositions[0].should.deep.equal(composition2);
+					compositions[1].should.deep.equal(composition1);
+				});
+		});
+
 
 	});
 
@@ -297,7 +320,7 @@ describe('Composition controller', () => {
 		beforeEach(removeAllCompositions);
 		// TODO(jliarte): 26/07/18 get composition should retrieve all project info in cascade
 
-		it('it should get all composition elements with cascade param', () => {
+		it('should get all composition elements with cascade param', () => {
 			const media1Id = 'mediaId.1';
 			const media2Id = 'mediaId.2';
 			const asset1 = {

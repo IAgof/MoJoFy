@@ -65,7 +65,6 @@ function query(params, user) {
 		.then(retrievedTracks => {
 			tracks = retrievedTracks;
 			if (params.cascade) {
-				logger.error("track query cascade");
 				return Promise.all(retrievedTracks.map(track => mediaCtrl
 					.query({ media: { trackId: track._id}, cascade: true })));
 			}

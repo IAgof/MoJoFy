@@ -76,9 +76,9 @@ function update(compositionData, user) {
 		});
 }
 
-function list(user) {
+function list(user, params) {
 	logger.info("compositionCtrl.list by User ", user);
-	return store.list();
+	return store.list(params);
 }
 
 function get(id, cascade, user) {
