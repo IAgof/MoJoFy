@@ -55,8 +55,7 @@ describe('Track controller', () => {
 		});
 
 		it('should assign a id if not present', () => {
-			const track = {
-			};
+			const track = {};
 			return trackCtrl.add(track)
 				.then(createdTrack => {
 					console.log("track created ", createdTrack);
@@ -70,9 +69,8 @@ describe('Track controller', () => {
 		});
 
 		it('should assign a user if present', () => {
-			const track = {
-			};
-			const user = { _id: 'userId' };
+			const track = {};
+			const user = {_id: 'userId'};
 			return trackCtrl.add(track, user)
 				.then(createdTrack => {
 					console.log("track created ", createdTrack);
@@ -87,8 +85,7 @@ describe('Track controller', () => {
 		});
 
 		it('should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
-			const track = {
-			};
+			const track = {};
 			return trackCtrl.add(track)
 				.then(createdTrack => {
 					console.log("track created ", createdTrack);
@@ -132,7 +129,7 @@ describe('Track controller', () => {
 		it('should create medias if present', () => {
 			let createdTrack;
 			const media1 = {
-				id:  'media1Id',
+				id: 'media1Id',
 				mediaType: 'video',
 				position: 0,
 				mediaPath: 'media/1/path',
@@ -149,7 +146,7 @@ describe('Track controller', () => {
 				assetId: 'assetId.1'
 			};
 			const media2 = {
-				id:  'media2Id',
+				id: 'media2Id',
 				mediaType: 'video',
 				position: 0,
 				mediaPath: 'media/1/path',
@@ -168,7 +165,7 @@ describe('Track controller', () => {
 			let createdTrackId;
 			const track = {
 				id: 'trackId',
-				medias: [ media1, media2 ]
+				medias: [media1, media2]
 			};
 			return trackCtrl.add(track)
 				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500))) // TODO(jliarte): 18/07/18 wait since media creation is not chained
@@ -212,14 +209,14 @@ describe('Track controller', () => {
 			return trackStore.add(track)
 				.then(res => {
 					console.log("created track res ", res);
-					return trackCtrl.query({ track: { compositionId: track.compositionId } });
+					return trackCtrl.query({track: {compositionId: track.compositionId}});
 				})
 				.then(tracks => {
 					console.log("retrieved tracks are: ", tracks);
 					tracks.should.have.length(1);
 					testUtil.prepareRetrievedEntityToCompare(tracks[0]);
 					tracks[0].should.deep.equal(track);
-					return trackCtrl.query({ track: { compositionId: 'notfound' } });
+					return trackCtrl.query({track: {compositionId: 'notfound'}});
 				})
 				.then(tracks => {
 					console.log("retrieved tracks are: ", tracks);
@@ -229,7 +226,7 @@ describe('Track controller', () => {
 
 		it('should return track with compositionId filter and corresponding medias if cascade', () => {
 			const media1 = {
-				id:  'media1Id',
+				id: 'media1Id',
 				mediaType: 'video',
 				position: 0,
 				mediaPath: 'media/1/path',
@@ -246,7 +243,7 @@ describe('Track controller', () => {
 				assetId: 'assetId.1'
 			};
 			const media2 = {
-				id:  'media2Id',
+				id: 'media2Id',
 				mediaType: 'video',
 				position: 0,
 				mediaPath: 'media/1/path',
@@ -270,13 +267,13 @@ describe('Track controller', () => {
 				position: 1,
 				compositionId: 'compositionId',
 				created_by: 'userId',
-				medias: [ media1, media2 ]
+				medias: [media1, media2]
 			};
 			return trackCtrl.add(track)
 				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500)))
 				.then(res => {
 					console.log("created track res ", res);
-					return trackCtrl.query({ track: { compositionId: track.compositionId }, cascade: true });
+					return trackCtrl.query({track: {compositionId: track.compositionId}, cascade: true});
 				})
 				.then(tracks => {
 					console.log("retrieved tracks are: ", tracks);
@@ -286,14 +283,13 @@ describe('Track controller', () => {
 					tracks[0].medias.should.have.length(2);
 
 					const retrievedMedia1 = tracks[0].medias.filter(item => item._id === media1.id)[0];
-					console.error("ret me 1 ", retrievedMedia1);
 					testUtil.prepareRetrievedEntityToCompare(retrievedMedia1);
 					retrievedMedia1.should.deep.equal(media1);
 					const retrievedMedia2 = tracks[0].medias.filter(item => item._id === media2.id)[0];
 					testUtil.prepareRetrievedEntityToCompare(retrievedMedia2);
 					retrievedMedia2.should.deep.equal(media2);
 
-					return trackCtrl.query({ track: { compositionId: 'notfound' } });
+					return trackCtrl.query({track: {compositionId: 'notfound'}});
 				})
 				.then(tracks => {
 					console.log("retrieved tracks are: ", tracks);
@@ -303,5 +299,83 @@ describe('Track controller', () => {
 
 
 	});
+
+	describe('get', () => {
+		beforeEach(removeAllTracks);
+		beforeEach(removeAllMedias);
+
+		it('should get all medias elements with cascade param', () => {
+			const media1 = {
+				id: 'media1Id',
+			};
+			const media2 = {
+				id: 'media2Id',
+			};
+			const track = {
+				id: 'trackId',
+				medias: [media1, media2]
+			};
+			return trackCtrl.add(track)
+				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500))) // TODO(jliarte): 18/07/18 wait since media creation is not chained
+				.then(createdTrack => {
+					console.log("track created ", createdTrack);
+					return trackCtrl.get(track.id, true);
+				})
+				.then(retrievedTrack => {
+					console.log("retrieved track ", retrievedTrack);
+					retrievedTrack.should.have.property('medias');
+					retrievedTrack.medias.should.have.length(2);
+					retrievedTrack.medias[0]._id.should.equal(media1.id);
+					retrievedTrack.medias[1]._id.should.equal(media2.id);
+				});
+		});
+
+	});
+
+	describe('remove', () => {
+		beforeEach(removeAllTracks);
+		beforeEach(removeAllMedias);
+
+		it('should remove track and its medias if cascade', () => {
+			const media1 = {
+				id: 'media1Id',
+			};
+			const media2 = {
+				id: 'media2Id',
+			};
+			let createdTrackId;
+			const track = {
+				id: 'trackId',
+				medias: [media1, media2]
+			};
+			return trackCtrl.add(track)
+				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500))) // TODO(jliarte): 18/07/18 wait since media creation is not chained
+				.then(createdTrackId => {
+					console.log("track created id", createdTrackId);
+					return trackStore.list()
+				})
+				.then(tracks => {
+					console.log("retrieved tracks are ", tracks);
+					tracks.should.have.length(1);
+					return mediaStore.list();
+				})
+				.then(medias => {
+					medias.should.have.length(2);
+					return trackCtrl.remove(track.id, true); // cascade = true
+				})
+				.then(res => {
+					console.log("Result removing track ", res);
+					return trackStore.list();
+				})
+				.then(tracks => {
+					tracks.should.have.length(0);
+					return mediaStore.list();
+				})
+				.then(medias => {
+					medias.should.have.length(0);
+				});
+		});
+	});
+
 
 });

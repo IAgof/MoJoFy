@@ -4,6 +4,7 @@ process.env.NODE_ENV = 'test';
 const compositionStore = require('../../../../components/project/composition/store');
 const compositionCtrl = require('../../../../components/project/composition');
 const trackStore = require('../../../../components/project/track/store');
+const mediaStore = require('../../../../components/project/media/store');
 const assetCtrl = require('../../../../components/asset');
 
 const testUtil = require('../../../test-util');
@@ -20,6 +21,14 @@ function removeAllCompositions() {
 
 function removeAllTracks() {
 	return testUtil.removeAllEntities('track');
+}
+
+function removeAllMedias() {
+	return testUtil.removeAllEntities('media');
+}
+
+function removeAllAssets() {
+	return testUtil.removeAllEntities('asset');
 }
 
 describe('Composition controller', () => {
@@ -318,7 +327,6 @@ describe('Composition controller', () => {
 
 	describe('get', () => {
 		beforeEach(removeAllCompositions);
-		// TODO(jliarte): 26/07/18 get composition should retrieve all project info in cascade
 
 		it('should get all composition elements with cascade param', () => {
 			const media1Id = 'mediaId.1';
@@ -459,6 +467,180 @@ describe('Composition controller', () => {
 					console.log("track media2 ", retrievedTrack1Media2);
 					retrievedTrack1Media1.should.have.property('asset');
 					retrievedTrack1Media2.should.have.property('asset');
+				});
+		});
+
+	});
+
+
+	describe('remove', () => {
+		beforeEach(removeAllCompositions);
+		beforeEach(removeAllTracks);
+		beforeEach(removeAllMedias);
+		beforeEach(removeAllAssets);
+
+		it('should remove a composition', () => {
+			const composition = {
+				id: 'compositionId',
+			};
+			return compositionCtrl.add(composition)
+				.then(createdComposition => {
+					console.log("composition created ", createdComposition);
+					return compositionCtrl.remove(composition.id);
+				})
+				.then(res => {
+					console.log("result removing composition ", res);
+					return compositionCtrl.list();
+				})
+				.then(retrievedCompositions => {
+					console.log("retrieved compositions are ", retrievedCompositions);
+					retrievedCompositions.should.have.length(0);
+				});
+		});
+
+
+		it('should remove all composition elements with cascade param', () => {
+			const media1Id = 'mediaId.1';
+			const media2Id = 'mediaId.2';
+			const asset1 = {
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				created_by: 'userId',
+				// mediaId: media1Id // FIXME(jliarte): 27/07/18 assetCtrl is failing: TypeError: mediaCtrl.updateMediaAsset is not a function
+			};
+			const asset2 = {
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				created_by: 'userId',
+				// mediaId: media2Id // FIXME(jliarte): 27/07/18 assetCtrl is failing: TypeError: mediaCtrl.updateMediaAsset is not a function
+			};
+
+			const media1 = {
+				id:  media1Id,
+				mediaType: 'video',
+				position: 0,
+				mediaPath: 'media/1/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/1/path',
+				clipText: '',
+				clipTextPosition: '',
+				hasText: false,
+				trimmed: false,
+				startTime: 0,
+				stopTime: 120980,
+				videoError: '',
+				transcodeFinished: false,
+				// asset: asset1
+			};
+			const media2 = {
+				id:  media2Id,
+				mediaType: 'video',
+				position: 0,
+				mediaPath: 'media/1/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/1/path',
+				clipText: '',
+				clipTextPosition: '',
+				hasText: false,
+				trimmed: false,
+				startTime: 0,
+				stopTime: 120980,
+				videoError: '',
+				transcodeFinished: false,
+				// asset: asset2
+			};
+
+			const track1 = {
+				id: 'trackId.1',
+				position: 0,
+				trackIndex: 1,
+				volume: 0.5,
+				muted: false,
+				medias: [media1, media2]
+			};
+			const track2 = {
+				id: 'trackId.1',
+				position: 1,
+				trackIndex: 2,
+				volume: 0.5,
+				muted: true
+			};
+
+			const composition = {
+				id: 'compositionId',
+				title: 'mycomposition',
+				description: 'desc',
+				remoteProjectPath: 'remote/prj/path',
+				quality: 'poor',
+				resolution: 'fhd',
+				frameRate: '30',
+				duration: 42,
+				audioFadeTransitionActivated: true,
+				videoFadeTransitionActivated: false,
+				watermarkActivated: true,
+				productType: 'p1,p2',
+				poster: 'poster/parh',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId',
+				tracks: [ track1, track2 ]
+			};
+			return assetCtrl.add(asset1)
+				.then(createdAsset => {
+					console.log("asset created ", createdAsset);
+					asset1.id = createdAsset._id;
+					media1.assetId = createdAsset._id;
+					return assetCtrl.add(asset2);
+				})
+				.then(createdAsset => {
+					console.log("asset created ", createdAsset);
+					asset2.id = createdAsset._id;
+					media2.assetId = createdAsset._id;
+					return compositionCtrl.add(composition);
+				})
+				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500)))
+				.then(createdComposition => {
+					console.log("composition created ", createdComposition);
+					return compositionCtrl.remove(composition.id, true); // cascade = true
+				})
+				.then(res => {
+					console.log("result removing composition ", res);
+					return compositionCtrl.list();
+				})
+				.then(retrievedCompositions => {
+					console.log("retrieved compositions are ", retrievedCompositions);
+					retrievedCompositions.should.have.length(0);
+					return trackStore.list();
+				})
+				.then(tracks => {
+					console.log("retrieved tracks are ", tracks);
+					tracks.should.have.length(0);
+					return mediaStore.list();
+				})
+				.then(medias => {
+					console.log("retrieved medias are ", medias);
+					medias.should.have.length(0);
+					return assetCtrl.list();
+				})
+				.then(assets => {
+					assets.should.have.length(2);
+					testUtil.prepareRetrievedEntityToCompare(assets[0]);
+					testUtil.prepareRetrievedEntityToCompare(assets[1]);
+					delete assets[0].date;
+					delete assets[1].date;
+					console.log("retrieved assets are ", assets);
+					assets.should.deep.include(asset1);
+					assets.should.deep.include(asset2);
 				});
 		});
 

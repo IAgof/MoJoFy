@@ -5,6 +5,14 @@ const store = require('./store');
 const logger = require('../../logger')(module);
 const Config = require('../../config');
 const FileUpload = require('../file');
+
+module.exports = {
+	add,
+	get,
+	list,
+	remove
+};
+
 const mediaCtrl = require('../project/media');
 
 const Model = require('./model');
@@ -86,10 +94,3 @@ function remove(id) {
 			}
 		});
 }
-
-module.exports = {
-	add,
-	get,
-	list,
-	remove
-};

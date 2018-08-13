@@ -1,7 +1,6 @@
 // components/project/composition/network.js
 
 const Controller = require('./index');
-const Config = require('../../../config');
 
 const logger = require('../../../logger')(module);
 const express = require('express');
@@ -10,7 +9,7 @@ const getUser = require("../../access/acl").getUser;
 
 router.post('/', (req, res, next) => {
 	let user = getUser(req);
-	logger.info("POST composition from user " + (user ? user._id : user));
+	logger.info("POST composition by user " + (user ? user._id : user));
 	logger.debug("user is ", req.user);
 	// TODO: don't overwrite? - composition without project?
 	req.body.projectId = req.params.projectId || undefined;
@@ -27,7 +26,7 @@ router.post('/', (req, res, next) => {
 
 router.get('/', (req, res, next) => {
 	let user = getUser(req);
-	logger.info("GET composition list from user " + (user ? user._id : user));
+	logger.info("GET composition list by user " + (user ? user._id : user));
 	let params = {};
 	if (req.query && typeof req.query === 'object') {
 		params.orderBy = req.query.orderBy || 'modification_date'; // TODO(jliarte): 7/08/18 should default order be set here?
@@ -40,7 +39,7 @@ router.get('/', (req, res, next) => {
 
 router.get('/:compositionId', (req, res, next) => {
 	const user = getUser(req);
-	logger.info("GET composition from user " + (user ? user._id : user));
+	logger.info("GET composition by user " + (user ? user._id : user));
 	const compositionId = req.params.compositionId || undefined;
 
 	let cascade = false;
@@ -53,19 +52,18 @@ router.get('/:compositionId', (req, res, next) => {
 		});
 });
 
-
 router.put('/:compositionId', (req, res, next) => {
 	let user = getUser(req);
-	logger.info("PUT composition from user " + (user ? user._id : user));
+	logger.info("PUT composition [" + req.params.compositionId + "] by user " + (user ? user._id : user));
 	logger.debug("user is ", req.user);
 	setObjectId(req.body, req.params.id);
 	// TODO: don't overwrite? - composition without project?
 	req.body.projectId = req.params.projectId || undefined;
+	req.body.id = req.params.compositionId;
 	if (!user) {
 		// TODO(jliarte): 12/07/18 extract helper? - ACL?
 		return res.status(401).json( { error: "Unauthorized!" } );
 	}
-	// TODO(jliarte): 7/08/18 should use compositionId param!
 	Controller.update(req.body, user)
 		.then(updatedComposition => {
 			res.status(201).json(updatedComposition);
@@ -78,6 +76,21 @@ function setObjectId(data, id) {
 	delete data._id;
 	data.id = id;
 }
+
+router.delete('/:compositionId', (req, res, next) => {
+	const user = getUser(req);
+	logger.info("DELETE composition [" + req.params.compositionId + "] by user " + (user ? user._id : user));
+	const compositionId = req.params.compositionId || undefined;
+
+	let cascade = false;
+	if (req.query && typeof req.query === 'object') {
+		cascade = req.query.cascade || false; // TODO(jliarte): 7/08/18 should default cascade be set here?
+	}
+	Controller.remove(compositionId, cascade, user)
+		.then((composition) => {
+			res.status(200).json(composition);
+		});
+});
 
 router.use((err, req, res, next) => {
 	logger.error(`Error in method ${req.method}: ${err.message}`);

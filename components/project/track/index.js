@@ -44,6 +44,26 @@ function add(newTrackData, user) {
 		});
 }
 
+function get(id, cascade) {
+	logger.info("trackController.get id ", id);
+	let track;
+	return store.get(id)
+		.then(retrievedTrack => {
+			track = retrievedTrack;
+			if (cascade) {
+				return mediaCtrl.query({ media: { trackId: id }, cascade: cascade });
+			} else {
+				return [];
+			}
+		})
+		.then(medias => {
+			if (medias && medias.length > 0) {
+				track.medias = medias;
+			}
+			return track;
+		});
+}
+
 function list(user) {
 	logger.info("trackController.list by User ", user);
 	return store.list();
@@ -77,8 +97,28 @@ function query(params, user) {
 		});
 }
 
+function remove(id, cascade) {
+	let retrievedTrack;
+	return get(id, cascade)
+		.then(res => {
+			retrievedTrack = res;
+			logger.debug("retrieved track is ", res);
+			if (cascade && retrievedTrack && retrievedTrack.medias && retrievedTrack.medias.length > 0) {
+				logger.debug("cascade!!!!!!!!!!");
+				// TODO(jliarte): 8/08/18 implement remove multi in dynamo driver
+				// const ids = retrievedTrack.medias.map(media => media._id);
+				// return mediaCtrl.removeMulti(ids).then(res => console.log("res deleting entities ", res));
+				return Promise.all(retrievedTrack.medias.map(media => mediaCtrl.remove(media._id)));
+			}
+		})
+		.then(() => store.remove(id))
+		.then(() => retrievedTrack);
+}
+
 module.exports = {
 	add,
+	get,
 	list,
-	query
+	query,
+	remove
 };

@@ -104,9 +104,24 @@ function get(id, cascade, user) {
 		});
 }
 
+function remove(compositionId, cascade) {
+	logger.info("compositionCtrl.remove id [" + compositionId + "]");
+	let composition;
+	return get(compositionId, true)
+		.then(retrievedComposition => {
+			composition = retrievedComposition;
+			if (cascade && retrievedComposition && retrievedComposition.tracks && retrievedComposition.tracks.length > 0) {
+				return Promise.all(retrievedComposition.tracks.map(track => trackCtrl.remove(track._id, true)));
+			}
+		})
+		.then(() => store.remove(compositionId))
+		.then(() => composition)
+}
+
 module.exports = {
 	add,
 	update,
 	list,
-	get
+	get,
+	remove
 };

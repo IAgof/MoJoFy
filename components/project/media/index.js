@@ -76,9 +76,23 @@ function updateMediaAsset(mediaId, assetId) {
 		});
 }
 
+function remove(mediaId) {
+	logger.info("mediaCtrl.remove media [" + mediaId + "]");
+	// TODO(jliarte): 9/08/18 should return removed media?
+	return store.remove(mediaId);
+}
+
+function removeMulti(mediaIds) {
+	logger.info("mediaCtrl.removeMulti medias ", mediaIds);
+	// TODO(jliarte): 9/08/18 should return removed medias?
+	return store.removeMulti(mediaIds);
+}
+
 module.exports = {
 	add,
 	list,
 	query,
-	updateMediaAsset
+	updateMediaAsset,
+	remove,
+	removeMulti
 };

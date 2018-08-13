@@ -113,6 +113,39 @@ describe('Track store', () => {
 				});
 		});
 
+		describe('remove', () => {
+			beforeEach(removeAllTracks);
+
+			it('should remove track with specified trackId', () => {
+				const track = {
+					id: 'trackId',
+					trackIndex: 0,
+					volume: 0.4,
+					muted: true,
+					position: 1,
+					compositionId: 'compositionId',
+					created_by: 'userId'
+				};
+				return trackStore.upsert(track)
+					.then(createdTrackId => {
+						console.log("track created id", createdTrackId);
+						return trackStore.list()
+					})
+					.then(tracks => {
+						console.log("retrieved tracks are ", tracks);
+						tracks.should.have.length(1);
+						return trackStore.remove(track.id);
+					})
+					.then(res => {
+						console.log("Result removing track ", res);
+						return trackStore.list();
+					})
+					.then(tracks => {
+						tracks.should.have.length(0);
+					});
+			});
+
+		});
 	});
-	
+
 });

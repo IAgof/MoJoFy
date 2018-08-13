@@ -65,11 +65,16 @@ function remove(id) {
 	return Repository.removeAsync(type, id);
 }
 
+function removeMulti(ids) {
+	return Repository._removeMulti(type, ids);
+}
+
 module.exports = {
 	add: upsert,
 	upsert,
 	list,
 	query,
 	get,
-	remove
+	remove,
+	removeMulti
 };
