@@ -78,6 +78,7 @@ function update(compositionData, user) {
 
 function list(user, params) {
 	logger.info("compositionCtrl.list by User ", user);
+	logger.debug("...with params ", params);
 	return store.list(params);
 }
 

@@ -10,6 +10,7 @@ module.exports = {
 	add,
 	get,
 	list,
+	query,
 	remove
 };
 
@@ -27,12 +28,6 @@ function add(newAssetData, user) {
 	logger.info("assetCtrl.add by user ", user);
 	logger.debug("...created new asset ", newAssetData);
 	let newAsset = Object.assign({}, newAssetData);
-	if (user) {
-		// TODO: don't overwrite
-		newAsset.created_by = user._id;
-	} else {
-		// TODO: reject? asset without user!
-	}
 
 	if (!newAssetData.date) {
 		newAsset.date = new Date();
@@ -75,6 +70,12 @@ function get(id, user) {
 function list(user) {
 	logger.info("assetCtrl.list by user ", user);
 	return store.list();
+}
+
+function query(params, user) {
+	logger.info("assetCtrl.query by user ", user);
+	logger.debug("...with params ", params);
+	return store.query(params);
 }
 
 function remove(id) {

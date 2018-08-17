@@ -65,7 +65,7 @@ function updateMediaAsset(mediaId, assetId) {
 	return store.get(mediaId)
 		.then(media => {
 			if (media) {
-				if (media.assetId && media.assetId != "") {
+				if (media.assetId && media.assetId != "" && media.assetId != assetId) {
 					assetCtrl.remove(media.assetId);
 				}
 				media.id = mediaId;

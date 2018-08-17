@@ -231,6 +231,46 @@ describe('Media controller', () => {
 				});
 		});
 
+		it('should not remove old asset if its the same as old one', () => {
+			assetControllerSpy.remove.resetHistory();
+			let createdMedia;
+			const assetId = 'sameAssetId';
+			const media = {
+				id: 'mediaId',
+				mediaType: 'video',
+				position: 1,
+				mediaPath: 'media/path',
+				volume: 0.2,
+				remoteTempPath: 'remote/tmp',
+				clipText: 'hello',
+				clipTextPosition: 'up',
+				hasText: true,
+				trimmed: true,
+				startTime: 240,
+				stopTime: 8900,
+				videoError: 'no error',
+				transcodeFinished: true,
+				trackId: 'trackId',
+				assetId: 'sameAssetId',
+				created_by: 'userId'
+			};
+			return mediaCtrl.add(media)
+				.then(result => {
+					console.log("media created ", result);
+					createdMedia = result;
+					return mediaCtrl.updateMediaAsset(createdMedia._id, assetId);
+				})
+				.then(value => {
+					return mediaStore.list();
+				})
+				.then(medias => {
+					console.log("retrieved medias are ", medias);
+					medias.should.have.length(1);
+					medias[0].assetId.should.equal(assetId);
+					sinon.assert.notCalled(assetControllerSpy.remove);
+				});
+		});
+
 	});
 
 	describe('query', () => {

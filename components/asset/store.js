@@ -5,6 +5,7 @@ const PromisifierUtils = require('../../util/promisifier-utils');
 
 const logger = require('../../logger')(module);
 const config = require('../../config');
+const insertFilter = require('../../store/store-util').insertFilter;
 
 const Persistent = require('../../store/' + config.persistence_db);
 const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierUtils.noErrPromisifier });
@@ -12,7 +13,7 @@ const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierU
 const type = 'asset';
 
 // TODO(jliarte): 11/07/18 check needed indexes!
-Persistent.index(type, []), logger.debug;
+Persistent.index(type, ['projectId', 'hash']), logger.debug;
 
 function upsert(newAssetData) {
 	let newAsset = Object.assign({}, newAssetData);
@@ -39,6 +40,21 @@ function list() {
 	return Repository.queryAsync(type, {});
 }
 
+function query(params) {
+	const queryParams = {};
+	if (params.asset) {
+		// build filter by specification
+		if (params.asset.hash && typeof params.asset.hash === 'string') {
+			insertFilter('hash', '=', params.asset.hash, queryParams);
+		}
+		if (params.asset.created_by && typeof params.asset.created_by === 'string') {
+			insertFilter('created_by', '=', params.asset.created_by, queryParams);
+		}
+	}
+	return Repository.queryAsync(type, queryParams);
+
+}
+
 function get(id) {
 	return new Promise((resolve, reject) => {
 		Persistent.get(type, id, function(data) {
@@ -57,6 +73,7 @@ module.exports = {
 	add: upsert,
 	upsert,
 	list,
+	query,
 	get,
 	remove
 };

@@ -13,6 +13,9 @@ const model = {
 	hash: {
 		type: 'string'
 	},
+	path: {
+		type: 'string'
+	},
 	filename: {
 		type: 'string'
 	},
@@ -50,7 +53,7 @@ const defaults = {
     projectId: '',
 };
 
-const  noDefaultsFields = ['type', 'hash', 'date', 'created_by'];
+const noDefaultsFields = ['uri', 'path', 'filename', 'mimetype', 'type', 'hash', 'date', 'created_by'];
 
 const Model = new Modelate('Asset').set(model);
 

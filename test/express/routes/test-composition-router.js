@@ -1,4 +1,4 @@
-// test/components/project/composition/test-composition-router.js
+// test/express/routes/test-composition-router.js
 
 process.env.NODE_ENV = 'test';
 // During the test the env variable is set to test
@@ -10,13 +10,6 @@ const express = require('express');
 const expect = require('chai').expect;
 const should = require('chai').should();
 const testUtil = require('../../test-util');
-
-// //Require the dev-dependencies
-// const chai = require('chai');
-// // const chaiAsPromised = require("chai-as-promised");
-// // chai.use(chaiAsPromised);
-// const should = chai.should();
-
 
 const compositionControllerSpy = {
 	faked: true,

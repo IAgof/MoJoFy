@@ -75,22 +75,6 @@ describe('Asset controller', () => {
 				});
 		});
 
-		it('should assign a user if present', () => {
-			const asset = {};
-			const user = {_id: 'userId'};
-			return assetCtrl.add(asset, user)
-				.then(createdAsset => {
-					console.log("asset created ", createdAsset);
-					return assetStore.list();
-				})
-				.then(assets => {
-					console.log("retrieved assets are ", assets);
-					assets.should.have.length(1);
-					assets[0].should.have.property('created_by');
-					assets[0]['created_by'].should.equal(user._id);
-				});
-		});
-
 		it('should not assign a user if not present', () => { // TODO(jliarte): 14/07/18 change to throw error?
 			const asset = {};
 			return assetCtrl.add(asset)
@@ -229,5 +213,153 @@ describe('Asset controller', () => {
 		});
 
 	});
+
+	describe('query', () => {
+		beforeEach(removeAllAssets);
+
+		it('should return specified asset by hash', () => {
+			const asset1 = {
+				id: 'assetId',
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId'
+			};
+			const asset2 = {
+				id: 'assetId.2',
+				name: 'asset2 name',
+				type: 'video2',
+				hash: 'dopiufhasdhkfhdsñkgagdsags',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset2/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'user2Id'
+			};
+			return assetCtrl.add(asset1)
+				.then(createdAsset => {
+					console.log("asset created id ", createdAsset);
+					return assetCtrl.add(asset2);
+				})
+				.then(createdAsset => {
+					console.log("asset created id ", createdAsset);
+					return assetCtrl.query({ asset: {hash: asset1.hash} });
+				})
+				.then(retrievedAssets => {
+					console.log("retrieved assets are  ", retrievedAssets);
+					retrievedAssets.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(retrievedAssets[0]);
+					retrievedAssets[0].should.deep.equal(asset1);
+				});
+		});
+
+		it('should return specified asset by userId', () => {
+			const asset1 = {
+				id: 'assetId',
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId'
+			};
+			const asset2 = {
+				id: 'assetId.2',
+				name: 'asset2 name',
+				type: 'video2',
+				hash: 'dopiufhasdhkfhdsñkgagdsags',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset2/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'user2Id'
+			};
+			return assetCtrl.add(asset1)
+				.then(createdAsset => {
+					console.log("asset created id ", createdAsset);
+					return assetCtrl.add(asset2);
+				})
+				.then(createdAsset => {
+					console.log("asset created id ", createdAsset);
+					return assetCtrl.query({ asset: {created_by: asset1.created_by} });
+				})
+				.then(retrievedAssets => {
+					console.log("retrieved assets are  ", retrievedAssets);
+					retrievedAssets.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(retrievedAssets[0]);
+					retrievedAssets[0].should.deep.equal(asset1);
+				});
+		});
+
+		it('should return specified asset by hash and userId', () => {
+			const asset1 = {
+				id: 'assetId',
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId'
+			};
+			const asset2 = {
+				id: 'assetId.2',
+				name: 'asset2 name',
+				type: 'video2',
+				hash: 'dopiufhasdhkfhdsñkgagdsags',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset2/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'user2Id'
+			};
+			const asset3 = {
+				id: 'assetId.3',
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+				mimetype: 'mime/type',
+				uri: 'asset/uuri',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId3'
+			};
+			return assetCtrl.add(asset1)
+				.then(createdAsset => {
+					console.log("asset created id ", createdAsset);
+					return assetCtrl.add(asset2);
+				})
+				.then(createdAsset => {
+					console.log("asset created id ", createdAsset);
+					return assetCtrl.add(asset3);
+				})
+				.then(createdAsset => {
+					console.log("asset created id ", createdAsset);
+					return assetCtrl.query({ asset: {hash: asset1.hash, created_by: asset1.created_by} });
+				})
+				.then(retrievedAssets => {
+					console.log("retrieved assets are  ", retrievedAssets);
+					retrievedAssets.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(retrievedAssets[0]);
+					retrievedAssets[0].should.deep.equal(asset1);
+				});
+		});
+
+	});
+
 
 });
