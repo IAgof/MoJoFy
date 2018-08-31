@@ -31,7 +31,9 @@ router.get('/', Acl, (req, res, next) => {
 	const params = { composition: {} };
 	if (req.query && typeof req.query === 'object') {
 		params.orderBy = req.query.orderBy || 'modification_date'; // TODO(jliarte): 7/08/18 should default order be set here?
-		params.composition.created_by = req.query.created_by;
+		if (req.query.created_by) {
+			params.composition.created_by = req.query.created_by.toString();
+		}
 	}
 
 	Controller.query(params)
