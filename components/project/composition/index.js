@@ -76,11 +76,17 @@ function update(compositionData, user) {
 		});
 }
 
-function list(user, params) {
-	logger.info("compositionCtrl.list by User ", user);
-	logger.debug("...with params ", params);
-	return store.list(params);
+function list() {
+	logger.info("compositionCtrl.list ");
+	return store.list();
 }
+
+function query(params) {
+	logger.info("compositionCtrl.query ");
+	logger.debug("...with params ", params);
+	return store.query(params);
+}
+
 
 function get(id, cascade, user) {
 	logger.info("compositionCtrl.get id [" + id + "] by User ", user);
@@ -123,6 +129,7 @@ module.exports = {
 	add,
 	update,
 	list,
+	query,
 	get,
 	remove
 };

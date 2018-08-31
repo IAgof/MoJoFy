@@ -93,4 +93,124 @@ describe('Composition store', () => {
 
 	});
 
+	describe('query', () => {
+		beforeEach(removeAllCompositions);
+
+		it('should return all compositions without filter', () => {
+			const composition1 = {
+				id: 'compositionId.1',
+				title: 'mycomposition',
+				description: 'desc',
+				remoteProjectPath: 'remote/prj/path',
+				quality: 'poor',
+				resolution: 'fhd',
+				frameRate: '30',
+				duration: 42,
+				audioFadeTransitionActivated: true,
+				videoFadeTransitionActivated: false,
+				watermarkActivated: true,
+				productType: 'p1,p2',
+				poster: 'poster/parh',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId.1'
+			};
+			const composition2 = {
+				id: 'compositionId.2',
+				title: 'otherComposition',
+				description: 'desc',
+				remoteProjectPath: 'remote/prj/path',
+				quality: 'poor',
+				resolution: 'fhd',
+				frameRate: '30',
+				duration: 42,
+				audioFadeTransitionActivated: true,
+				videoFadeTransitionActivated: false,
+				watermarkActivated: true,
+				productType: 'p1,p2',
+				poster: 'poster/parh',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId.2'
+			};
+			return compositionStore.upsert(composition1)
+				.then(createdCompositionId => {
+					console.log("composition created id", createdCompositionId);
+					createdCompositionId.should.equal(composition1.id);
+					return compositionStore.upsert(composition2);
+				})
+				.then(createdCompositionId => {
+					console.log("composition created id", createdCompositionId);
+					createdCompositionId.should.equal(composition2.id);
+					return compositionStore.query();
+				})
+				.then(compositions => {
+					console.log("retrieved compositions are ", compositions);
+					compositions.should.have.length(2);
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
+					testUtil.prepareRetrievedEntityToCompare(compositions[1]);
+					compositions.should.deep.include(composition1);
+					compositions.should.deep.include(composition2);
+				});
+		});
+
+
+		it('should return compositions of specified user', () => {
+			const composition1 = {
+				id: 'compositionId.1',
+				title: 'mycomposition',
+				description: 'desc',
+				remoteProjectPath: 'remote/prj/path',
+				quality: 'poor',
+				resolution: 'fhd',
+				frameRate: '30',
+				duration: 42,
+				audioFadeTransitionActivated: true,
+				videoFadeTransitionActivated: false,
+				watermarkActivated: true,
+				productType: 'p1,p2',
+				poster: 'poster/parh',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId.1'
+			};
+			const composition2 = {
+				id: 'compositionId.2',
+				title: 'otherComposition',
+				description: 'desc',
+				remoteProjectPath: 'remote/prj/path',
+				quality: 'poor',
+				resolution: 'fhd',
+				frameRate: '30',
+				duration: 42,
+				audioFadeTransitionActivated: true,
+				videoFadeTransitionActivated: false,
+				watermarkActivated: true,
+				productType: 'p1,p2',
+				poster: 'poster/parh',
+				projectId: 'projectId',
+				date: new Date(),
+				created_by: 'userId.2'
+			};
+			return compositionStore.upsert(composition1)
+				.then(createdCompositionId => {
+					console.log("composition created id", createdCompositionId);
+					createdCompositionId.should.equal(composition1.id);
+					return compositionStore.upsert(composition2);
+				})
+				.then(createdCompositionId => {
+					console.log("composition created id", createdCompositionId);
+					createdCompositionId.should.equal(composition2.id);
+					return compositionStore.query({ composition: { created_by: composition1.created_by } });
+				})
+				.then(compositions => {
+					console.log("retrieved compositions are ", compositions);
+					compositions.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
+					compositions[0].should.deep.equal(composition1);
+				});
+		});
+
+	});
+
 });

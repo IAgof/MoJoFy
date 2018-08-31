@@ -285,44 +285,6 @@ describe('Composition controller', () => {
 				});
 		});
 
-		it('should order compositions by modification_date', () => {
-			const composition1 = {
-				id: 'compositionId.1',
-			};
-			const days = 1;
-			const composition2 = {
-				id: 'compositionId.2',
-			};
-			return compositionStore.add(composition1)
-				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500))) // (jliarte): 8/08/18 wait for composition2 modification date be 500ms greater than composition1
-				.then(createdComposition => {
-					console.log("composition created ", createdComposition);
-					return compositionStore.add(composition2);
-				})
-				.then(createdComposition => {
-					console.log("composition created ", createdComposition);
-					return compositionCtrl.list(undefined, { orderBy: 'modification_date' });
-				})
-				.then(compositions => {
-					console.log("retrieved compositions are ", compositions);
-					compositions.should.have.length(2);
-					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
-					testUtil.prepareRetrievedEntityToCompare(compositions[1]);
-					compositions[0].should.deep.equal(composition1);
-					compositions[1].should.deep.equal(composition2);
-					return compositionCtrl.list(undefined, { orderBy: '-modification_date' });
-				})
-				.then(compositions => {
-					console.log("retrieved compositions are ", compositions);
-					compositions.should.have.length(2);
-					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
-					testUtil.prepareRetrievedEntityToCompare(compositions[1]);
-					compositions[0].should.deep.equal(composition2);
-					compositions[1].should.deep.equal(composition1);
-				});
-		});
-
-
 	});
 
 	describe('get', () => {
@@ -641,6 +603,48 @@ describe('Composition controller', () => {
 					console.log("retrieved assets are ", assets);
 					assets.should.deep.include(asset1);
 					assets.should.deep.include(asset2);
+				});
+		});
+
+	});
+
+	describe('query', () => {
+		beforeEach(removeAllCompositions);
+
+		it('should order compositions by modification_date', () => {
+			const composition1 = {
+				id: 'compositionId.1',
+			};
+			const days = 1;
+			const composition2 = {
+				id: 'compositionId.2',
+			};
+			return compositionStore.add(composition1)
+				.then(result => new Promise(resolve => setTimeout(() => resolve(result), 500))) // (jliarte): 8/08/18 wait for composition2 modification date be 500ms greater than composition1
+				.then(createdComposition => {
+					console.log("composition created ", createdComposition);
+					return compositionStore.add(composition2);
+				})
+				.then(createdComposition => {
+					console.log("composition created ", createdComposition);
+					return compositionCtrl.query({ orderBy: 'modification_date' });
+				})
+				.then(compositions => {
+					console.log("retrieved compositions are ", compositions);
+					compositions.should.have.length(2);
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
+					testUtil.prepareRetrievedEntityToCompare(compositions[1]);
+					compositions[0].should.deep.equal(composition1);
+					compositions[1].should.deep.equal(composition2);
+					return compositionCtrl.query({ orderBy: '-modification_date' });
+				})
+				.then(compositions => {
+					console.log("retrieved compositions are ", compositions);
+					compositions.should.have.length(2);
+					testUtil.prepareRetrievedEntityToCompare(compositions[0]);
+					testUtil.prepareRetrievedEntityToCompare(compositions[1]);
+					compositions[0].should.deep.equal(composition2);
+					compositions[1].should.deep.equal(composition1);
 				});
 		});
 

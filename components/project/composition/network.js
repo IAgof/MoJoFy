@@ -6,6 +6,7 @@ const logger = require('../../../logger')(module);
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 const getUser = require("../../access/acl").getUser;
+const Acl = require('./acl').middleware;
 
 router.post('/', (req, res, next) => {
 	let user = getUser(req);
@@ -24,14 +25,16 @@ router.post('/', (req, res, next) => {
 		.catch(next);
 });
 
-router.get('/', (req, res, next) => {
+router.get('/', Acl, (req, res, next) => {
 	let user = getUser(req);
 	logger.info("GET composition list by user " + (user ? user._id : user));
-	let params = {};
+	const params = { composition: {} };
 	if (req.query && typeof req.query === 'object') {
 		params.orderBy = req.query.orderBy || 'modification_date'; // TODO(jliarte): 7/08/18 should default order be set here?
+		params.composition.created_by = req.query.created_by;
 	}
-	Controller.list(user, params)
+
+	Controller.query(params)
 		.then((compositions) => {
 			res.status(200).json(compositions);
 		});

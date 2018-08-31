@@ -18,25 +18,35 @@ exports.getUserRole = getUserRole;
 // TO_DO: 
 // THIS SHALL BE RECOVERED FROM DATABASE.
 const roles = {
-	_roleList: ['admin', 'editor', 'marketing', 'operations', 'guest'],
-	video: {
+	_roleList: ['admin', 'editor', 'marketing', 'operations', 'guest']
+};
+roles.video = {
 		guest: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'update_own', 'download_own'],
 		editor: ['read', 'add', 'list', 'update', 'delete', 'remove_own', 'remove_other', 'update_own', 'update_other', 'download_own', 'download_other',
 			'update_privileged_fields']
-	},
-	user: {
+	};
+roles.user = {
 		guest: ['read', 'add', 'edit_own', 'remove_own'],
 		editor: ['read', 'add', 'list', 'update', 'edit_own', 'edit_other', 'remove_own', 'remove_other', 'see_email']
-	},
-	client: {
+	};
+roles.client = {
 		guest: [],
 		editor: ['read', 'add', 'update', 'delete']
-	},
-	distribute: {
+	};
+roles.distribute = {
 		guest: [],
 		editor: ['read', 'distribute']
-	}
-};
+	};
+
+// TODO(jliarte): 31/08/18 define project actions for roles
+roles.project = {};
+roles.project.guest = ['read'];
+roles.project.editor = roles.project.guest.concat();
+
+roles.composition = {};
+roles.composition.guest = ['read_own', 'add_own', 'list_own', 'update_own', 'delete_own'];
+roles.composition.editor = roles.composition.guest.concat();
+roles.composition.admin = roles.composition.guest.concat('read_any', 'list_any');
 
 
 // Allow "admin" to access all the resources
