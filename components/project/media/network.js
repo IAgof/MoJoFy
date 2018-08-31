@@ -10,7 +10,7 @@ const getUser = require("../../access/acl").getUser;
 
 router.post('/', (req, res, next) => {
 	let user = getUser(req);
-	logger.info("POST media from user " + (user ? user._id : user));
+	logger.info("POST media by user " + (user ? user._id : user));
 	logger.debug("user is ", req.user);
 	// TODO: don't overwrite? - media without track?
 	req.body.trackId = req.params.trackId || undefined;
@@ -26,9 +26,21 @@ router.post('/', (req, res, next) => {
 });
 
 router.get('/', (req, res, next) => {
+	let user = getUser(req);
+	logger.info("GET media list by user " + (user ? user._id : user));
 	Controller.list()
 		.then((tracks) => {
 			res.status(200).json(tracks);
+		});
+});
+
+router.delete('/:mediaId', (req, res, next) => {
+	let user = getUser(req);
+	const mediaId = req.params.mediaId || undefined;
+	logger.info("DELETE media [" +  mediaId + "] by user " + (user ? user._id : user));
+	Controller.remove(mediaId)
+		.then((media) => {
+			res.status(200).json(media);
 		});
 });
 

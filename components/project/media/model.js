@@ -72,7 +72,6 @@ const defaults = {
 	position: 0,
 	mediaPath: '',
 	volume: 1,
-	remoteTempPath: '',
 	clipText: '',
 	clipTextPosition: '',
 	hasText: false,
@@ -81,14 +80,13 @@ const defaults = {
 	// stopTime: ???
 	videoError: '',
 	trackId: '', // TODO(jliarte): 14/07/18 set or not?
-	assetId: '', // TODO(jliarte): 25/07/18 set or not?
 	// date: {
 	// 	type: 'object',
 	// 	date: true
 	// },
 };
 
-const  noDefaultsFields = ['stopTime', 'transcodeFinished', 'created_by'];
+const  noDefaultsFields = ['stopTime', 'transcodeFinished', 'remoteTempPath', 'assetId', 'created_by'];
 
 const Model = new Modelate('Media').set(model);
 

@@ -49,7 +49,6 @@ const defaults = {
     name: '',
     filename: '',
     mimetype: '',
-    uri: '',
     projectId: '',
 };
 

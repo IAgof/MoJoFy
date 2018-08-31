@@ -15,7 +15,6 @@ const getUser = require("../access/acl").getUser;
 router.post('/', Upload.single('file'), (req, res, next) => {
 	let user = getUser(req);
 	logger.info("POST asset by user " + (user ? user._id : user));
-	logger.error("esete es el data ", req.body);
 	// TODO: don't overwrite?
 	req.body.file = req.file;
 	req.body.project = req.params.projectId || undefined;
