@@ -18,7 +18,11 @@ exports.middleware = function(req, res, next) {
 	} else {
 		Acl.middleware(req, res, function() {
 			if (method === 'GET') {
-				get(req, res, next);
+				if (req.params.compositionId) {
+					get(req, res, next);
+				} else {
+					list(req, res, next);
+				}
 			} else {
 				next();
 			}
@@ -29,6 +33,25 @@ exports.middleware = function(req, res, next) {
 
 function get(req, res, next) {
 	const user = getUser(req);
+	const compositionId = req.params.compositionId;
+	let action = 'read_any';
+	Store.get(compositionId)
+		.then(composition => {
+			if (composition && (composition.created_by === getUserId(req))) {
+				action = 'read_own';
+			}
+			Acl.acl.query(getUserRole(req), 'composition', action, function(err, allow) {
+				if (!allow) {
+					logger.debug("User " + getUserId(req) + " not allowed to action " + action + " in GET /composition/:compositionId");
+					// return Response.error(req, res, next, 403);
+					return Response.error(req, res, next, 404); // TODO(jliarte): 31/08/18 shall we throw an error?
+				}
+				return next();
+			});
+		});
+}
+
+function list(req, res, next) {
 	let action = 'list_any';
 	if (req.query.created_by === getUserId(req)) {
 		action = 'list_own';

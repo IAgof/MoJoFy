@@ -42,7 +42,7 @@ router.get('/', Acl, (req, res, next) => {
 		});
 });
 
-router.get('/:compositionId', (req, res, next) => {
+router.get('/:compositionId', Acl, (req, res, next) => {
 	const user = getUser(req);
 	logger.info("GET composition by user " + (user ? user._id : user));
 	const compositionId = req.params.compositionId || undefined;

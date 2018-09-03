@@ -188,7 +188,7 @@ function getUserId(req) {
 	if (req.user && req.user.userProfile && req.user.userProfile._id) {
 		id = req.user.userProfile._id;
 	}
-	return id;
+	return id.toString();
 }
 
 function getUserRole(req) {
