@@ -1,11 +1,11 @@
-// test/components/asset/test-asset-model.js
+// test/components/user/user-feature/test-user-feature-model.js
 
 process.env.NODE_ENV = 'test';
 // During the test the env variable is set to test
 
-const Asset = require('../../../components/asset/model');
+const UserFeature = require('../../../../components/user/user-feature/model');
 
-const testUtil = require('../../test-util');
+const testUtil = require('../../../test-util');
 
 // Require the dev-dependencies
 const chai = require('chai');
@@ -13,19 +13,14 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const should = chai.should();
 
-function removeAllAssets() {
-	return testUtil.removeAllEntities('asset');
-}
-
-describe('Asset model', () => {
+describe('UserFeature model', () => {
 	describe('set', () => {
-		beforeEach(removeAllAssets);
 
 		it('should set default values for empty fields', () => {
-			const asset = {
+			const userFeature = {
 			};
-			let modelatedAsset = Asset.set(asset);
-			modelatedAsset.should.deep.equal(Asset._defaults);
+			let modelatedUserFeature = UserFeature.set(userFeature);
+			modelatedUserFeature.should.deep.equal(UserFeature._defaults);
 		});
 
 		// it('it should create a default date value if not present', () => {

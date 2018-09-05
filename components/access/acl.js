@@ -42,11 +42,17 @@ roles.distribute = {
 roles.project = {};
 roles.project.guest = ['read'];
 roles.project.editor = roles.project.guest.concat();
+roles.project.admin = roles.project.guest.concat();
 
 roles.composition = {};
 roles.composition.guest = ['read_own', 'add_own', 'list_own', 'update_own', 'delete_own'];
 roles.composition.editor = roles.composition.guest.concat();
 roles.composition.admin = roles.composition.guest.concat('read_any', 'list_any');
+
+roles.userFeature = {};
+roles.userFeature.guest = ['read_own'];
+roles.userFeature.editor = roles.userFeature.guest.concat();
+roles.userFeature.admin = roles.userFeature.guest.concat();
 
 
 // Allow "admin" to access all the resources
