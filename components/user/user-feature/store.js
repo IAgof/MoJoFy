@@ -48,6 +48,9 @@ function query(params) {
 		if (params.userFeature.userId && typeof params.userFeature.userId === 'string') {
 			insertFilter('userId', '=', params.userFeature.userId, queryParams);
 		}
+		if (params.userFeature.plan && typeof params.userFeature.plan === 'string') {
+			insertFilter('plan', '=', params.userFeature.plan, queryParams);
+		}
 	}
 	return Repository.queryAsync(type, queryParams);
 
@@ -66,6 +69,10 @@ function remove(id) {
 	return Repository.removeAsync(type, id);
 }
 
+function removeMulti(ids) {
+	return Repository._removeMulti(type, ids);
+}
+
 
 module.exports = {
 	add: upsert,
@@ -73,5 +80,6 @@ module.exports = {
 	list,
 	query,
 	get,
-	remove
+	remove,
+	removeMulti
 };

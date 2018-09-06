@@ -80,4 +80,149 @@ describe('User Feature store', () => {
 
 	});
 
+
+	describe('query', () => {
+		beforeEach(removeAllUserFeatures);
+
+		it('should return specified user feature by userId', () => {
+			const userFeature1 = {
+				id: 'userFeatureId.1',
+				name: 'userFeature name',
+				description: 'desc',
+				enabled: true,
+				userId: 'userId.1',
+			};
+			const userFeature2 = {
+				id: 'userFeatureId',
+				name: 'userFeature2 name',
+				description: 'desc',
+				enabled: true,
+				userId: 'userId.2',
+			};
+			return userFeatureStore.upsert(userFeature1)
+				.then(createdUserFeature => {
+					console.log("user feature created id ", createdUserFeature);
+					return userFeatureStore.upsert(userFeature2);
+				})
+				.then(createdUserFeature => {
+					console.log("user feature created id ", createdUserFeature);
+					return userFeatureStore.query({ userFeature: {userId: userFeature1.userId} });
+				})
+				.then(retrievedUserFeatures => {
+					console.log("retrieved user features are  ", retrievedUserFeatures);
+					retrievedUserFeatures.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(retrievedUserFeatures[0]);
+					retrievedUserFeatures[0].should.deep.equal(userFeature1);
+				});
+		});
+
+		it('should return specified user feature by userId and feature name', () => {
+			const userFeature1 = {
+				id: 'userFeatureId.1',
+				name: 'userFeature1 name',
+				description: 'desc',
+				enabled: true,
+				userId: 'userId.1',
+			};
+			const userFeature2 = {
+				id: 'userFeatureId',
+				name: 'userFeature2 name',
+				description: 'desc',
+				enabled: true,
+				userId: 'userId.1',
+			};
+			return userFeatureStore.upsert(userFeature1)
+				.then(createdUserFeature => {
+					console.log("user feature created id ", createdUserFeature);
+					return userFeatureStore.upsert(userFeature2);
+				})
+				.then(createdUserFeature => {
+					console.log("user feature created id ", createdUserFeature);
+					return userFeatureStore.query({ userFeature: { userId: userFeature1.userId, name: userFeature1.name } });
+				})
+				.then(retrievedUserFeatures => {
+					console.log("retrieved user features are  ", retrievedUserFeatures);
+					retrievedUserFeatures.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(retrievedUserFeatures[0]);
+					retrievedUserFeatures[0].should.deep.equal(userFeature1);
+				});
+		});
+
+		it('should return specified user features by plan', () => {
+			const userFeature1 = {
+				id: 'userFeatureId.1',
+				name: 'userFeature1 name',
+				description: 'desc',
+				enabled: true,
+				userId: 'userId.1',
+				plan: 'free',
+			};
+			const userFeature2 = {
+				id: 'userFeatureId',
+				name: 'userFeature2 name',
+				description: 'desc',
+				enabled: true,
+				userId: 'userId.1',
+				plan: 'lite',
+			};
+			return userFeatureStore.upsert(userFeature1)
+				.then(createdUserFeature => {
+					console.log("user feature created id ", createdUserFeature);
+					return userFeatureStore.upsert(userFeature2);
+				})
+				.then(createdUserFeature => {
+					console.log("user feature created id ", createdUserFeature);
+					return userFeatureStore.query({ userFeature: { plan: 'lite' } });
+				})
+				.then(retrievedUserFeatures => {
+					console.log("retrieved user features are  ", retrievedUserFeatures);
+					retrievedUserFeatures.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(retrievedUserFeatures[0]);
+					retrievedUserFeatures[0].should.deep.equal(userFeature2);
+				});
+		});
+
+	});
+
+	describe('removeMulti', () => {
+		beforeEach(removeAllUserFeatures);
+
+		it('should remove specified user features by id', () => {
+			const userFeature1 = {
+				id: 'userFeatureId.1',
+				name: 'userFeature1 name',
+				description: 'desc',
+				enabled: true,
+				userId: 'userId.1',
+				plan: 'free',
+			};
+			const userFeature2 = {
+				id: 'userFeatureId',
+				name: 'userFeature2 name',
+				description: 'desc',
+				enabled: true,
+				userId: 'userId.1',
+				plan: 'lite',
+			};
+			return userFeatureStore.upsert(userFeature1)
+				.then(createdUserFeature => {
+					console.log("user feature created id ", createdUserFeature);
+					return userFeatureStore.upsert(userFeature2);
+				})
+				.then(createdUserFeature => {
+					console.log("user feature created id ", createdUserFeature);
+					return userFeatureStore.removeMulti( [userFeature1.id, userFeature2.id] );
+				})
+				.then(result => {
+					console.log("result removing user features ", result);
+					return userFeatureStore.list();
+				})
+				.then(userFeatures => {
+					userFeatures.should.have.length(0);
+				});
+		});
+
+	});
+
+
 });

@@ -9,7 +9,10 @@ module.exports = {
 	get,
 	list,
 	query,
-	remove
+	remove,
+	getDefaultsForPlan,
+	setPlanDefaultsToUser,
+	removeUserFeatures
 };
 
 const Model = require('./model');
@@ -67,5 +70,34 @@ function remove(id) {
 			} else {
 				return false; // TODO(jliarte): 26/07/18 reject, resolve or throw?
 			}
+		});
+}
+
+function getDefaultsForPlan(plan) {
+	logger.info("userFeatureCtrl.getDefaultsForPlan for plan [" + plan + "]");
+	return query({ userFeature: { userId: 'default', plan: plan} }, undefined);
+}
+
+function setPlanDefaultsToUser(userId, plan) {
+	logger.info("userFeatureCtrl.setPlanDefaultsToUser for user id [" + userId + "] and plan [" + plan + "]");
+	return removeUserFeatures(userId)
+		.then(result => {
+			return getDefaultsForPlan(plan);
+		})
+		.then(features => {
+			features.map(feature => {
+				feature.userId = userId;
+				delete feature._id;
+			});
+			return Promise.all(features.map(feature => store.upsert(feature)));
+		})
+}
+
+function removeUserFeatures(userId) {
+	logger.info("userFeatureCtrl.removeUserFeatures for userId [" + userId + "]");
+	return query({ userFeature: { userId: userId } }, undefined)
+		.then(features => {
+			logger.debug("------------- ", features);
+			return store.removeMulti(features.map(feature => feature._id));
 		});
 }

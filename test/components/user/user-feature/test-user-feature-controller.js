@@ -140,48 +140,17 @@ describe('UserFeature controller', () => {
 
 	});
 
-	describe('query', () => {
+	describe('getDefaultsForPlan', () => {
 		beforeEach(removeAllUserFeatures);
 
-		it('should return specified user feature by userId', () => {
-			const userFeature1 = {
-				id: 'userFeatureId.1',
-				name: 'userFeature name',
-				description: 'desc',
-				enabled: true,
-				userId: 'userId.1',
-			};
-			const userFeature2 = {
-				id: 'userFeatureId',
-				name: 'userFeature2 name',
-				description: 'desc',
-				enabled: true,
-				userId: 'userId.2',
-			};
-			return userFeatureCtrl.add(userFeature1)
-				.then(createdUserFeature => {
-					console.log("user feature created id ", createdUserFeature);
-					return userFeatureCtrl.add(userFeature2);
-				})
-				.then(createdUserFeature => {
-					console.log("user feature created id ", createdUserFeature);
-					return userFeatureCtrl.query({ userFeature: {userId: userFeature1.userId} });
-				})
-				.then(retrievedUserFeatures => {
-					console.log("retrieved user features are  ", retrievedUserFeatures);
-					retrievedUserFeatures.should.have.length(1);
-					testUtil.prepareRetrievedEntityToCompare(retrievedUserFeatures[0]);
-					retrievedUserFeatures[0].should.deep.equal(userFeature1);
-				});
-		});
-
-		it('should return specified user feature by userId and feature name', () => {
+		it('should return default features for specified plan', () => {
 			const userFeature1 = {
 				id: 'userFeatureId.1',
 				name: 'userFeature1 name',
 				description: 'desc',
 				enabled: true,
 				userId: 'userId.1',
+				plan: 'lite',
 			};
 			const userFeature2 = {
 				id: 'userFeatureId',
@@ -189,25 +158,145 @@ describe('UserFeature controller', () => {
 				description: 'desc',
 				enabled: true,
 				userId: 'userId.1',
+				plan: 'lite',
+			};
+			const defaultFeature1 = {
+				id: 'defFeatureId1',
+				name: 'userFeature name',
+				description: 'desc',
+				enabled: true,
+				userId: 'default',
+				plan: 'lite'
+			};
+			const defaultFeature2 = {
+				id: 'defFeatureId2',
+				name: 'userFeature name',
+				description: 'desc',
+				enabled: true,
+				userId: 'default',
+				plan: 'lite'
 			};
 			return userFeatureCtrl.add(userFeature1)
 				.then(createdUserFeature => {
-					console.log("user feature created id ", createdUserFeature);
+					console.log("userFeature created id ", createdUserFeature);
 					return userFeatureCtrl.add(userFeature2);
 				})
 				.then(createdUserFeature => {
-					console.log("user feature created id ", createdUserFeature);
-					return userFeatureCtrl.query({ userFeature: { userId: userFeature1.userId, name: userFeature1.name } });
+					console.log("userFeature created id ", createdUserFeature);
+					return userFeatureCtrl.add(defaultFeature1);
 				})
-				.then(retrievedUserFeatures => {
-					console.log("retrieved user features are  ", retrievedUserFeatures);
-					retrievedUserFeatures.should.have.length(1);
-					testUtil.prepareRetrievedEntityToCompare(retrievedUserFeatures[0]);
-					retrievedUserFeatures[0].should.deep.equal(userFeature1);
+				.then(createdUserFeature => {
+					console.log("userFeature created id ", createdUserFeature);
+					return userFeatureCtrl.add(defaultFeature2);
+				})
+				.then(createdUserFeature => {
+					console.log("userFeature created id ", createdUserFeature);
+					return userFeatureCtrl.getDefaultsForPlan('lite');
+				})
+				.then(retrievedFeatures => {
+					console.log("retrieved userFeature is ", retrievedFeatures);
+					retrievedFeatures.should.have.length(2);
+					testUtil.prepareRetrievedEntityToCompare(retrievedFeatures[0]);
+					testUtil.prepareRetrievedEntityToCompare(retrievedFeatures[1]);
+					retrievedFeatures[0].should.deep.equal(defaultFeature1);
+					retrievedFeatures[1].should.deep.equal(defaultFeature2);
 				});
 		});
 
 	});
 
+	describe('setPlanDefaultsToUser', () => {
+		beforeEach(removeAllUserFeatures);
+
+		it('should set default features for specified plan to specified userId', () => {
+			const userId = 'userToTestId';
+			const defaultFeature1 = {
+				id: 'defFeatureId1',
+				name: 'userFeature name',
+				description: 'desc',
+				enabled: true,
+				userId: 'default',
+				plan: 'lite'
+			};
+			const defaultFeature2 = {
+				id: 'defFeatureId2',
+				name: 'userFeature name',
+				description: 'desc',
+				enabled: true,
+				userId: 'default',
+				plan: 'lite'
+			};
+			return userFeatureCtrl.add(defaultFeature1)
+				.then(createdUserFeature => {
+					console.log("userFeature created id ", createdUserFeature);
+					return userFeatureCtrl.add(defaultFeature2);
+				})
+				.then(createdUserFeature => {
+					console.log("userFeature created id ", createdUserFeature);
+					return userFeatureCtrl.setPlanDefaultsToUser(userId, 'lite');
+				})
+				.then(result => {
+					console.log("result setting defaults for user ", result);
+					return userFeatureCtrl.query({ userFeature: { userId: userId } })
+				})
+				.then(retrievedFeatures => {
+					console.log("retrieved userFeature is ", retrievedFeatures);
+					retrievedFeatures.should.have.length(2);
+					testUtil.prepareRetrievedEntityToCompare(retrievedFeatures[0]);
+					delete retrievedFeatures[0].id;
+					delete defaultFeature1.id;
+					defaultFeature1.userId = userId;
+					retrievedFeatures[0].should.deep.equal(defaultFeature1);
+					testUtil.prepareRetrievedEntityToCompare(retrievedFeatures[1]);
+					delete retrievedFeatures[1].id;
+					delete defaultFeature2.id;
+					defaultFeature2.userId = userId;
+					retrievedFeatures[1].should.deep.equal(defaultFeature2);
+				});
+		});
+
+	});
+
+	describe('removeUserFeatures', () => {
+		beforeEach(removeAllUserFeatures);
+
+		it('should remove all user features for specified userId', () => {
+			const userId = 'userId';
+			const defaultFeature1 = {
+				id: 'defFeatureId1',
+				name: 'userFeature name',
+				description: 'desc',
+				enabled: true,
+				userId: userId,
+				plan: 'lite'
+			};
+			const defaultFeature2 = {
+				id: 'defFeatureId2',
+				name: 'userFeature name',
+				description: 'desc',
+				enabled: true,
+				userId: userId,
+				plan: 'lite'
+			};
+			return userFeatureCtrl.add(defaultFeature1)
+				.then(createdUserFeature => {
+					console.log("userFeature created id ", createdUserFeature);
+					return userFeatureCtrl.add(defaultFeature2);
+				})
+				.then(createdUserFeature => {
+					console.log("userFeature created id ", createdUserFeature);
+					return userFeatureCtrl.removeUserFeatures(userId);
+				})
+				.then(result => {
+					console.log("result removing features for user ", result);
+					return userFeatureCtrl.list(undefined)
+				})
+				.then(retrievedFeatures => {
+					console.log("retrieved userFeature are ", retrievedFeatures);
+					retrievedFeatures.should.have.length(0);
+				});
+		});
+
+	});
 
 });
