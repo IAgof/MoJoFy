@@ -1,5 +1,6 @@
+// components/video/model.js
 
-var Modelate = require('modelate');
+let Modelate = require('modelate');
 
 const model = {
 	owner: {

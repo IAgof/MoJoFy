@@ -56,10 +56,10 @@ function count(query, callback) {
 }
 
 function remove(id, callback) {
-	Persistent.remove(type, id, function (data) {
-		callback(data);
+	Persistent.remove(type, id, function (data, error) {
+		callback(data, error);
 	});
 	Search.remove(type, id, function (data) {
-		logger.debug("Removed vieo from search: ", data);
+		logger.debug("Removed video from search: ", data);
 	});
 }

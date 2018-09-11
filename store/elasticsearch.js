@@ -148,8 +148,8 @@ function remove(type, id, cb) {
 		type: type,
 		id: id
 	}, function (error, response) {
-		if(error) {
-			logger.error('Have been an error removing from ElasticSearch!!');
+		if (error) {
+			logger.error('Have been an error removing ' + type + ' '  + id + ' from ElasticSearch!!');
 			logger.error(error);
 			cb(false);
 			return false;

@@ -5,9 +5,9 @@ const Store = require('./store');
 const logger = require('../../logger')(module);
 const Config = require('../../config');
 
-const User = require('../user');
 const DownloadCode = require('../download-code');
 const Notifications = require('../email_notifications');
+const userCtrl = require('../user');
 
 // Exposed functions
 
@@ -76,7 +76,7 @@ function add(data, requestingUser, callback) {
 					video._id = id;
 					generate_download_codes(id);
 					notify_video_upload(video);
-					User.updateVideoCounter(video.owner);
+					userCtrl.updateVideoCounter(video.owner);
 					// TODO:(DevStarlight) 24/04/2018 We have set a timeout of 1000ms to give time to process the video 
 					setTimeout(function () {
 						callback(video, null, 201);
@@ -341,7 +341,7 @@ function getVideoOwner(videos, requestingUser, callback) {
 	for (let i = 0; i < videos.length; i++) {
 		delete videos[i].original; // TODO(jliarte): this should be in another place
 		const video = videos[i];
-		User.get(video.owner, requestingUser, false, function (data) {
+		userCtrl.get(video.owner, requestingUser, false, function (data) {
 			if (data) {
 				video.ownerData = data;
 			}
@@ -364,10 +364,25 @@ function query(params, requestingUser, callback) {
 }
 
 function remove(id, requestingUser, callback) {
-	Store.remove(id, function(data) {
+	logger.debug("Video.remove id " + id + " by user ", requestingUser);
+	Store.get(id, function(data) {
 		if (data) {
-			data._id = id;
-			callback(data, null);
+			const video = data.video;
+			const originalVideo = data.original;
+			const poster = data.poster;
+			const videoOwner = data.owner;
+			Store.remove(id, function(data) {
+				if (data) {
+					data._id = id;
+					FileUpload.removeFromCloudStorage(video);
+					FileUpload.removeFromCloudStorage(originalVideo);
+					FileUpload.removeFromCloudStorage(poster);
+					userCtrl.decreaseVideoCounter(videoOwner);
+					callback(data, null);
+				} else {
+					callback(null, 'That video does not exist', 404);
+				}
+			});
 		} else {
 			callback(null, 'That video does not exist', 404);
 		}
