@@ -12,12 +12,15 @@ const config = {
 	max_video_upload_byte_size: process.env.MAX_VIDEO_UPLOAD_BYTE_SIZE || '1500000',
 	max_profile_upload_byte_size: process.env.MAX_PROFILE_UPLOAD_BYTE_SIZE || '1500000',
 	
-	// JWT
+	// auth - JWT
 	jwt_secret: process.env.JWT_SECRET || 'secret',
-	//jwt_issuer: process.env.JWT_ISSUER,
 	jwt_expires: process.env.JWT_TOKEN_EXPIRATION || '1y',		// Format guide: https://github.com/zeit/ms
+	jwt_issuer: process.env.JWT_ISSUER,
+	auth0_audience: process.env.AUTH0_AUDIENCE,
+	auth0_metadata_ns: process.env.AUTH0_METADATA_NS,
+	auth0_base_uri: process.env.AUTH0_BASE_URI,
 
-	// Databases
+// Databases
 	persistence_db: process.env.BACKEND_PERSISTENT_DB || 'datastore',
 	search_db: process.env.BACKEND_SEARCH_DB || 'elasticsearch',
 	db_table_prefix: process.env.DB_TABLE_PREFIX || 'tableprefix',

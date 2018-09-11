@@ -1,6 +1,6 @@
 const fs = require('fs');
 const s3 = require("./s3");
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const config = require('../../config');
 
 exports.uploadToStorage = uploadToStorage;
@@ -18,16 +18,21 @@ function uploadToStorage(fileData, storageFolder) {
 			if (config.aws_region !== 'us-east-1') {
 				replacePath = config.aws_region + '.' + replacePath;
 			}
-			return response.Location.replace(config.storage_bucket + '.' + replacePath, config.cdn_path);
+			return response.Location.replace(replacePath + '/' + config.storage_bucket, config.cdn_path);
 		});
 }
 
 function removeFromStorage(url) {
-	let path = url.split(config.cdn_path + '/')[1];
-	return s3.remove(path)
-		.catch(error => {
-			throw error;
-		});
+	if (url && url.indexOf(config.cdn_path) > -1) {
+		let path = url.split(config.cdn_path + '/')[1];
+		return s3.remove(path)
+			.catch(error => {
+				throw error;
+			});
+	} else {
+		logger.debug("AWS.removeFromStorage - Unable to remove Provided url [" + url + "] resolving promise");
+		return Promise.resolve();
+	}
 }
 
 function getFileBuffer(path) {

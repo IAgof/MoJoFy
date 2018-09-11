@@ -6,7 +6,7 @@ console.warn('[store/elasticsearch.js] Elasticsearch Query groupBy not implement
 
 const elasticsearch = require('elasticsearch');
 const config = require('../config');
-const logger = require('../logger');
+const logger = require('../logger')(module);
 
 const INDEX = config.elastic_index;
 const login = config.elastic_user ? ( config.elastic_pass ? config.elastic_user + ':' + config.elastic_pass + '@' : config.elastic_user + '@' ) : '';

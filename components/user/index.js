@@ -3,15 +3,17 @@ const FileUpload = require('../file');
 const merge = require('util-merge');
 const Model = require('./model');
 const Pass = require('../access/password');
-const Store = require('./store');
-const logger = require('../../logger');
+const logger = require('../../logger')(module);
 const config = require('../../config');
 
+const Store = require('./store');
 const Video = require('../video');
 
 // Exposed functions
 
 exports.get = get;
+exports.getUserId = getUserId;
+exports.getUserByEmail = getUserByEmail;
 exports.list = list;
 exports.add = add;
 exports.exist = exist;
@@ -22,43 +24,79 @@ exports.updateVideoCounter = updateVideoCounter;
 
 // Internal functions
 
-function get(id, token, callback, includePass) {
-
-	Store.get(id, function(data) {
-		if(data) {
+function get(id, requestingUser, includePass, callback) {
+	logger.debug("user.get method " + id + " by  ", requestingUser);
+	Store.get(id, function (data) {
+		if (data) {
 			data._id = id;
-			if(!includePass) {
+			if (!includePass) {
 				delete data.password;
 			}
 
-			if (!token) {
-				token = {};
+			if (!requestingUser) {
+				requestingUser = {};
 			}
 
-			Acl.query(token, 'see_email', function (allowed) {
+			// TODO(jliarte): 29/06/18 move acl logic to router?
+			Acl.query(requestingUser, 'see_email', function (allowed) {
 				if (!allowed) {
 					delete data.email;
 				}
-
-				if(!data.videoCount) {
-					setVideoCounter(id, function(data) {
-						callback(data, null);
+				if (!data.videoCount) {
+					setVideoCounter(id, function (data) {
+						return callback(data, null);
 					});
 				} else {
-					callback(data, null);
+					return callback(data, null);
 				}
-			})
-			
-
+			});
 		} else {
 			callback(null, 'That user does not exist', 404);
 		}
 	});
 }
 
-function add(data, token, callback) {
-	logger.debug("user.add mehod, data - ", data);
-	isUser(data, token, function (exists) {
+function getUserId(authId, callback) {
+	logger.debug("user.getUserId method " + authId);
+	const params = {
+		filters: [{
+			field: 'authId',
+			operator: '=',
+			value: authId
+		}],
+		limit: 1
+	};
+	query(params, null, false, function (users) {
+		if (!users || users.length === 0) {
+			callback(null);
+		} else {
+			callback(users[0]);
+		}
+	});
+}
+
+function getUserByEmail(email, callback) {
+	logger.debug("user.getUserByEmail method " + email);
+	const params = {
+		filters: [{
+			field: 'email',
+			operator: '=',
+			value: email
+		}],
+		limit: 1
+	};
+	query(params, null, false, function (users) {
+		if (!users || users.length === 0) {
+			callback(null);
+		} else {
+			callback(users[0]);
+		}
+	});
+}
+
+function add(data, requestingUser, callback) {
+	logger.debug("user.add method, data - ", data);
+	userExists(data, requestingUser, function (exists) {
 		if (exists === null) {
 			callback(null, 'Unable to register, no user or email provided', 400);
 			return false;
@@ -67,12 +105,15 @@ function add(data, token, callback) {
 			return false;
 		}
 
-		if(!data.role || data.role === '') {
+		if (!data.role || data.role === '') {
 			data.role = 'guest';
 		}
-		
+
 		// Execute all the code;
-		prepare(data, function(model) {
+		prepare(data, function (model) {
+			// TODO(jliarte): 27/06/18 check if this affects the rest of the tests xD :P
+			model._id = data.id || data._id;
+
 			Store.upsert(model, function (result, id) {
 				if (result, id) {
 					model._id = id;
@@ -86,8 +127,9 @@ function add(data, token, callback) {
 	});
 }
 
-function exist(data, token, callback) {
-	isUser(data, token, function (exists) {
+function exist(data, requestingUser, callback) {
+	logger.debug("user.exists by ", requestingUser);
+	userExists(data, requestingUser, function (exists) {
 		if (exists === null) {
 			callback(null, 'Unable to register, no user or email provided', 400);
 			return false;
@@ -97,35 +139,35 @@ function exist(data, token, callback) {
 	});
 }
 
-function isUser(data, token, callback) {
-	var params = {
+function userExists(data, requestingUser, callback) {
+	const params = {
 		filters: [],
 		limit: 1
 	};
 
-	if(typeof data.name === 'string' && data.name !== '') {
+	if (typeof data.name === 'string' && data.name !== '') {
 		params.filters.push({
-			field: 'username', 
-			operator: '=', 
+			field: 'username',
+			operator: '=',
 			value: data.name
 		});
-	} else if(typeof data.email === 'string' && data.email !== '') {
+	} else if (typeof data.email === 'string' && data.email !== '') {
 		params.filters.push({
-			field: 'email', 
-			operator: '=', 
+			field: 'email',
+			operator: '=',
 			value: data.email
 		});
 	} else {
 		callback(null);
 	}
-	logger.debug("querying with params ", params);
+	logger.debug("userExists querying with params ", params);
 
-	query(params, token, function(found, error) {	//, code) {
-		if(error) {
+	query(params, requestingUser, false, function (found, error) {
+		if (error) {
 			callback(null);
 		}
 
-		if(found && found.length > 0) {
+		if (found && found.length > 0) {
 			callback(true);
 		} else {
 			callback(false);
@@ -133,44 +175,47 @@ function isUser(data, token, callback) {
 	}, false);
 }
 
-function update(data, token, file, callback) {
-	if(!data.id && !data._id) {
+function update(data, requestingUser, file, callback) {
+	logger.debug("user.update by user ", requestingUser);
+	logger.debug("user.update data", data);
+	if (!data.id && !data._id) {
 		callback(null, 'No user id provided', 400);
 		return;
 	}
-	
-	updatePassword(data, function(model) {
 
+	prepare(data, function (model) {
 		model._id = data.id || data._id;
 
-		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(response => {
-			if (response) {
-				model.pic = response;
+		FileUpload.moveUploadedFile(file, config.storage_folder.user + '/' + model._id).then(newPicUrl => {
+			logger.debug("user update res of move uploaded file is [" + newPicUrl + "]");
+			if (newPicUrl) {
+				model.pic = newPicUrl;
 			}
-
 			updateUser(model, callback);
 		});
 	});
 }
 
 function updateUser(model, callback) {
+	logger.debug("user.userUpdate with model ", model);
 	Store.get(model._id, function (user) {
 		if (!user) {
 			callback(null, 'Unable to update the user', 500);
 			return false;
 		}
-		
+
 		const merged = merge(user, model);
-		
-		Store.upsert(merged, function(result, id) {
-			if(result, id) {
+
+		Store.upsert(merged, function (result, id) {
+			if (result, id) {
 				merged._id = id;
 				delete merged.password;
 
-				if(user.pic) {
-					FileUpload.removeFromCloudStorage(user.pic);
-				}
-				
+				// TODO(jliarte): 5/07/18 inspect this error from auth0-user middleware
+				// if (user.pic) {
+				// 	FileUpload.removeFromCloudStorage(user.pic);
+				// }
+
 				callback(merged, null, 200);
 			} else {
 				callback(null, 'Unable to update the user', 500);
@@ -179,46 +224,47 @@ function updateUser(model, callback) {
 	});
 }
 
-
-function list(token, callback) {
-	query({}, token, callback);
+function list(requestingUser, callback) {
+	logger.debug("user.list ${id} by user ", requestingUser);
+	query({}, requestingUser, false, callback);
 }
 
-function query(params, token, callback, includePass) {
-	// Acl.query(token, 'list', function(success) {
-		if (!token) {
-			token = {};
-		}
+function query(params, requestingUser, includePass, callback) {
+	if (!requestingUser) {
+		requestingUser = {};
+	}
 
-		Store.list(params, function(result) {
-			if(result) {
-				Acl.query(token, 'see_email', function (allowed) {
-					for (var i = 0; i < result.length; i++) {
-						// result[i]._id = id;
-						if(!includePass) {
-							delete result[i].password;
-						}
-
-						if (!allowed) {
-							delete result[i].email;
-						}
+	Store.list(params, function (result) {
+		if (result) {
+			// TODO(jliarte): 29/06/18 move acl logic to router?
+			Acl.query(requestingUser, 'see_email', function (allowed) {
+				for (let i = 0; i < result.length; i++) {
+					// result[i]._id = id;
+					if (!includePass) {
+						delete result[i].password;
 					}
-					callback(result, null, 201);
-				});
-			} else {
-				callback(null, 'Unable to list users', 500);
-			}
-		});
-	// });
+
+					if (!allowed) {
+						delete result[i].email;
+					}
+				}
+				callback(result, null, 201);
+			});
+		} else {
+			callback(null, 'Unable to list users', 500);
+		}
+	});
 }
 
 function updateVideoCounter(userId, callback) {
-	if(!userId) {
+	logger.debug("User.updateVideoCounter of user " + userId);
+	if (!userId) {
 		typeof callback === 'function' && callback(null);
 		return false;
 	}
 
-	Store.get(userId, function(data) {
+	Store.get(userId, function (data) {
+		logger.debug("UserStore got user ", userId, data);
 		if (data && data.videoCount) {
 			data._id = userId;
 			delete data.password;
@@ -240,11 +286,19 @@ function updateVideoCounter(userId, callback) {
 	}, true);
 }
 
+/**
+ * Set user videoCount field
+ *
+ * @param data warning! data can be both a user entity or a user ID!!! :S
+ * @param callback
+ * @returns {boolean}
+ */
 function setVideoCounter(data, callback) {
-	if(!data) {
+	if (!data) {
 		callback(null);
 		return false;
-	} else if(typeof data !== 'object') {
+	} else if (typeof data !== 'object') {
+		// TODO(jliarte): 29/06/18 maybe separate in two calls/functions for a clearer code
 		return updateVideoCounter(data, callback);
 	}
 
@@ -256,16 +310,16 @@ function setVideoCounter(data, callback) {
 			operator: '=',
 			value: userId
 		}]
-	}, function(userVideos) {
+	}, function (userVideos) {
 		data.videoCount = userVideos || 0;
 		update(data, null, null, function (data, err) {
 			if (err) {
-				logger.error(err);
+				logger.error("Error counting videos:", err);
 			} else {
 				logger.log('Video counter setted for user ' + userId);
 			}
-			
-			if(typeof callback === 'function') {
+
+			if (typeof callback === 'function') {
 				callback(data);
 			}
 		});
@@ -274,13 +328,16 @@ function setVideoCounter(data, callback) {
 
 function prepare(data, next) {
 	const model = Model.set(data);
-	updatePassword(model, next);
+	next(model);
+
+	// TODO(jliarte): 27/06/18 clean auth code
+	// updatePassword(model, next);
 }
 
 function updatePassword(data, next) {
-	// Check if pasword shall be created
-	if(typeof(data.password) !== 'undefined') {
-		Pass.crypt(data.password, function(err, hash) {
+	// Check if password shall be created
+	if (typeof(data.password) !== 'undefined') {
+		Pass.crypt(data.password, function (err, hash) {
 			data.password = hash;
 			next(data);
 		});
