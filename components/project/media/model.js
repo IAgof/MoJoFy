@@ -43,7 +43,19 @@ const model = {
 	transcodeFinished: {
 		type: 'boolean'
 	},
-	trackId: {
+  title: {
+    type: 'string',
+  },
+  author: {
+    type: 'string',
+  },
+  iconResourceId: {
+    type: 'number',
+  },
+  duration: {
+    type: 'number',
+  },
+  trackId: {
 		type: 'string',
 	},
     assetId: {
@@ -79,6 +91,7 @@ const defaults = {
 	startTime: 0,
 	// stopTime: ???
 	videoError: '',
+	title: '',
 	trackId: '', // TODO(jliarte): 14/07/18 set or not?
 	// date: {
 	// 	type: 'object',
@@ -86,7 +99,8 @@ const defaults = {
 	// },
 };
 
-const  noDefaultsFields = ['stopTime', 'transcodeFinished', 'remoteTempPath', 'assetId', 'created_by'];
+const  noDefaultsFields = ['stopTime', 'transcodeFinished', 'remoteTempPath', 'author', 'assetId', 'created_by',
+	'iconResourceId', 'duration'];
 
 const Model = new Modelate('Media').set(model);
 
