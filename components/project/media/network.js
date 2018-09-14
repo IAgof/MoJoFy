@@ -7,6 +7,7 @@ const logger = require('../../../logger')(module);
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 const getUser = require("../../access/acl").getUser;
+const Acl = require('./acl').middleware;
 
 router.post('/', (req, res, next) => {
 	let user = getUser(req);
@@ -24,6 +25,23 @@ router.post('/', (req, res, next) => {
 		})
 		.catch(next);
 });
+
+router.put('/:mediaId', Acl, (req, res, next) => {
+  let user = getUser(req);
+  logger.info("PUT media by user " + (user ? user._id : user));
+  // TODO: don't overwrite? - media without id?
+  req.body.id = req.params.mediaId;
+  if (!user) {
+    // TODO(jliarte): 12/07/18 extract helper? - ACL?
+    return res.status(401).json( { error: "Unauthorized!" } );
+  }
+  Controller.upsert(req.body, user)
+    .then(updatedMedia => {
+      res.status(201).json(updatedMedia);
+    })
+    .catch(next);
+});
+
 
 router.get('/', (req, res, next) => {
 	let user = getUser(req);

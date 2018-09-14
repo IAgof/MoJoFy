@@ -28,6 +28,11 @@ function add(newMediaData, user) {
 		});
 }
 
+function upsert(newMediaData, user) {
+  logger.info("mediaCtrl.upsert by User ", user);
+  return add(newMediaData, user);
+}
+
 function list(user) {
 	logger.info("mediaCtrl.list by User ", user);
 	return store.list();
@@ -90,6 +95,7 @@ function removeMulti(mediaIds) {
 
 module.exports = {
 	add,
+	upsert,
 	list,
 	query,
 	updateMediaAsset,
