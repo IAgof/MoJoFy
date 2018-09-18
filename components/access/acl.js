@@ -49,6 +49,11 @@ roles.composition.guest = ['read_own', 'add_own', 'list_own', 'update_own', 'del
 roles.composition.editor = roles.composition.guest.concat();
 roles.composition.admin = roles.composition.guest.concat('read_any', 'list_any');
 
+roles.media = {};
+roles.media.guest = ['read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete_own'];
+roles.media.editor = roles.media.guest.concat();
+roles.media.admin = roles.media.guest.concat('read_any', 'list_any');
+
 roles.userFeature = {};
 roles.userFeature.guest = ['read_own'];
 roles.userFeature.editor = roles.userFeature.guest.concat();
