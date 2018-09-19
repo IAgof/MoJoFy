@@ -28,6 +28,16 @@ function add(newMediaData, user) {
 		});
 }
 
+function get(mediaId) {
+	return store.get(mediaId)
+		.then(retrievedMedia => {
+			if (retrievedMedia) {
+				retrievedMedia._id = mediaId;
+			}
+			return retrievedMedia;
+		});
+}
+
 function upsert(newMediaData, user) {
   logger.info("mediaCtrl.upsert by User ", user);
   return add(newMediaData, user);
@@ -83,8 +93,14 @@ function updateMediaAsset(mediaId, assetId) {
 
 function remove(mediaId) {
 	logger.info("mediaCtrl.remove media [" + mediaId + "]");
-	// TODO(jliarte): 9/08/18 should return removed media?
-	return store.remove(mediaId);
+	let media;
+	return get(mediaId)
+		.then(retrievedMedia => {
+			logger.debug("retrieved media to delete is ", retrievedMedia);
+			media = retrievedMedia;
+      return store.remove(mediaId);
+    })
+		.then(() => media);
 }
 
 function removeMulti(mediaIds) {
@@ -95,6 +111,7 @@ function removeMulti(mediaIds) {
 
 module.exports = {
 	add,
+	get,
 	upsert,
 	list,
 	query,
