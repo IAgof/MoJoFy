@@ -9,7 +9,7 @@ const router = express.Router({ mergeParams: true });
 const getUser = require("../../access/acl").getUser;
 const Acl = require('./acl').middleware;
 
-router.post('/', (req, res, next) => {
+router.post('/', Acl, (req, res, next) => {
 	let user = getUser(req);
 	logger.info("POST media by user " + (user ? user._id : user));
 	logger.debug("user is ", req.user);
@@ -43,7 +43,7 @@ router.put('/:mediaId', Acl, (req, res, next) => {
 });
 
 
-router.get('/', (req, res, next) => {
+router.get('/', Acl, (req, res, next) => {
 	let user = getUser(req);
 	logger.info("GET media list by user " + (user ? user._id : user));
 	Controller.list()
@@ -52,7 +52,7 @@ router.get('/', (req, res, next) => {
 		});
 });
 
-router.delete('/:mediaId', (req, res, next) => {
+router.delete('/:mediaId', Acl, (req, res, next) => {
 	let user = getUser(req);
 	const mediaId = req.params.mediaId || undefined;
 	logger.info("DELETE media [" +  mediaId + "] by user " + (user ? user._id : user));
