@@ -44,7 +44,7 @@ roles.project.guest = ['read'];
 roles.project.editor = roles.project.guest.concat();
 
 roles.composition = {};
-roles.composition.guest = ['read_own', 'add_own', 'list_own', 'update_own', 'delete_own'];
+roles.composition.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
 roles.composition.editor = roles.composition.guest.concat();
 roles.composition.admin = roles.composition.guest.concat('read_any', 'list_any');
 
@@ -101,7 +101,7 @@ function middleware(req, res, next, operation) {
 			Response.error(req, res, next, 500, 'There was an error performing access control');
 		} else {
 			if (allow) {
-				next();
+        next();
 			} else {
 				Response.error(req, res, next, 403);
 			}
