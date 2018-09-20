@@ -1,4 +1,4 @@
-// test/components/project/media/test-media-acl.js
+// test/components/project/track/test-track-acl.js
 
 process.env.NODE_ENV = 'test';
 // During the test the env variable is set to test
@@ -11,8 +11,8 @@ const mockedResponse = {
   error: sinon.spy()
 };
 
-const mediaStore = require('../../../../components/project/media/store');
-const acl = proxyquire('../../../../components/project/media/acl', {
+const trackStore = require('../../../../components/project/track/store');
+const acl = proxyquire('../../../../components/project/track/acl', {
 
   '../../../network/response': mockedResponse
 });
@@ -26,7 +26,7 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 function removeAllMedias() {
-	return testUtil.removeAllEntities('media');
+	return testUtil.removeAllEntities('track');
 }
 
 // (jliarte): 20/09/18 wait time for store.get
@@ -50,53 +50,53 @@ describe('Media acl', () => {
 
   });
 
-  describe('middleware GET media', () => {
+  describe('middleware GET track', () => {
     beforeEach(removeAllMedias);
     afterEach(() => {
       mockedResponse.error.resetHistory();
     });
 
-    it('allows guest user access an owned media', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('allows guest user access an owned track', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'get',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
-        user: {userProfile: {role: 'guest', _id: media.created_by}}
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
+        user: {userProfile: {role: 'guest', _id: track.created_by}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           acl.middleware(req, res, function (req, res, next) {
             done();
           });
         });
     });
 
-    it('rejects guest user access a not owned media with 404', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('rejects guest user access a not owned track with 404', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'get',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
         user: {userProfile: {role: 'guest', _id: 'not-the-same-user-id'}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
       const next = sinon.stub();
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           return acl.middleware(req, res, next);
         })
         .then(result => new Promise(resolve => setTimeout(() => resolve(result), storeTimeout))) // (jliarte): 18/07/18 wait for store call
@@ -107,52 +107,52 @@ describe('Media acl', () => {
         });
     });
 
-    it('allows admin user access a not owned media', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('allows admin user access a not owned track', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'get',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
         user: {userProfile: {role: 'admin', _id: 'not-the-same-user-id'}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
       const next = sinon.stub();
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           acl.middleware(req, res, () => done());
         });
     });
 
   });
 
-  describe('middleware GET medias (list)', () => {
+  describe('middleware GET tracks (list)', () => {
     beforeEach(removeAllMedias);
     afterEach(() => { mockedResponse.error.resetHistory(); });
 
-    it('allows guest user list medias with created_by filter', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('allows guest user list tracks with created_by filter', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = { method: 'get',
         headers: { authorization: 'Bearer: auth' },
         params: {},
         query: {},
-        baseUrl: 'base/media',
+        baseUrl: 'base/track',
         user: { userProfile: { role: 'guest', _id: 'not-the-same-user-id' } }
       };
       const send = { send: sinon.spy() };
       const res = { status: sinon.stub().returns(send) };
       const next = sinon.stub();
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           acl.middleware(req, res, () => {
             req.query.created_by.should.equal(req.user.userProfile._id);
             done();
@@ -160,24 +160,24 @@ describe('Media acl', () => {
         });
     });
 
-    it('allows admin user list medias without created_by filter', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('allows admin user list tracks without created_by filter', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = { method: 'get',
         headers: { authorization: 'Bearer: auth' },
         params: {},
         query: {},
-        baseUrl: 'base/media',
+        baseUrl: 'base/track',
         user: { userProfile: { role: 'admin', _id: 'not-the-same-user-id' } }
       };
       const send = { send: sinon.spy() };
       const res = { status: sinon.stub().returns(send) };
       const next = sinon.stub();
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           acl.middleware(req, res, () => {
             req.query.should.not.have.property('created_by');
             done();
@@ -187,18 +187,18 @@ describe('Media acl', () => {
 
   });
 
-  describe('middleware PUT media', () => {
+  describe('middleware PUT track', () => {
     beforeEach(removeAllMedias);
     afterEach(() => {
       mockedResponse.error.resetHistory();
     });
 
-    it('allows guest user create a media with PUT', (done) => { // TODO(jliarte): 20/09/18 should allow this "missuse" of PUT method??? now it's allowed
+    it('allows guest user create a track with PUT', (done) => { // TODO(jliarte): 20/09/18 should allow this "missuse" of PUT method??? now it's allowed
       const req = {
         method: 'put',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: 'anyId'},
-        baseUrl: 'base/media',
+        params: {trackId: 'anyId'},
+        baseUrl: 'base/track',
         user: {userProfile: {role: 'guest', _id: 'userId'}}
       };
       const send = {send: sinon.spy()};
@@ -209,47 +209,47 @@ describe('Media acl', () => {
     });
 
 
-    it('allows guest user update an owned media', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('allows guest user update an owned track', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'put',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
-        user: {userProfile: {role: 'guest', _id: media.created_by}}
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
+        user: {userProfile: {role: 'guest', _id: track.created_by}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           acl.middleware(req, res, function (req, res, next) {
             done();
           });
         });
     });
 
-    it('rejects guest user update a not owned media with 404', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('rejects guest user update a not owned track with 404', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'put',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
         user: {userProfile: {role: 'guest', _id: 'not-the-same-user-id'}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
       const next = sinon.stub();
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           return acl.middleware(req, res, next);
         })
         .then(result => new Promise(resolve => setTimeout(() => resolve(result), storeTimeout))) // (jliarte): 18/07/18 wait for store call
@@ -260,77 +260,77 @@ describe('Media acl', () => {
         });
     });
 
-    it('allows admin user update a not owned media', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('allows admin user update a not owned track', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'put',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
         user: {userProfile: {role: 'admin', _id: 'not-the-same-user-id'}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
       const next = sinon.stub();
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           acl.middleware(req, res, () => done());
         });
     });
 
   });
 
-  describe('middleware DELETE media', () => {
+  describe('middleware DELETE track', () => {
     beforeEach(removeAllMedias);
     afterEach(() => {
       mockedResponse.error.resetHistory();
     });
 
-    it('allows guest user delete an owned media', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('allows guest user delete an owned track', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'delete',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
-        user: {userProfile: {role: 'guest', _id: media.created_by}}
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
+        user: {userProfile: {role: 'guest', _id: track.created_by}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           acl.middleware(req, res, function (req, res, next) {
             done();
           });
         });
     });
 
-    it('rejects guest user delete a not owned media with 404', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('rejects guest user delete a not owned track with 404', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'delete',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
         user: {userProfile: {role: 'guest', _id: 'not-the-same-user-id'}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
       const next = sinon.stub();
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           return acl.middleware(req, res, next);
         })
         .then(result => new Promise(resolve => setTimeout(() => resolve(result), storeTimeout))) // (jliarte): 18/07/18 wait for store call
@@ -341,24 +341,24 @@ describe('Media acl', () => {
         });
     });
 
-    it('allows admin user delete a not owned media', (done) => {
-      const media = {
-        id: 'mediaId.1',
+    it('allows admin user delete a not owned track', (done) => {
+      const track = {
+        id: 'trackId.1',
         created_by: 'userId.1'
       };
       const req = {
         method: 'delete',
         headers: {authorization: 'Bearer: auth'},
-        params: {mediaId: media.id},
-        baseUrl: 'base/media',
+        params: {trackId: track.id},
+        baseUrl: 'base/track',
         user: {userProfile: {role: 'admin', _id: 'not-the-same-user-id'}}
       };
       const send = {send: sinon.spy()};
       const res = {status: sinon.stub().returns(send)};
       const next = sinon.stub();
-      mediaStore.upsert(media)
+      trackStore.upsert(track)
         .then(createdComposition => {
-          console.log("media created ", createdComposition);
+          console.log("track created ", createdComposition);
           acl.middleware(req, res, () => done());
         });
     });

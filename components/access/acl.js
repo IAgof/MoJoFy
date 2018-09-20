@@ -53,6 +53,11 @@ roles.media.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'updat
 roles.media.editor = roles.media.guest.concat();
 roles.media.admin = roles.media.guest.concat('read_any', 'list_any');
 
+roles.track = {};
+roles.track.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
+roles.track.editor = roles.media.guest.concat();
+roles.track.admin = roles.media.guest.concat('read_any', 'list_any');
+
 
 // Allow "admin" to access all the resources
 acl.allow('admin');
