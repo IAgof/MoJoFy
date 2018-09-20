@@ -193,7 +193,7 @@ describe('Composition acl', () => {
       mockedResponse.error.resetHistory();
     });
 
-    it('allows guest user create a media with PUT', (done) => {
+    it('allows guest user create a media with PUT', (done) => { // TODO(jliarte): 20/09/18 should allow this "missuse" of PUT method??? now it's allowed
       const req = {
         method: 'put',
         headers: {authorization: 'Bearer: auth'},

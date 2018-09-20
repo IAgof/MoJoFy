@@ -193,6 +193,21 @@ describe('Composition acl', () => {
       mockedResponse.error.resetHistory();
     });
 
+    it('allows guest user create a composition with PUT route', (done) => { // TODO(jliarte): 20/09/18 should allow this "missuse" of PUT method???
+      const req = {
+        method: 'put',
+        headers: {authorization: 'Bearer: auth'},
+        params: {mediaId: 'anyId'},
+        baseUrl: 'base/composition',
+        user: {userProfile: {role: 'guest', _id: 'userId'}}
+      };
+      const send = {send: sinon.spy()};
+      const res = {status: sinon.stub().returns(send)};
+      acl.middleware(req, res, function (req, res, next) {
+        done();
+      });
+    });
+
     it('allows guest user update an owned composition', (done) => {
       const composition = {
         id: 'compositionId.1',
