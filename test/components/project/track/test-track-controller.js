@@ -143,6 +143,7 @@ describe('Track controller', () => {
 				stopTime: 120980,
 				videoError: '',
 				transcodeFinished: false,
+        title: 'media1 title',
 				assetId: 'assetId.1'
 			};
 			const media2 = {
@@ -160,6 +161,7 @@ describe('Track controller', () => {
 				stopTime: 120980,
 				videoError: '',
 				transcodeFinished: false,
+        title: 'media2 title',
 				assetId: 'assetId.2'
 			};
 			let createdTrackId;
@@ -240,6 +242,7 @@ describe('Track controller', () => {
 				stopTime: 120980,
 				videoError: '',
 				transcodeFinished: false,
+        title: "media1 title",
 				assetId: 'assetId.1'
 			};
 			const media2 = {
@@ -257,7 +260,8 @@ describe('Track controller', () => {
 				stopTime: 120980,
 				videoError: '',
 				transcodeFinished: false,
-				assetId: 'assetId.2'
+        title: "media2 title",
+        assetId: 'assetId.2'
 			};
 			const track = {
 				id: 'trackId',

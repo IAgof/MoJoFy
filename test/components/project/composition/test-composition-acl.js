@@ -193,7 +193,7 @@ describe('Composition acl', () => {
       mockedResponse.error.resetHistory();
     });
 
-    it('allows guest user create a composition with PUT route', (done) => { // TODO(jliarte): 20/09/18 should allow this "missuse" of PUT method???
+    xit('allows guest user create a composition with PUT route', (done) => { // TODO(jliarte): 20/09/18 should allow this "missuse" of PUT method???
       const req = {
         method: 'put',
         headers: {authorization: 'Bearer: auth'},
