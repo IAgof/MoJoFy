@@ -47,8 +47,6 @@ const model = {
 
 const defaults = {
     name: '',
-    filename: '',
-    mimetype: '',
     projectId: '',
 };
 
