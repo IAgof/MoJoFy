@@ -11,8 +11,9 @@ const logger = require('../../logger')(module);
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 const getUser = require("../access/acl").getUser;
+const Acl = require('./acl').middleware;
 
-router.post('/', Upload.single('file'), (req, res, next) => {
+router.post('/', Acl, Upload.single('file'), (req, res, next) => {
 	let user = getUser(req);
 	logger.info("POST asset by user " + (user ? user._id : user));
 	// TODO: don't overwrite?
@@ -26,7 +27,7 @@ router.post('/', Upload.single('file'), (req, res, next) => {
 		.catch(next);
 });
 
-router.get('/', (req, res, next) => {
+router.get('/', Acl, (req, res, next) => {
 	let user = getUser(req);
 	logger.info("GET asset list by user " + (user ? user._id : user));
 	let params = {};
