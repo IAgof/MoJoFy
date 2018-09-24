@@ -268,7 +268,7 @@ describe('Composition router', () => {
 				.get('/composition/' + compositionId)
 				.query({cascade: true})
 				.expect((res) => {
-					console.log("GET /composition/:compositionId result is ", res);
+					console.log("GET /composition/:compositionId result body is ", res.body);
 					sinon.assert.calledOnce(compositionControllerSpy.get);
 					sinon.assert.calledWith(compositionControllerSpy.get, compositionId, 'true', undefined);
 				})

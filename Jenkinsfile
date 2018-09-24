@@ -38,24 +38,28 @@ pipeline {
                 script {
                     def dockerfile = 'Dockerfile'
                     def testImage = docker.build("backend-test-image:${env.BUILD_ID}", "-f ${dockerfile} ./")
+                    def dataStoreSidecar = docker.build("singularities/datastore-emulator")
 
                     sh "eval \$(docker-machine env --shell bash \$DOCKER_MACHINE_NAME)"
-                    testImage.inside('-e "NODE_ENV=production" -e "BACKEND_SEARCH_DB=fakelasticsearch" -e BACKEND_API_URL=http://${DOCKER_MACHINE_IP}:3000') {
-                        BACKEND_TAG = sh (
-                            script: "node -e \"console.log(require(\'./package.json\').version);\"",
-                            returnStdout: true
-                            ).trim()
-                        //sh "cd /app/src && ../node_modules/gulp/bin/gulp.js build"
-                        try {
-                            sh "cd /app && node_modules/mocha/bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./src/report/test_results.xml --recursive src/test/"
-                        } catch(err) {
-                            sh "echo TESTS FAILED"
-                            currentBuild.result = 'UNSTABLE'
-                            throw err
-                        } finally {
-                            sh "cp -r /app/src/report ${WORKSPACE}"
+                    sh "docker ps -a"
+                    dataStoreSidecar.withRun('-e "DATASTORE_LISTEN_ADDRESS=0.0.0.0:8081" -e "DATASTORE_PROJECT_ID=videona-test"') { c ->
+                        testImage.inside("--link ${c.id}:datastore-test -e NODE_ENV=production -e BACKEND_SEARCH_DB=fakelasticsearch -e DATASTORE_EMULATOR_HOST=http://datastore-test:8081 -e BACKEND_API_URL=http://\${DOCKER_MACHINE_IP}:3000") {
+                            BACKEND_TAG = sh (
+                                script: "node -e \"console.log(require(\'./package.json\').version);\"",
+                                returnStdout: true
+                                ).trim()
+                            //sh "cd /app/src && ../node_modules/gulp/bin/gulp.js build"
+                            try {
+                                sh "cd /app && node_modules/mocha/bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./src/report/test_results.xml --recursive src/test/"
+                            } catch(err) {
+                                sh "echo TESTS FAILED"
+                                currentBuild.result = 'UNSTABLE'
+                                throw err
+                            } finally {
+                                sh "cp -r /app/src/report ${WORKSPACE}"
+                            }
+                            sh 'echo "Tests passed"'
                         }
-                        sh 'echo "Tests passed"'
                     }
                 }
             }
