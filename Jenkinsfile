@@ -40,7 +40,7 @@ pipeline {
                     def testImage = docker.build("backend-test-image:${env.BUILD_ID}", "-f ${dockerfile} ./")
 
                     sh "eval \$(docker-machine env --shell bash \$DOCKER_MACHINE_NAME)"
-                    testImage.inside('-e "NODE_ENV=production" -e BACKEND_API_URL=http://${DOCKER_MACHINE_IP}:3000') {
+                    testImage.inside('-e "NODE_ENV=production" -e "BACKEND_SEARCH_DB=fakelasticsearch" -e BACKEND_API_URL=http://${DOCKER_MACHINE_IP}:3000') {
                         BACKEND_TAG = sh (
                             script: "node -e \"console.log(require(\'./package.json\').version);\"",
                             returnStdout: true
