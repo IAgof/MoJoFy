@@ -29,16 +29,18 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const should = chai.should();
 
+const testUtil = require('../../test-util');
 
 function removeAllUsers() {
-	return userStore.listAsync({})
-		.then((users) => {
-			if (users.length == 0) {
-				return Promise.resolve();
-			}
-			console.log("removing existing users ", users.length, users);
-			return Promise.all(users.map(user => userStore.removeIdAsync(user._id))).then(console.log);
-		});
+	// return userStore.listAsync({})
+	// 	.then((users) => {
+	// 		if (users.length == 0) {
+	// 			return Promise.resolve();
+	// 		}
+	// 		console.log("removing existing users ", users.length, users);
+	// 		return Promise.all(users.map(user => userStore.removeIdAsync(user._id))).then(console.log);
+	// 	});
+  return testUtil.removeAllEntities('user');
 }
 
 describe('User Controller', () => {
@@ -46,7 +48,7 @@ describe('User Controller', () => {
 		beforeEach(removeAllUsers);
 
 
-		it('it should decrease video counter', () => {
+		it('should decrease video counter', () => {
 			const userId = 1;
 			const user = {
 				_id: userId,
@@ -56,12 +58,14 @@ describe('User Controller', () => {
 			console.log("calling user store upsert with ", user);
 			return userStore.upsertAsync(user)
 				.then(res => {
-					console.log ("-------------usert ", res);
 					return userCtrl.decreaseVideoCounterAsync(userId);
 				})
 				.then(res => {
 					console.log("user decreaseVideoCounterAsync called ", res);
-					sinon.assert.calledWith(userStoreSpy.upsert, { id: userId, videoCount: 41 }, sinon.match.any);
+					sinon.assert.called(userStoreSpy.upsert);
+					let upsertArgs = userStoreSpy.upsert.getCall(0).args;
+					upsertArgs[0].id.should.equal(userId);
+					upsertArgs[0].videoCount.should.equal(41);
 				});
 		});
 

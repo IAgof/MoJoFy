@@ -77,7 +77,8 @@ function processUploadedVideo(file, callback) {
 
 function moveUploadedFile(fileUpload, folder) {
 	if (fileUpload) {
-		let fileData = getFileData(fileUpload);
+    logger.debug("Move uploaded file filedata ", fileUpload);
+    let fileData = getFileData(fileUpload);
 		return moveToCloudStorage(fileData, folder);
 	}
 	return Promise.resolve();

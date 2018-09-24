@@ -14,8 +14,11 @@ const testUtil = require('../../test-util');
 const compositionControllerSpy = {
 	faked: true,
 	list: sinon.stub().returns(Promise.resolve()),
-	get: sinon.stub().returns(Promise.resolve())
+  get: sinon.stub().returns(Promise.resolve()),
+  query: sinon.stub().returns(Promise.resolve())
 };
+
+const fakeAcl = { middleware: function(req, res, next) { next(); } };
 
 function initMockApp(compositionResponse, entryResponse) {
 	const app = express();
@@ -33,7 +36,8 @@ function initMockApp(compositionResponse, entryResponse) {
 	//proxy models when loading the router
 
 	const router = proxyquire('../../../components/project/composition/network', {
-		'./index': compositionControllerSpy
+		'./index': compositionControllerSpy,
+		'./acl': fakeAcl
 	});
 	app.use('/composition', router);
 	//define error handler
@@ -48,8 +52,11 @@ function initMockApp(compositionResponse, entryResponse) {
 
 function initFullApp() {
 	const app = express();
-	const router = require('../../../components/project/composition/network');
-	app.use('/composition', router);
+  const router = proxyquire('../../../components/project/composition/network', {
+    './acl': fakeAcl
+  });
+
+  app.use('/composition', router);
 	//define error handler
 	app.use(function (err, req, res, next) {
 		res.status(err.status || 500).json({
@@ -245,8 +252,8 @@ describe('Composition router', () => {
 				.get('/composition/')
 				.query({orderBy: 'modification_date'})
 				.expect((res) => {
-					sinon.assert.calledOnce(compositionControllerSpy.list);
-					sinon.assert.calledWith(compositionControllerSpy.list, undefined, {orderBy: 'modification_date'});
+					sinon.assert.calledOnce(compositionControllerSpy.query);
+					sinon.assert.calledWith(compositionControllerSpy.query, { composition: {}, orderBy: 'modification_date'});
 				})
 				.expect(200, done);
 		}).timeout(10000);
@@ -261,6 +268,7 @@ describe('Composition router', () => {
 				.get('/composition/' + compositionId)
 				.query({cascade: true})
 				.expect((res) => {
+					console.log("GET /composition/:compositionId result is ", res);
 					sinon.assert.calledOnce(compositionControllerSpy.get);
 					sinon.assert.calledWith(compositionControllerSpy.get, compositionId, 'true', undefined);
 				})
