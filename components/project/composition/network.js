@@ -8,7 +8,7 @@ const router = express.Router({ mergeParams: true });
 const getUser = require("../../access/acl").getUser;
 const Acl = require('./acl').middleware;
 
-router.post('/', (req, res, next) => {
+router.post('/', Acl, (req, res, next) => {
 	let user = getUser(req);
 	logger.info("POST composition by user " + (user ? user._id : user));
 	logger.debug("user is ", req.user);
@@ -57,7 +57,7 @@ router.get('/:compositionId', Acl, (req, res, next) => {
 		});
 });
 
-router.put('/:compositionId', (req, res, next) => {
+router.put('/:compositionId', Acl, (req, res, next) => {
 	let user = getUser(req);
 	logger.info("PUT composition [" + req.params.compositionId + "] by user " + (user ? user._id : user));
 	logger.debug("user is ", req.user);
@@ -82,7 +82,7 @@ function setObjectId(data, id) {
 	data.id = id;
 }
 
-router.delete('/:compositionId', (req, res, next) => {
+router.delete('/:compositionId', Acl, (req, res, next) => {
 	const user = getUser(req);
 	logger.info("DELETE composition [" + req.params.compositionId + "] by user " + (user ? user._id : user));
 	const compositionId = req.params.compositionId || undefined;

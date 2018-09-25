@@ -54,6 +54,16 @@ roles.media.guest = ['read_own', 'add_own', 'list_own', 'update', 'update_own', 
 roles.media.editor = roles.media.guest.concat();
 roles.media.admin = roles.media.guest.concat('read_any', 'list_any');
 
+roles.track = {};
+roles.track.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
+roles.track.editor = roles.media.guest.concat();
+roles.track.admin = roles.media.guest.concat('read_any', 'list_any');
+
+roles.asset = {};
+roles.asset.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
+roles.asset.editor = roles.media.guest.concat();
+roles.asset.admin = roles.media.guest.concat('read_any', 'list_any');
+
 roles.userFeature = {};
 roles.userFeature.guest = ['read_own'];
 roles.userFeature.editor = roles.userFeature.guest.concat();

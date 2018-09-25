@@ -7,8 +7,9 @@ const logger = require('../../../logger')(module);
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 const getUser = require("../../access/acl").getUser;
+const Acl = require('./acl').middleware;
 
-router.post('/', (req, res, next) => {
+router.post('/', Acl, (req, res, next) => {
 	let user = getUser(req);
 	logger.info("POST track from user " + (user ? user._id : user));
 	logger.debug("user is ", req.user);
@@ -25,14 +26,14 @@ router.post('/', (req, res, next) => {
 		.catch(next);
 });
 
-router.get('/', (req, res, next) => {
+router.get('/', Acl, (req, res, next) => {
 	Controller.list()
 		.then((tracks) => {
 			res.status(200).json(tracks);
 		});
 });
 
-router.put('/:trackId', (req, res, next) => {
+router.put('/:trackId', Acl, (req, res, next) => {
   let user = getUser(req);
   const trackId = req.params.trackId;
   logger.info("PUT track [" + trackId + "] from user " + (user ? user._id : user));
@@ -52,7 +53,7 @@ router.put('/:trackId', (req, res, next) => {
     .catch(next);
 });
 
-router.delete('/:trackId', (req, res, next) => {
+router.delete('/:trackId', Acl, (req, res, next) => {
   let user = getUser(req);
   logger.info("DELETE track [" + trackId + "] from user " + (user ? user._id : user));
   const trackId = req.params.trackId;

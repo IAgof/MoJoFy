@@ -47,6 +47,7 @@ describe('Media controller', () => {
 				stopTime: 8900,
 				videoError: 'no error',
 				transcodeFinished: true,
+				title: 'media title',
 				trackId: 'trackId',
 				assetId: 'assetId',
 				created_by: 'userId'
@@ -149,6 +150,42 @@ describe('Media controller', () => {
 		});
 
 	});
+
+  describe('get', () => {
+    beforeEach(removeAllMedias);
+    it('should set assetId for existing media with empty assetId', () => {
+      const media = {
+        id: 'mediaId',
+        mediaType: 'video',
+        position: 1,
+        mediaPath: 'media/path',
+        volume: 0.2,
+        remoteTempPath: 'remote/tmp',
+        clipText: 'hello',
+        clipTextPosition: 'up',
+        hasText: true,
+        trimmed: true,
+        startTime: 240,
+        stopTime: 8900,
+        videoError: 'no error',
+        transcodeFinished: true,
+	      title: 'media title',
+        trackId: 'trackId',
+        assetId: '',
+        created_by: 'userId'
+      };
+      return mediaCtrl.add(media)
+        .then(result => {
+          console.log("media created ", result);
+          createdMedia = result;
+          return mediaCtrl.get(media.id);
+        })
+        .then(retrievedMedia => {
+          testUtil.prepareRetrievedEntityToCompare(retrievedMedia);
+          retrievedMedia.should.deep.equal(media);
+        });
+    });
+  });
 
 	describe('updateMediaAsset', () => {
 		beforeEach(removeAllMedias);
@@ -292,6 +329,7 @@ describe('Media controller', () => {
 				stopTime: 8900,
 				videoError: 'no error',
 				transcodeFinished: true,
+        title: 'media title',
 				trackId: 'trackId',
 				assetId: 'assetId',
 				created_by: 'userId'
@@ -404,7 +442,31 @@ describe('Media controller', () => {
 				});
 		});
 
-	});
+    it('should return removed media', () => {
+      const media1 = {
+        id: 'mediaId',
+      };
+      const media2 = {
+        id: 'mediaId.2',
+      };
+      return mediaStore.add(media1)
+        .then(createdMediaId => {
+          console.log("created media id ", createdMediaId);
+          return mediaStore.add(media2)
+        })
+        .then(createdMediaId => {
+          console.log("created media id ", createdMediaId);
+          return mediaCtrl.remove(media1.id);
+        })
+        .then(result => {
+          console.log("result removing media ", result);
+          testUtil.prepareRetrievedEntityToCompare(result);
+          result.should.deep.equal(media1);
+        });
+    });
+
+
+  });
 
 	describe('removeMulti', () => {
 		beforeEach(removeAllMedias);

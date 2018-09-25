@@ -1,3 +1,5 @@
+// components/project/track/acl.js
+
 const logger = require('../../../logger')(module);
 
 const getUser = require("../../access/acl").getUser;
@@ -18,7 +20,7 @@ exports.middleware = function(req, res, next) {
 	} else {
 		Acl.middleware(req, res, function() { // TODO(jliarte): 20/09/18 this is causing general action (read, update, delete) tests, should we remove? as we are testing again later with specific actions (_own, _any)
 			if (method === 'GET') {
-				if (req.params.compositionId) {
+				if (req.params.trackId) {
 					isEntityAccessAllowed('read', req, res, next);
 				} else {
 					list(req, res, next);
@@ -37,8 +39,8 @@ exports.middleware = function(req, res, next) {
 
 function getActionForEntity(entityId, userId, baseAction) {
   return Store.get(entityId)
-    .then(composition => {
-      if (composition && (composition.created_by === userId)) {
+    .then(track => {
+      if (track && (track.created_by === userId)) {
       	return baseAction += '_own';
       } else {
       	return baseAction += '_any';
@@ -48,7 +50,7 @@ function getActionForEntity(entityId, userId, baseAction) {
 
 function isActionAllowedToRole(action, role) {
 	return new Promise((resolve, reject) => {
-    Acl.acl.query(role, 'composition', action, function (err, allow) {
+    Acl.acl.query(role, 'track', action, function (err, allow) {
       if (err) {
         return reject(err);
       }
@@ -58,9 +60,9 @@ function isActionAllowedToRole(action, role) {
 }
 
 function isEntityAccessAllowed(baseAction, req, res, next) {
-	const compositionId = req.params.compositionId;
+	const trackId = req.params.trackId;
 	let action;
-  return getActionForEntity(compositionId, getUserId(req), baseAction)
+  return getActionForEntity(trackId, getUserId(req), baseAction)
 		.then(act => {
 			action = act;
       return isActionAllowedToRole(action, getUserRole(req));
@@ -83,7 +85,7 @@ function list(req, res, next) {
   return isActionAllowedToRole(action, getUserRole(req))
 	  .then(allowed => {
       if (!allowed) {
-        logger.debug("User " + getUserId(req) + " not allowed to " + action + " in GET /composition, filtering.");
+        logger.debug("User " + getUserId(req) + " not allowed to " + action + " in GET /track, filtering.");
         req.query.created_by = getUserId(req);
       }
       return next();

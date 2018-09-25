@@ -8,6 +8,8 @@ const sinon = require('sinon');
 const Bluebird = require('bluebird');
 const PromisifierUtils = require('../../../util/promisifier-utils')
 
+const testUtil = require('../../test-util');
+
 const videoStoreCB = require('../../../components/video/store');
 const videoStore = Bluebird.promisifyAll(videoStoreCB, { promisifier: PromisifierUtils.noErrPromisifier });
 
@@ -46,19 +48,11 @@ const chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 const should = chai.should();
 
-
 function removeAllVideos() {
-	return videoStore.listDataStoreAsync({})
-		.then((videos) => {
-			if (videos.length == 0) {
-				return Promise.resolve();
-			}
-			console.log("removing existing videos ", videos.length, videos);
-			return Promise.all(videos.map(video => videoStore.removeAsync(video._id))).then(console.log);
-		});
+  return testUtil.removeAllEntities('video');
 }
 
-describe('Video Store', () => {
+describe('Video Controller', () => {
 	describe('remove', () => {
 		beforeEach(removeAllVideos);
 

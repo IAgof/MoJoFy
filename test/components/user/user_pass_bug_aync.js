@@ -1,3 +1,5 @@
+// test/components/user/user_pass_bug_aync.js
+
 //During the test the env variable is set to test
 process.env.NODE_ENV = 'test';
 
@@ -16,16 +18,19 @@ var chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 let should = chai.should();
 
+const testUtil = require('../../test-util');
+
 function removeAllUsersAsync() {
-	return userStore.listAsync({})
-		.then((users) => {
-			if (users.length == 0) {
-				return Promise.resolve();
-			}
-			let userLenght = users.length;
-			console.log("removing existing users ", userLenght, users);
-			return Promise.all(users.map(user => userStore.removeIdAsync(user._id))).then(console.log);
-		});
+	// return userStore.listAsync({})
+	// 	.then((users) => {
+	// 		if (users.length == 0) {
+	// 			return Promise.resolve();
+	// 		}
+	// 		let userLenght = users.length;
+	// 		console.log("removing existing users ", userLenght, users);
+	// 		return Promise.all(users.map(user => userStore.removeIdAsync(user._id))).then(console.log);
+	// 	});
+  return testUtil.removeAllEntities('user');
 }
 
 describe('Users', () => {
@@ -36,7 +41,7 @@ describe('Users', () => {
 		beforeEach(removeAllUsersAsync);
 		// beforeEach(() => { return removeAllUsersAsync() });
 
-		it('it should create a user', () => {
+		it('should create a user', () => {
 			const user = {
 				email: 'email@email.com',
 				username: 'username',
@@ -58,7 +63,7 @@ describe('Users', () => {
 				});
 		});
 
-		it('it should not modify a created user after update', () => {
+		it('should not modify a created user after update', () => {
 			const user = {
 				email: 'email@email.com',
 				username: 'username',
@@ -84,8 +89,13 @@ describe('Users', () => {
 					return userStore.upsertAsync(retrievedUser);
 				})
 				.then(() => {
-					return userStore.getAsync(userId).should.eventually.deep.equal(
-						{ email: 'email@email.com', username: 'new username' });
+					return userStore.getAsync(userId);
+				})
+				.then(retrievedUser => {
+					delete retrievedUser.creation_date;
+					delete retrievedUser.modification_date;
+          retrievedUser.should.deep.equal(
+            { email: 'email@email.com', username: 'new username' });
 				});
 		});
 
@@ -95,7 +105,7 @@ describe('Users', () => {
 		// beforeEach(() => { return removeAllUsersAsync() });
 		beforeEach(removeAllUsersAsync);
 
-		it('it should not create non existent fields', () => {
+		xit('should not create non existent fields', () => { // TODO(jliarte): 24/09/18 update when refactor user component with model utils
 			const user = {
 				email: 'email@email.com',
 				username: 'username'
@@ -119,7 +129,7 @@ describe('Users', () => {
 	describe('User component update', () => {
 		beforeEach(removeAllUsersAsync);
 
-		it('it should not change password if not provided', () => {
+		it('should not change password if not provided', () => {
 			const user = {
 				email: 'email@email.com',
 				username: 'username',
@@ -155,7 +165,7 @@ describe('Users', () => {
 				});
 		});
 
-		it('it should not change not specified fields', () => {
+		xit('should not change not specified fields', () => { // TODO(jliarte): 24/09/18 recover when refactor user component with model utils
 			const user = {
 				email: 'email@email.com',
 				username: 'username'

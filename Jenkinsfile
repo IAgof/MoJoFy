@@ -23,10 +23,11 @@ pipeline {
                     accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                     secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                 ]]) {
-                    sh "docker-machine create -d amazonec2 --amazonec2-access-key ${AWS_ACCESS_KEY_ID} \
-                        --amazonec2-secret-key ${AWS_SECRET_ACCESS_KEY} --amazonec2-region us-east-1  \
-                        --amazonec2-zone a --amazonec2-vpc-id vpc-bc023cd8 --amazonec2-security-group mojofy-testing \
-                        --amazonec2-instance-type t2.micro ${DOCKER_MACHINE_NAME}"
+                    // TODO: I'm unable to activate created docker-machine to run containers so disable until find a fix
+                    //sh "docker-machine create -d amazonec2 --amazonec2-access-key ${AWS_ACCESS_KEY_ID} \
+                    //    --amazonec2-secret-key ${AWS_SECRET_ACCESS_KEY} --amazonec2-region us-east-1  \
+                    //    --amazonec2-zone a --amazonec2-vpc-id vpc-bc023cd8 --amazonec2-security-group mojofy-testing \
+                    //    --amazonec2-instance-type t2.micro ${DOCKER_MACHINE_NAME}"
                 }
 
             }
@@ -38,24 +39,35 @@ pipeline {
                 script {
                     def dockerfile = 'Dockerfile'
                     def testImage = docker.build("backend-test-image:${env.BUILD_ID}", "-f ${dockerfile} ./")
+                    def dataStoreSidecar = docker.image("singularities/datastore-emulator")
 
                     sh "eval \$(docker-machine env --shell bash \$DOCKER_MACHINE_NAME)"
-                    testImage.inside('-e "NODE_ENV=production" -e BACKEND_API_URL=http://${DOCKER_MACHINE_IP}:3000') {
-                        BACKEND_TAG = sh (
-                            script: "node -e \"console.log(require(\'./package.json\').version);\"",
-                            returnStdout: true
-                            ).trim()
-                        //sh "cd /app/src && ../node_modules/gulp/bin/gulp.js build"
-                        try {
-                            sh "cd /app && node_modules/mocha/bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./src/report/test_results.xml --recursive src/test/"
-                        } catch(err) {
-                            sh "echo TESTS FAILED"
-                            currentBuild.result = 'UNSTABLE'
-                            throw err
-                        } finally {
-                            sh "cp -r /app/src/report ${WORKSPACE}"
+                    sh "docker ps -a"
+                    dataStoreSidecar.withRun('-e "DATASTORE_LISTEN_ADDRESS=0.0.0.0:8081" -e "DATASTORE_PROJECT_ID=videona-test" -p 8081:8081', '--consistency=1.0') { c ->
+                        docker.image("backend-test-image:${env.BUILD_ID}").inside("--link ${c.id}:datastore-test") {
+                            sh "curl https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o wait-for-it.sh"
+                            sh "chmod 550 wait-for-it.sh"
+                            sh "./wait-for-it.sh datastore-test:8081 -t 15 -- echo \"datastore is up\""
                         }
-                        sh 'echo "Tests passed"'
+
+                        testImage.inside("--link ${c.id}:datastore-test -e NODE_ENV=developement -e BACKEND_GOOGLE_CLOUD_PROJECT_ID=videona-test -e BACKEND_SEARCH_DB=fakelasticsearch -e DATASTORE_EMULATOR_HOST=http://datastore-test:8081 -e BACKEND_API_URL=http://\${DOCKER_MACHINE_IP}:3000") {
+                            BACKEND_TAG = sh (
+                                script: "node -e \"console.log(require(\'./package.json\').version);\"",
+                                returnStdout: true
+                                ).trim()
+                                //sh "sleep 20"
+                            //sh "cd /app/src && ../node_modules/gulp/bin/gulp.js build"
+                            try {
+                                sh "cd /app && node_modules/mocha/bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./src/report/test_results.xml --recursive src/test/"
+                            } catch(err) {
+                                sh "echo TESTS FAILED"
+                                currentBuild.result = 'UNSTABLE'
+                                throw err
+                            } finally {
+                                sh "cp -r /app/src/report ${WORKSPACE}"
+                            }
+                            sh 'echo "Tests passed"'
+                        }
                     }
                 }
             }
@@ -107,10 +119,10 @@ pipeline {
         }
     }
 
-    post {
-      always {
-          sh "docker-machine rm -y ${DOCKER_MACHINE_NAME}"
-      }
-    }
+    //post {
+    //  always {
+    //      sh "docker-machine rm -y ${DOCKER_MACHINE_NAME}"
+    //  }
+    //}
 
 }
