@@ -6,8 +6,15 @@ const Pass = require('../access/password');
 const logger = require('../../logger')(module);
 const config = require('../../config');
 
-const Store = require('./store');
+const StoreCB = require('./store');
+// const Store = require('./store');
 const Video = require('../video');
+const billingCtrl = require('../billing');
+const emailNotificationsCtrl = require('../email_notifications');
+
+const Bluebird = require('bluebird');
+const PromisifierUtils = require('../../util/promisifier-utils')
+const Store = Bluebird.promisifyAll(StoreCB, { promisifier: PromisifierUtils.noErrPromisifier });
 
 // Exposed functions
 
@@ -21,6 +28,7 @@ exports.update = update;
 exports.query = query;
 exports.updateVideoCounter = updateVideoCounter;
 exports.decreaseVideoCounter = decreaseVideoCounter;
+exports.setPrehistericUser = setPrehistericUser;
 
 // Internal functions
 
@@ -73,6 +81,22 @@ function getUserId(authId, callback) {
 			callback(users[0]);
 		}
 	});
+}
+
+function setPrehistericUser(user, prehisteric) {
+  logger.debug("user.setPrehistericUser [" + prehisteric + "] to user [" + user._id + "]");
+  if (prehisteric === true && !user.prehisteric) {
+  	user.id = user._id;
+  	user.prehisteric = prehisteric;
+  	logger.debug("saving user", user);
+  	return Store.upsertAsync(user)
+		  .then((res, id) => {
+        // assign hero plan to user (for a year)
+        billingCtrl.givePromotionProductToUserForAYear(user, 'hero')
+        // send prehisteric thanks welcome to hero email
+			  emailNotificationsCtrl.sendPrehistericPromotionWelcomeEmail(user);
+      });
+  }
 }
 
 function getUserByEmail(email, callback) {
@@ -225,7 +249,7 @@ function updateUser(model, callback) {
 }
 
 function list(requestingUser, callback) {
-	logger.debug("user.list ${id} by user ", requestingUser);
+	logger.debug("user.list by user ", requestingUser);
 	query({}, requestingUser, false, callback);
 }
 

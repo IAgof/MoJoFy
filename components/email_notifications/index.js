@@ -16,15 +16,15 @@ function getTemplate(path, mapObj) {
 		.then(source => {
 			return Handlebars.compile(source.toString())(mapObj);
 		})
-};
+}
 
 function sendNotificationVideoUploadedMail(user, video) {
 	if (!config.emailNotificationsRecipient) {
 		return;
 	}
 	// TODO: Keep an eye on i18n
-	var subject = 'Se ha subido un nuevo vídeo a Vimojo.';
-	if (user) {
+  let subject = 'Se ha subido un nuevo vídeo a Vimojo.';
+  if (user) {
 		subject = (user.username || 'Se') + ' ha subido un nuevo vídeo a Vimojo.';
 	}
 	const msg = {
@@ -91,7 +91,34 @@ function notifyVideoCodesGenerated(videoId, codes) {
 	}
 }
 
+function sendPrehistericPromotionWelcomeEmail(user) {
+	const prehistoricPromoText = ""; // TODO(jliarte): 28/09/18 put in template or include i18n setup!!!
+  const templateVars = {
+    title: "¡Gracias por confiar en nosotros!",
+    description: prehistoricPromoText,
+    // url: config.frontend_url + '/download/' + videoId,
+    vimojo_logo: 'http://vimojo.co/wp-content/uploads/2017/11/Vimojo.png',
+    platform_url: 'http://vimojo.co',
+    poster: '',
+  };
+  const subject = "¡Enhorabuena " + user.username + "! Le regalamos una subscricpción anual a hero gratis!"; // TODO(jliarte): 28/09/18 i18n
+  const msg = {
+    to: user.email,
+    from: config.emailNotificationsSender,
+    subject: subject,
+    html: '',
+  };
+
+  return getTemplate(templatePath + '/notify-video-codes-generated.hbs', templateVars)
+	  .then(data => {
+      logger.info("Sending prehistoric promo notification to user ", user._id);
+      msg.html = data;
+	  	return sendgridMail.send(msg);
+	  });
+}
+
 module.exports = {
 	notifyVideoUploaded,
-	notifyVideoCodesGenerated
+	notifyVideoCodesGenerated,
+	sendPrehistericPromotionWelcomeEmail
 };

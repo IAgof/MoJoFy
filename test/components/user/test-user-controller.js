@@ -16,9 +16,21 @@ const userStoreSpy = {
 	upsert: sinon.stub().callsArgWith(1, true)
 };
 
+const billingSpy = {
+  faked: true,
+  givePromotionProductToUserForAYear: sinon.stub().returns(Promise.resolve())
+};
+
+emailNotificationsSpy = {
+  faked: true,
+  sendPrehistericPromotionWelcomeEmail: sinon.stub().returns(Promise.resolve())
+};
+
 // TODO(jliarte): 16/07/18 setup in beforeEach?
 const userCtrlCB = proxyquire('../../../components/user', {
 	'./store': userStoreSpy,
+  '../billing': billingSpy,
+  '../email_notifications': emailNotificationsSpy
 });
 const userCtrl = Bluebird.promisifyAll(userCtrlCB, { promisifier: PromisifierUtils.noErrPromisifier });
 
@@ -32,23 +44,16 @@ const should = chai.should();
 const testUtil = require('../../test-util');
 
 function removeAllUsers() {
-	// return userStore.listAsync({})
-	// 	.then((users) => {
-	// 		if (users.length == 0) {
-	// 			return Promise.resolve();
-	// 		}
-	// 		console.log("removing existing users ", users.length, users);
-	// 		return Promise.all(users.map(user => userStore.removeIdAsync(user._id))).then(console.log);
-	// 	});
   return testUtil.removeAllEntities('user');
 }
 
 describe('User Controller', () => {
 	describe('decreaseVideoCounterAsync', () => {
 		beforeEach(removeAllUsers);
+    afterEach(() => { userStoreSpy.upsert.resetHistory(); });
 
 
-		it('should decrease video counter', () => {
+    it('should decrease video counter', () => {
 			const userId = 1;
 			const user = {
 				_id: userId,
@@ -70,5 +75,105 @@ describe('User Controller', () => {
 		});
 
 	});
+
+  describe('setPrehistericUser', () => {
+    beforeEach(removeAllUsers);
+    afterEach(() => { userStoreSpy.upsert.resetHistory(); });
+
+    it('should set prehisteric field to true if not set already', () => {
+      const userId = 'userId';
+      const user = {
+        id: userId,
+      };
+
+      console.log("calling user store upsert with ", user);
+      return userStore.upsertAsync(user)
+        .then(res => {
+          console.log("Result upserting user ", res);
+        	user._id = userId; // TODO(jliarte): 25/09/18 FIXME: upsert modifies param
+          console.log("User is ", user);
+          return userCtrl.setPrehistericUser(user, true);
+        })
+        .then(res => {
+          console.log("user setPrehistericUser called, res ", res);
+          return userCtrl.listAsync(null);
+        })
+	      .then(users => {
+	      	console.log("users are ", users);
+	      	users.should.have.length(1);
+	      	users[0].prehisteric.should.equal(true);
+        });
+    });
+
+    it('should not set prehisteric field to true if already set', () => {
+      const userId = 'userId';
+      const user = {
+        id: userId,
+        prehisteric: true
+      };
+
+      console.log("calling user store upsert with ", user);
+      return userStore.upsertAsync(user)
+        .then(res => {
+          console.log("Result upserting user ", res);
+          user._id = userId; // TODO(jliarte): 25/09/18 FIXME: upsert modifies param
+          console.log("User is ", user);
+          return userCtrl.setPrehistericUser(user, false);
+        })
+        .then(res => {
+          console.log("user setPrehistericUser called, res ", res);
+          return userCtrl.listAsync(null);
+        })
+        .then(users => {
+          console.log("users are ", users);
+          users.should.have.length(1);
+          users[0].prehisteric.should.equal(true);
+        });
+    });
+
+    it('should call givePromotionProductToUserForAYear if prehisteric not set already', () => {
+      const userId = 'userId';
+      const user = {
+        id: userId,
+      };
+
+      console.log("calling user store upsert with ", user);
+      return userStore.upsertAsync(user)
+        .then(res => {
+          console.log("Result upserting user ", res);
+          user._id = userId; // TODO(jliarte): 25/09/18 FIXME: upsert modifies param
+          console.log("User is ", user);
+          return userCtrl.setPrehistericUser(user, true);
+        })
+        .then(res => {
+          console.log("user setPrehistericUser called, res ", res);
+          sinon.assert.called(billingSpy.givePromotionProductToUserForAYear);
+          sinon.assert.calledWith(billingSpy.givePromotionProductToUserForAYear, user, 'hero');
+        });
+    });
+
+    it('should call sendPrehistericPromotionWelcomeEmail if prehisteric not set already', () => {
+      const userId = 'userId';
+      const user = {
+        id: userId,
+      };
+
+      console.log("calling user store upsert with ", user);
+      return userStore.upsertAsync(user)
+        .then(res => {
+          console.log("Result upserting user ", res);
+          user._id = userId; // TODO(jliarte): 25/09/18 FIXME: upsert modifies param
+          console.log("User is ", user);
+          return userCtrl.setPrehistericUser(user, true);
+        })
+        .then(res => {
+          console.log("user setPrehistericUser called, res ", res);
+          sinon.assert.called(emailNotificationsSpy.sendPrehistericPromotionWelcomeEmail);
+          sinon.assert.calledWith(emailNotificationsSpy.sendPrehistericPromotionWelcomeEmail, user);
+        });
+    });
+
+  });
+
 
 });

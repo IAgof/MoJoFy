@@ -46,10 +46,7 @@ describe('Media store', () => {
 				.then(medias => {
 					console.log("retrieved medias are ", medias);
 					medias.should.have.length(1);
-					medias[0].id = medias[0]._id;
-					delete medias[0]._id;
-					delete medias[0].creation_date;
-					delete medias[0].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(medias[0]);
 					console.log("expected ", media);
 					console.log("actual", medias[0]);
 					medias[0].should.deep.equal(media); // _id
@@ -122,10 +119,7 @@ describe('Media store', () => {
 				.then(medias => {
 					console.log("retrieved medias are ", medias);
 					medias.should.have.length(1);
-					medias[0].id = medias[0]._id;
-					delete medias[0]._id;
-					delete medias[0].creation_date;
-					delete medias[0].modification_date;
+          testUtil.prepareRetrievedEntityToCompare(medias[0]);
 					console.log("expected ", media);
 					console.log("actual", medias[0]);
 					medias[0].should.deep.equal(media); // _id

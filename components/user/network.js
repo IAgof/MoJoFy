@@ -40,6 +40,13 @@ router.get('/getId', function(req, res, next) {
 			if (!user) {
 				return Response.error(req, res, next, 404, 'User not found!');
 			}
+			if (req.query.prehisteric) {
+				let prehisteric = req.query.prehisteric;
+				if (typeof req.query.prehisteric === 'string') {
+          prehisteric = (req.query.prehisteric == 'true');
+        }
+				Controller.setPrehistericUser(user, prehisteric);
+			}
 			Response.success(req, res, next, (code || 200), { id: user._id } );
 		} else {
 			Response.error(req, res, next, (code || 500), err);

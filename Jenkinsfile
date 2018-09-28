@@ -55,8 +55,7 @@ pipeline {
                                 script: "node -e \"console.log(require(\'./package.json\').version);\"",
                                 returnStdout: true
                                 ).trim()
-                                //sh "sleep 20"
-                            //sh "cd /app/src && ../node_modules/gulp/bin/gulp.js build"
+
                             try {
                                 sh "cd /app && node_modules/mocha/bin/mocha --reporter mocha-junit-reporter --reporter-options mochaFile=./src/report/test_results.xml --recursive src/test/"
                             } catch(err) {

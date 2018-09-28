@@ -57,7 +57,7 @@ function setMediaAsset(medias, mediaAssets) {
 }
 
 function query(params, user) {
-	logger.info("mediaCtrl.updateMediaAsset by User ", user);
+	logger.info("mediaCtrl.query by User ", user);
 	logger.debug("with params ", params);
 	let medias = [];
 	return store.query(params)
