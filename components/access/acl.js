@@ -42,14 +42,15 @@ roles.distribute = {
 roles.project = {};
 roles.project.guest = ['read'];
 roles.project.editor = roles.project.guest.concat();
+roles.project.admin = roles.project.guest.concat();
 
 roles.composition = {};
-roles.composition.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
+roles.composition.guest = ['read_own', 'add_own', 'list_own', 'update_own', 'delete_own'];
 roles.composition.editor = roles.composition.guest.concat();
 roles.composition.admin = roles.composition.guest.concat('read_any', 'list_any');
 
 roles.media = {};
-roles.media.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
+roles.media.guest = ['read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete_own'];
 roles.media.editor = roles.media.guest.concat();
 roles.media.admin = roles.media.guest.concat('read_any', 'list_any');
 
@@ -62,6 +63,11 @@ roles.asset = {};
 roles.asset.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
 roles.asset.editor = roles.media.guest.concat();
 roles.asset.admin = roles.media.guest.concat('read_any', 'list_any');
+
+roles.userFeature = {};
+roles.userFeature.guest = ['read_own'];
+roles.userFeature.editor = roles.userFeature.guest.concat();
+roles.userFeature.admin = roles.userFeature.guest.concat();
 
 
 // Allow "admin" to access all the resources
@@ -111,7 +117,7 @@ function middleware(req, res, next, operation) {
 			Response.error(req, res, next, 500, 'There was an error performing access control');
 		} else {
 			if (allow) {
-        next();
+				next();
 			} else {
 				Response.error(req, res, next, 403);
 			}

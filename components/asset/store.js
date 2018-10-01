@@ -13,7 +13,7 @@ const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierU
 const type = 'asset';
 
 // TODO(jliarte): 11/07/18 check needed indexes!
-Persistent.index(type, ['projectId', 'hash']), logger.debug;
+Persistent.index(type, ['projectId', 'hash'], logger.debug);
 
 function upsert(newAssetData) {
 	let newAsset = Object.assign({}, newAssetData);
