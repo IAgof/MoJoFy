@@ -24,7 +24,7 @@ function givePromotionProductToUserForAYear(user, productId, promotionName) {
   return purchaseCtrl.add(purchase)
     .then(purchase => {
       createdPurchase = purchase;
-	    return getUserPuchasesByProductValueOrder(user);
+	    return getActiveUserPuchasesByProductValueOrder(user);
     }).then(purchasesByValue => {
       if (purchasesByValue && purchasesByValue.length > 0 && purchasesByValue[0].productId === productId) {
 	      return featureCtrl.setPlanDefaultsToUser(user._id, productId);
@@ -33,12 +33,16 @@ function givePromotionProductToUserForAYear(user, productId, promotionName) {
     });
 }
 
-function sortByValueOrder(p1, p2) {
+function compareValueOrder(p1, p2) {
   return p2.valueOrder - p1.valueOrder;
 }
 
-function getUserPuchasesByProductValueOrder(user) {
-	logger.info("billingCtrl.getUserPuchasesByProductValueOrder to user [" + user._id + "]");
+function isPurchaseActive(purchase) {
+  return (new Date(purchase.expirationDate) > new Date());
+}
+
+function getActiveUserPuchasesByProductValueOrder(user) {
+	logger.info("billingCtrl.getActiveUserPuchasesByProductValueOrder to user [" + user._id + "]");
 	let products = {};
   return productCtrl.list()
     .then(retrievedProducts => {
@@ -57,10 +61,11 @@ function getUserPuchasesByProductValueOrder(user) {
         return purchase;
       });
     })
-    .then(purchases => purchases.sort(sortByValueOrder));
+    .then(purchases => purchases.sort(compareValueOrder))
+    .then(purchases => purchases.filter(isPurchaseActive));
 }
 
 module.exports = {
   givePromotionProductToUserForAYear,
-  getUserPuchasesByProductValueOrder
+  getActiveUserPuchasesByProductValueOrder
 };

@@ -116,6 +116,7 @@ describe('Billing controller', () => {
 				paymentMethod: 'paypal',
 				value: 200,
 			};
+			purchase.expirationDate.setFullYear(purchase.expirationDate.getFullYear() + 1); // purchase expires next year
 			return productStore.upsert(productHero)
 				.then(res => {
 					console.log("Product 1 upsert ", res);
@@ -136,10 +137,63 @@ describe('Billing controller', () => {
 				});
 		});
 
+		it('should assign product features for that user if has a purchase of higher value but has expired', () => {
+			const productId = 'hero';
+			const promotionName = 'promotionName';
+			const user = {
+				_id: 'userId'
+			};
+			const productHero = {
+				id: 'hero',
+				productName: 'Hero',
+				description: 'Hero saas product',
+				monthlyPrice: 84.99,
+				yearlyPrice: 112.25,
+				discount: 3,
+				valueOrder: 3,
+			};
+			const productSuperHero = {
+				id: 'super-hero',
+				productName: 'Super Hero',
+				description: 'Super Hero saas product',
+				monthlyPrice: 0,
+				yearlyPrice: 0,
+				discount: 0,
+				valueOrder: 4,
+			};
+			const purchase = {
+				userId: user._id,
+				productId: productSuperHero.id,
+				purchaseDate: new Date('2018/09/25 00:00 UTC'),
+				expirationDate: new Date(), // today
+				paymentMethod: 'paypal',
+				value: 200,
+			};
+			purchase.expirationDate.setFullYear(purchase.expirationDate.getFullYear() - 1); // purchase expired last year
+			return productStore.upsert(productHero)
+				.then(res => {
+					console.log("Product 1 upsert ", res);
+					return productStore.upsert(productSuperHero);
+				})
+				.then(res => {
+					console.log("Product 2 upsert ", res);
+					return purchaseStore.upsert(purchase);
+				})
+				.then(res => {
+					console.log("purchase upsert ", res);
+					return billingCtrl.givePromotionProductToUserForAYear(user, productId, promotionName);
+				})
+				.then(result => {
+					console.log("give product result ", result);
+					sinon.assert.called(featureControllerSpy.setPlanDefaultsToUser);
+					sinon.assert.calledWith(featureControllerSpy.setPlanDefaultsToUser, user._id, productId);
+				});
+		});
+
 
 	});
 
-	describe('getUserPuchasesByProductValueOrder', () => {
+	describe('getActiveUserPuchasesByProductValueOrder', () => {
 		beforeEach(removeAllPurchases);
 
 		it('should return user purchases with associated product valueOrder ordered by it descending for that user', () => {
@@ -150,19 +204,21 @@ describe('Billing controller', () => {
 				userId: userId,
 				productId: 'hero',
 				purchaseDate: new Date('2018/09/25 00:00 UTC'),
-				expirationDate: new Date('2019/09/25'),
+				expirationDate: new Date(),
 				paymentMethod: 'promotion',
 				value: 14.99,
 			};
+			purchase.expirationDate.setFullYear(purchase.expirationDate.getFullYear() + 1); // purchase expires next year
 			const purchase2 = {
 				id: 'purchaseId2',
 				userId: userId,
 				productId: 'free',
 				purchaseDate: new Date('2018/09/25 00:00 UTC'),
-				expirationDate: new Date('2019/09/25'),
+				expirationDate: new Date(),
 				paymentMethod: 'promotion',
 				value: 0,
 			};
+			purchase2.expirationDate.setFullYear(purchase2.expirationDate.getFullYear() + 1); // purchase expires next year
 			const product1 = {
 				id: purchase.productId,
 				productName: 'Hero',
@@ -196,7 +252,7 @@ describe('Billing controller', () => {
 				})
 				.then(res => {
 					console.log("purchase 2 upsert ", res);
-					return billingCtrl.getUserPuchasesByProductValueOrder(user);
+					return billingCtrl.getActiveUserPuchasesByProductValueOrder(user);
 				})
 				.then(retrievedPurchases => {
 					console.log("retrieved purchases with valueOrder ", retrievedPurchases);
@@ -209,6 +265,74 @@ describe('Billing controller', () => {
 					retrievedPurchases[1].valueOrder.should.equal(product2.valueOrder);
 				});
 		});
+
+		it('should filter expired user purchases', () => {
+			let userId = 'userId';
+			const user = { _id: userId };
+			const purchase = {
+				id: 'purchaseId',
+				userId: userId,
+				productId: 'hero',
+				purchaseDate: new Date('2018/09/25 00:00 UTC'),
+				expirationDate: new Date(),
+				paymentMethod: 'promotion',
+				value: 14.99,
+			};
+			purchase.expirationDate.setFullYear(purchase.expirationDate.getFullYear() + 1); // purchase expires next year
+			const purchase2 = {
+				id: 'purchaseId2',
+				userId: userId,
+				productId: 'free',
+				purchaseDate: new Date('2018/09/25 00:00 UTC'),
+				expirationDate: new Date(),
+				paymentMethod: 'promotion',
+				value: 0,
+			};
+			purchase2.expirationDate.setFullYear(purchase2.expirationDate.getFullYear() - 1); // purchase expired last year
+			const product1 = {
+				id: purchase.productId,
+				productName: 'Hero',
+				description: 'Hero saas product',
+				monthlyPrice: 84.99,
+				yearlyPrice: 112.25,
+				discount: 3,
+				valueOrder: 3,
+			};
+			const product2 = {
+				id: purchase2.productId,
+				productName: 'Free',
+				description: 'Free saas product',
+				monthlyPrice: 0,
+				yearlyPrice: 0,
+				discount: 0,
+				valueOrder: 3,
+			};
+			return productStore.upsert(product1)
+				.then(res => {
+					console.log("Product 1 upsert ", res);
+					return productStore.upsert(product2);
+				})
+				.then(res => {
+					console.log("Product 2 upsert ", res);
+					return purchaseStore.upsert(purchase);
+				})
+				.then(res => {
+					console.log("purchase 1 upsert ", res);
+					return purchaseStore.upsert(purchase2);
+				})
+				.then(res => {
+					console.log("purchase 2 upsert ", res);
+					return billingCtrl.getActiveUserPuchasesByProductValueOrder(user);
+				})
+				.then(retrievedPurchases => {
+					console.log("retrieved purchases with valueOrder ", retrievedPurchases);
+					retrievedPurchases.should.have.length(1);
+					retrievedPurchases[0].should.have.property('valueOrder');
+					retrievedPurchases[0].productId.should.equal(product1.id);
+					retrievedPurchases[0].valueOrder.should.equal(product1.valueOrder);
+				});
+		});
+
 
 	});
 
