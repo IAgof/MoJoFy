@@ -90,7 +90,7 @@ function setPlanDefaultsToUser(userId, plan) {
 				delete feature._id;
 			});
 			return Promise.all(features.map(feature => store.upsert(feature)));
-		})
+		});
 }
 
 function removeUserFeatures(userId) {

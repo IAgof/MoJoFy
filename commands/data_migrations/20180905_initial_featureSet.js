@@ -1,9 +1,9 @@
-const FREE_PLAN_NAME = 'free';
-const LITE_PLAN_NAME = 'lite';
-const INFLUENCER_PLAN_NAME = 'influencer';
-const HERO_PLAN_NAME = 'hero';
-const SUPER_HERO_PLAN_NAME = 'super-hero';
-const plans = [FREE_PLAN_NAME, LITE_PLAN_NAME, INFLUENCER_PLAN_NAME, HERO_PLAN_NAME, SUPER_HERO_PLAN_NAME];
+const FREE_PRODUCT_NAME = 'free';
+const WITNESS_PRODUCT_NAME = 'witness';
+const JOURNALIST_PRODUCT_NAME = 'journalist';
+const HERO_PRODUCT_NAME = 'hero';
+const SUPER_HERO_PRODUCT_NAME = 'super-hero';
+const plans = [FREE_PRODUCT_NAME, WITNESS_PRODUCT_NAME, JOURNALIST_PRODUCT_NAME, HERO_PRODUCT_NAME, SUPER_HERO_PRODUCT_NAME];
 
 const USER_FEATURE_FORCE_WATERMARK = "user-feature-force-watermark";
 const USER_FEATURE_WATERMARK = "user-feature-watermark";
@@ -32,62 +32,63 @@ const featureSelectResolution = { name: USER_FEATURE_SELECT_RESOLUTION, descript
 
 const featureSet = {};
 
-featureSet[FREE_PLAN_NAME] = [ Object.assign({ enabled: true, plan: FREE_PLAN_NAME}, featureForceWatermark),
-		Object.assign({ enabled: false, plan: FREE_PLAN_NAME}, featureWatermark),
-		Object.assign({ enabled: false, plan: FREE_PLAN_NAME}, featureVimojoStore),
-		Object.assign({ enabled: true, plan: FREE_PLAN_NAME}, featureVimojoPlatform),
-		Object.assign({ enabled: false, plan: FREE_PLAN_NAME}, featureFtpPublishing),
-		Object.assign({ enabled: true, plan: FREE_PLAN_NAME}, featureAds),
-		Object.assign({ enabled: false, plan: FREE_PLAN_NAME}, featureVoiceOver),
-		Object.assign({ enabled: false, plan: FREE_PLAN_NAME}, featureCameraPro),
-		Object.assign({ enabled: false, plan: FREE_PLAN_NAME}, featureSelectFR),
-		Object.assign({ enabled: false, plan: FREE_PLAN_NAME}, featureSelectResolution)];
+featureSet[FREE_PRODUCT_NAME] = [ Object.assign({ enabled: true, plan: FREE_PRODUCT_NAME}, featureForceWatermark),
+		Object.assign({ enabled: false, plan: FREE_PRODUCT_NAME}, featureWatermark),
+		Object.assign({ enabled: false, plan: FREE_PRODUCT_NAME}, featureVimojoStore),
+		Object.assign({ enabled: true, plan: FREE_PRODUCT_NAME}, featureVimojoPlatform),
+		Object.assign({ enabled: false, plan: FREE_PRODUCT_NAME}, featureFtpPublishing),
+		Object.assign({ enabled: true, plan: FREE_PRODUCT_NAME}, featureAds),
+		Object.assign({ enabled: false, plan: FREE_PRODUCT_NAME}, featureVoiceOver),
+		Object.assign({ enabled: false, plan: FREE_PRODUCT_NAME}, featureCameraPro),
+		Object.assign({ enabled: false, plan: FREE_PRODUCT_NAME}, featureSelectFR),
+		Object.assign({ enabled: false, plan: FREE_PRODUCT_NAME}, featureSelectResolution)];
 
-featureSet[LITE_PLAN_NAME] = [ Object.assign({ enabled: false, plan: LITE_PLAN_NAME}, featureForceWatermark),
-		Object.assign({ enabled: true, plan: LITE_PLAN_NAME}, featureWatermark),
-		Object.assign({ enabled: true, plan: LITE_PLAN_NAME}, featureVimojoStore),
-		Object.assign({ enabled: true, plan: LITE_PLAN_NAME}, featureVimojoPlatform),
-		Object.assign({ enabled: false, plan: LITE_PLAN_NAME}, featureFtpPublishing),
-		Object.assign({ enabled: true, plan: LITE_PLAN_NAME}, featureAds),
-		Object.assign({ enabled: false, plan: LITE_PLAN_NAME}, featureVoiceOver),
-		Object.assign({ enabled: false, plan: LITE_PLAN_NAME}, featureCameraPro),
-		Object.assign({ enabled: false, plan: LITE_PLAN_NAME}, featureSelectFR),
-		Object.assign({ enabled: false, plan: LITE_PLAN_NAME}, featureSelectResolution)];
+featureSet[WITNESS_PRODUCT_NAME] = [ Object.assign({ enabled: false, plan: WITNESS_PRODUCT_NAME}, featureForceWatermark),
+		Object.assign({ enabled: true, plan: WITNESS_PRODUCT_NAME}, featureWatermark),
+		Object.assign({ enabled: true, plan: WITNESS_PRODUCT_NAME}, featureVimojoStore),
+		Object.assign({ enabled: true, plan: WITNESS_PRODUCT_NAME}, featureVimojoPlatform),
+		Object.assign({ enabled: false, plan: WITNESS_PRODUCT_NAME}, featureFtpPublishing),
+		Object.assign({ enabled: true, plan: WITNESS_PRODUCT_NAME}, featureAds),
+		Object.assign({ enabled: false, plan: WITNESS_PRODUCT_NAME}, featureVoiceOver),
+		Object.assign({ enabled: false, plan: WITNESS_PRODUCT_NAME}, featureCameraPro),
+		Object.assign({ enabled: false, plan: WITNESS_PRODUCT_NAME}, featureSelectFR),
+		Object.assign({ enabled: false, plan: WITNESS_PRODUCT_NAME}, featureSelectResolution)];
 
-featureSet[INFLUENCER_PLAN_NAME] = [ Object.assign({ enabled: false, plan: INFLUENCER_PLAN_NAME}, featureForceWatermark),
-		Object.assign({ enabled: true, plan: INFLUENCER_PLAN_NAME}, featureWatermark),
-		Object.assign({ enabled: true, plan: INFLUENCER_PLAN_NAME}, featureVimojoStore),
-		Object.assign({ enabled: true, plan: INFLUENCER_PLAN_NAME}, featureVimojoPlatform),
-		Object.assign({ enabled: false, plan: INFLUENCER_PLAN_NAME}, featureFtpPublishing),
-		Object.assign({ enabled: true, plan: INFLUENCER_PLAN_NAME}, featureAds),
-		Object.assign({ enabled: true, plan: INFLUENCER_PLAN_NAME}, featureVoiceOver),
-		Object.assign({ enabled: true, plan: INFLUENCER_PLAN_NAME}, featureCameraPro),
-		Object.assign({ enabled: true, plan: INFLUENCER_PLAN_NAME}, featureSelectFR),
-		Object.assign({ enabled: true, plan: INFLUENCER_PLAN_NAME}, featureSelectResolution)];
+featureSet[JOURNALIST_PRODUCT_NAME] = [ Object.assign({ enabled: false, plan: JOURNALIST_PRODUCT_NAME}, featureForceWatermark),
+		Object.assign({ enabled: true, plan: JOURNALIST_PRODUCT_NAME}, featureWatermark),
+		Object.assign({ enabled: true, plan: JOURNALIST_PRODUCT_NAME}, featureVimojoStore),
+		Object.assign({ enabled: true, plan: JOURNALIST_PRODUCT_NAME}, featureVimojoPlatform),
+		Object.assign({ enabled: false, plan: JOURNALIST_PRODUCT_NAME}, featureFtpPublishing),
+		Object.assign({ enabled: true, plan: JOURNALIST_PRODUCT_NAME}, featureAds),
+		Object.assign({ enabled: true, plan: JOURNALIST_PRODUCT_NAME}, featureVoiceOver),
+		Object.assign({ enabled: true, plan: JOURNALIST_PRODUCT_NAME}, featureCameraPro),
+		Object.assign({ enabled: true, plan: JOURNALIST_PRODUCT_NAME}, featureSelectFR),
+		Object.assign({ enabled: true, plan: JOURNALIST_PRODUCT_NAME}, featureSelectResolution)];
 
-featureSet[HERO_PLAN_NAME] = [ Object.assign({ enabled: false, plan: HERO_PLAN_NAME}, featureForceWatermark),
-		Object.assign({ enabled: true, plan: HERO_PLAN_NAME}, featureWatermark),
-		Object.assign({ enabled: true, plan: HERO_PLAN_NAME}, featureVimojoStore),
-		Object.assign({ enabled: true, plan: HERO_PLAN_NAME}, featureVimojoPlatform),
-		Object.assign({ enabled: true, plan: HERO_PLAN_NAME}, featureFtpPublishing),
-		Object.assign({ enabled: false, plan: HERO_PLAN_NAME}, featureAds),
-		Object.assign({ enabled: true, plan: HERO_PLAN_NAME}, featureVoiceOver),
-		Object.assign({ enabled: true, plan: HERO_PLAN_NAME}, featureCameraPro),
-		Object.assign({ enabled: true, plan: HERO_PLAN_NAME}, featureSelectFR),
-		Object.assign({ enabled: true, plan: HERO_PLAN_NAME}, featureSelectResolution)];
+featureSet[HERO_PRODUCT_NAME] = [ Object.assign({ enabled: false, plan: HERO_PRODUCT_NAME}, featureForceWatermark),
+		Object.assign({ enabled: true, plan: HERO_PRODUCT_NAME}, featureWatermark),
+		Object.assign({ enabled: true, plan: HERO_PRODUCT_NAME}, featureVimojoStore),
+		Object.assign({ enabled: true, plan: HERO_PRODUCT_NAME}, featureVimojoPlatform),
+		Object.assign({ enabled: true, plan: HERO_PRODUCT_NAME}, featureFtpPublishing),
+		Object.assign({ enabled: false, plan: HERO_PRODUCT_NAME}, featureAds),
+		Object.assign({ enabled: true, plan: HERO_PRODUCT_NAME}, featureVoiceOver),
+		Object.assign({ enabled: true, plan: HERO_PRODUCT_NAME}, featureCameraPro),
+		Object.assign({ enabled: true, plan: HERO_PRODUCT_NAME}, featureSelectFR),
+		Object.assign({ enabled: true, plan: HERO_PRODUCT_NAME}, featureSelectResolution)];
 
-featureSet[SUPER_HERO_PLAN_NAME] = [ Object.assign({ enabled: false, plan: SUPER_HERO_PLAN_NAME}, featureForceWatermark),
-		Object.assign({ enabled: true, plan: SUPER_HERO_PLAN_NAME}, featureWatermark),
-		Object.assign({ enabled: true, plan: SUPER_HERO_PLAN_NAME}, featureVimojoStore),
-		Object.assign({ enabled: true, plan: SUPER_HERO_PLAN_NAME}, featureVimojoPlatform),
-		Object.assign({ enabled: true, plan: SUPER_HERO_PLAN_NAME}, featureFtpPublishing),
-		Object.assign({ enabled: false, plan: SUPER_HERO_PLAN_NAME}, featureAds),
-		Object.assign({ enabled: true, plan: SUPER_HERO_PLAN_NAME}, featureVoiceOver),
-		Object.assign({ enabled: true, plan: SUPER_HERO_PLAN_NAME}, featureCameraPro),
-		Object.assign({ enabled: true, plan: SUPER_HERO_PLAN_NAME}, featureSelectFR),
-		Object.assign({ enabled: true, plan: SUPER_HERO_PLAN_NAME}, featureSelectResolution)];
+featureSet[SUPER_HERO_PRODUCT_NAME] = [ Object.assign({ enabled: false, plan: SUPER_HERO_PRODUCT_NAME}, featureForceWatermark),
+		Object.assign({ enabled: true, plan: SUPER_HERO_PRODUCT_NAME}, featureWatermark),
+		Object.assign({ enabled: true, plan: SUPER_HERO_PRODUCT_NAME}, featureVimojoStore),
+		Object.assign({ enabled: true, plan: SUPER_HERO_PRODUCT_NAME}, featureVimojoPlatform),
+		Object.assign({ enabled: true, plan: SUPER_HERO_PRODUCT_NAME}, featureFtpPublishing),
+		Object.assign({ enabled: false, plan: SUPER_HERO_PRODUCT_NAME}, featureAds),
+		Object.assign({ enabled: true, plan: SUPER_HERO_PRODUCT_NAME}, featureVoiceOver),
+		Object.assign({ enabled: true, plan: SUPER_HERO_PRODUCT_NAME}, featureCameraPro),
+		Object.assign({ enabled: true, plan: SUPER_HERO_PRODUCT_NAME}, featureSelectFR),
+		Object.assign({ enabled: true, plan: SUPER_HERO_PRODUCT_NAME}, featureSelectResolution)];
 
 module.exports = {
+	FREE_PRODUCT_NAME, WITNESS_PRODUCT_NAME, JOURNALIST_PRODUCT_NAME, HERO_PRODUCT_NAME, SUPER_HERO_PRODUCT_NAME,
 	plans,
 	featureSet
 };

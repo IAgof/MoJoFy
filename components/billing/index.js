@@ -1,6 +1,14 @@
+// components/billing/index.js
+
+const logger = require('../../logger')(module);
+
 const purchaseCtrl = require('./purchase');
+const featureCtrl = require('../user/user-feature');
+const productCtrl = require('./product');
 
 function givePromotionProductToUserForAYear(user, productId, promotionName) {
+  logger.info("billingCtrl.givePromotionProductToUserForAYear product [" + productId + "] promotion [" + promotionName
+    + "] user [" + user._id + "]");
   const today = new Date();
   const nextYear = new Date(today.getTime());
   nextYear.setFullYear(today.getFullYear() + 1);
@@ -12,10 +20,47 @@ function givePromotionProductToUserForAYear(user, productId, promotionName) {
     paymentMethod: promotionName,
     value: 0,
   };
-  // TODO(jliarte): 28/09/18 set user features depending on the highest value product active purchase
-  return purchaseCtrl.add(purchase);
+  let createdPurchase;
+  return purchaseCtrl.add(purchase)
+    .then(purchase => {
+      createdPurchase = purchase;
+	    return getUserPuchasesByProductValueOrder(user);
+    }).then(purchasesByValue => {
+      if (purchasesByValue && purchasesByValue.length > 0 && purchasesByValue[0].productId === productId) {
+	      return featureCtrl.setPlanDefaultsToUser(user._id, productId);
+      }
+      return [];
+    });
+}
+
+function sortByValueOrder(p1, p2) {
+  return p2.valueOrder - p1.valueOrder;
+}
+
+function getUserPuchasesByProductValueOrder(user) {
+	logger.info("billingCtrl.getUserPuchasesByProductValueOrder to user [" + user._id + "]");
+	let products = {};
+  return productCtrl.list()
+    .then(retrievedProducts => {
+      for (let idx in retrievedProducts) {
+        products[retrievedProducts[idx]._id] = retrievedProducts[idx];
+      }
+	    return purchaseCtrl.query({ purchase: { userId: user._id } });
+    })
+    .then(purchases => {
+      return purchases.map(purchase => {
+        let valueOrder = 0;
+        if (products[purchase.productId]) {
+          valueOrder = products[purchase.productId].valueOrder || 0;
+        }
+        purchase.valueOrder = valueOrder;
+        return purchase;
+      });
+    })
+    .then(purchases => purchases.sort(sortByValueOrder));
 }
 
 module.exports = {
   givePromotionProductToUserForAYear,
+  getUserPuchasesByProductValueOrder
 };

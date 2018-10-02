@@ -1,4 +1,4 @@
-// /data/repos/videona/mojofy/MoJoFy/components/billing/purchase/store.js
+// components/billing/purchase/store.js
 
 const Bluebird = require('bluebird');
 const PromisifierUtils = require('../../../util/promisifier-utils');
@@ -24,8 +24,6 @@ function upsert(purchaseData) {
 
     logger.debug("purchase store upsert to ", config.persistence_db);
     Persistent.upsert(type, purchase, id, function(result, id) {
-      logger.debug("purchase store add persistent result ", result);
-      logger.debug("purchase store add persistent id ", id);
       if (result) {
         resolve(id);
       } else {
