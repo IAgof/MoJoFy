@@ -58,6 +58,9 @@ function query(params) {
     if (params.purchase.productId && typeof params.purchase.productId === 'string') {
       insertFilter('productId', '=', params.purchase.productId, queryParams);
     }
+	  if (params.purchase.paymentMethod && typeof params.purchase.paymentMethod === 'string') {
+		  insertFilter('paymentMethod', '=', params.purchase.paymentMethod, queryParams);
+	  }
   }
   return Repository.queryAsync(type, queryParams);
 }

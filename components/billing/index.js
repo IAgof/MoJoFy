@@ -6,6 +6,19 @@ const purchaseCtrl = require('./purchase');
 const featureCtrl = require('../user/user-feature');
 const productCtrl = require('./product');
 
+const FREE_TRIAL_PROMOTION = 'free-trial';
+
+function upgradeUserFeatures(user, productId) {
+	logger.info("billingCtrl.upgradeUserFeatures product [" + productId + "] user [" + user._id + "]");
+	return getActiveUserPuchasesByProductValueOrder(user)
+		.then(purchasesByValue => {
+			if (purchasesByValue && purchasesByValue.length > 0 && purchasesByValue[0].productId === productId) {
+				return featureCtrl.setPlanDefaultsToUser(user._id, productId);
+			}
+			return [];
+		});
+}
+
 function givePromotionProductToUserForAYear(user, productId, promotionName) {
   logger.info("billingCtrl.givePromotionProductToUserForAYear product [" + productId + "] promotion [" + promotionName
     + "] user [" + user._id + "]");
@@ -23,13 +36,8 @@ function givePromotionProductToUserForAYear(user, productId, promotionName) {
   let createdPurchase;
   return purchaseCtrl.add(purchase)
     .then(purchase => {
-      createdPurchase = purchase;
-	    return getActiveUserPuchasesByProductValueOrder(user);
-    }).then(purchasesByValue => {
-      if (purchasesByValue && purchasesByValue.length > 0 && purchasesByValue[0].productId === productId) {
-	      return featureCtrl.setPlanDefaultsToUser(user._id, productId);
-      }
-      return [];
+      createdPurchase = purchase; // TODO(jliarte): 15/10/18 never used?
+      return upgradeUserFeatures(user, productId);
     });
 }
 
@@ -39,6 +47,30 @@ function compareValueOrder(p1, p2) {
 
 function isPurchaseActive(purchase) {
   return (new Date(purchase.expirationDate) > new Date());
+}
+
+function giveProductFreeTrialToUser(productId, user) {
+	logger.info("billingCtrl.giveProductFreeTrialToUser product [" + productId + "] user [" + user._id + "]");
+	const today = new Date();
+	const nextMonth = new Date(today.getTime());
+	nextMonth.setMonth(today.getMonth() + 1);
+	const purchase = {
+		userId: user._id,
+		productId: productId,
+		purchaseDate: today, // today
+		expirationDate: nextMonth, // today + 1 month
+		paymentMethod: FREE_TRIAL_PROMOTION,
+		value: 0,
+	};
+	let createdPurchase;
+	return purchaseCtrl.query( { purchase: { paymentMethod: 'free-trial' } })
+		.then(retrievedPurchases => {
+			if (retrievedPurchases.length > 0) {
+				return Promise.reject("free trial already used!");
+			}
+			return purchaseCtrl.add(purchase);
+		})
+		.then(() => upgradeUserFeatures(user, productId));
 }
 
 function getActiveUserPuchasesByProductValueOrder(user) {
@@ -67,5 +99,6 @@ function getActiveUserPuchasesByProductValueOrder(user) {
 
 module.exports = {
   givePromotionProductToUserForAYear,
-  getActiveUserPuchasesByProductValueOrder
+  getActiveUserPuchasesByProductValueOrder,
+	giveProductFreeTrialToUser
 };

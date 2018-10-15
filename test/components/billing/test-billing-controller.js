@@ -11,7 +11,7 @@ let featureQueryResults = [
 	{ _id: 'feature2', enabled: false }
 ];
 
-featureControllerSpy = {
+let featureControllerSpy = {
 	faked: true,
 	setPlanDefaultsToUser: sinon.stub().returns(Promise.resolve([])),
 	query: sinon.stub().returns(Promise.resolve(featureQueryResults))
@@ -195,7 +195,7 @@ describe('Billing controller', () => {
 
 	describe('getActiveUserPuchasesByProductValueOrder', () => {
 		beforeEach(removeAllPurchases);
-
+		
 		it('should return user purchases with associated product valueOrder ordered by it descending for that user', () => {
 			let userId = 'userId';
 			const user = { _id: userId };
@@ -330,6 +330,213 @@ describe('Billing controller', () => {
 					retrievedPurchases[0].should.have.property('valueOrder');
 					retrievedPurchases[0].productId.should.equal(product1.id);
 					retrievedPurchases[0].valueOrder.should.equal(product1.valueOrder);
+				});
+		});
+
+
+	});
+
+	// TODO(jliarte): 11/10/18 make a router endpoint to call from web after loging callback from pricing page**
+	describe('giveProductFreeTrialToUser', () => { // TODO(jliarte): 11/10/18 tests for assigning free trial
+		beforeEach(removeAllPurchases);
+		afterEach(() => { featureControllerSpy.setPlanDefaultsToUser.resetHistory(); });
+
+		it('should add purchase if no purchase with free-trial promotion', () => {
+			const user = { _id: 'userId' };
+			let productId = 'hero';
+			return billingCtrl.giveProductFreeTrialToUser(productId, user)
+				.then(res => {
+					console.log("res giving user hero free trial ", res);
+					return purchaseStore.list();
+				})
+				.then(purchases => {
+					console.log("retrieved purchases are ", purchases);
+					purchases.should.have.length(1);
+					purchases[0].userId.should.equal(user._id);
+					purchases[0].productId.should.equal(productId);
+					purchases[0].paymentMethod.should.equal('free-trial');
+					const purchaseDate = new Date(purchases[0].purchaseDate);
+					const expirationDate = new Date(purchases[0].expirationDate);
+					expirationDate.getMonth().should.equal(purchaseDate.getMonth() + 1);
+				});
+		});
+
+		it('should thow an error if already used free-trial promotion', () => {
+			const user = { _id: 'userId' };
+			let productId = 'hero';
+			const purchase = {
+				userId: user._id,
+				productId: 'journalist',
+				purchaseDate: new Date('2018/09/25 00:00 UTC'),
+				expirationDate: new Date(), // today
+				paymentMethod: 'free-trial',
+				value: 0,
+			};
+			return purchaseStore.add(purchase)
+				.then(res => {
+					console.log("res creating purchase ", res);
+					billingCtrl.giveProductFreeTrialToUser(productId, user).should.eventually.be.rejected;
+					return purchaseStore.list();
+				})
+				.then(purchases => {
+					console.log("retrieved purchases are ", purchases);
+					purchases.should.have.length(1);
+					testUtil.prepareRetrievedEntityToCompare(purchases[0]);
+					delete purchases[0].id;
+					purchases[0].should.deep.equal(purchase);
+				});
+		});
+
+		it('should assign features of product if is highest value active product', () => {
+			let userId = 'userId';
+			const user = { _id: userId };
+			const product1 = {
+				id: 'witness',
+				productName: 'Witness',
+				description: 'Witness saas product',
+				monthlyPrice: 5,
+				yearlyPrice: 7,
+				discount: 0.1,
+				valueOrder: 1,
+			};
+			const product2 = {
+				id: 'hero',
+				productName: 'Hero',
+				description: 'Hero saas product',
+				monthlyPrice: 84,
+				yearlyPrice: 112,
+				discount: 0.3,
+				valueOrder: 3,
+			};
+			const product3 = {
+				id: 'super-hero',
+				productName: 'Super Hero',
+				description: 'Super Hero saas product',
+				monthlyPrice: 180,
+				yearlyPrice: 220,
+				discount: 0.3,
+				valueOrder: 4,
+			};
+			const purchase = {
+				id: 'purchaseId',
+				userId: userId,
+				productId: product1.id,
+				purchaseDate: new Date('2018/09/25 00:00 UTC'),
+				expirationDate: new Date(),
+				paymentMethod: 'promotion',
+				value: 14.99,
+			};
+			purchase.expirationDate.setFullYear(purchase.expirationDate.getFullYear() + 1); // purchase expires next year
+			const purchase2 = {
+				id: 'purchaseId2',
+				userId: userId,
+				productId: product3.id,
+				purchaseDate: new Date('2018/09/25 00:00 UTC'),
+				expirationDate: new Date(),
+				paymentMethod: 'promotion',
+				value: 14.99,
+			};
+			purchase2.expirationDate.setFullYear(purchase.expirationDate.getFullYear() - 1); // purchase expired last year
+			return productStore.upsert(product1)
+				.then(res => {
+					console.log("Product 1 upsert ", res);
+					return productStore.upsert(product2);
+				})
+				.then(res => {
+					console.log("Product 2 upsert ", res);
+					return productStore.upsert(product3);
+				})
+				.then(res => {
+					console.log("Product 3 upsert ", res);
+					return purchaseStore.upsert(purchase);
+				})
+				.then(res => {
+					console.log("purchase 1 upsert ", res);
+					return purchaseStore.upsert(purchase2);
+				})
+				.then(res => {
+					console.log("purchase 2 upsert ", res);
+					return billingCtrl.giveProductFreeTrialToUser(product2.id, user);
+				})
+				.then(res => {
+					console.log("res giving free trial ", res);
+					sinon.assert.called(featureControllerSpy.setPlanDefaultsToUser);
+					sinon.assert.calledWith(featureControllerSpy.setPlanDefaultsToUser, user._id, product2.id);
+				});
+		});
+
+		it('should not assign features of product if it is not the highest value active product', () => {
+			let userId = 'userId';
+			const user = { _id: userId };
+			const product1 = {
+				id: 'witness',
+				productName: 'Witness',
+				description: 'Witness saas product',
+				monthlyPrice: 5,
+				yearlyPrice: 7,
+				discount: 0.1,
+				valueOrder: 1,
+			};
+			const product2 = {
+				id: 'hero',
+				productName: 'Hero',
+				description: 'Hero saas product',
+				monthlyPrice: 84,
+				yearlyPrice: 112,
+				discount: 0.3,
+				valueOrder: 3,
+			};
+			const product3 = {
+				id: 'super-hero',
+				productName: 'Super Hero',
+				description: 'Super Hero saas product',
+				monthlyPrice: 180,
+				yearlyPrice: 220,
+				discount: 0.3,
+				valueOrder: 4,
+			};
+			const purchase = {
+				userId: userId,
+				productId: product1.id,
+				purchaseDate: new Date('2018/09/25 00:00 UTC'),
+				expirationDate: new Date(),
+				paymentMethod: 'promotion',
+				value: 14.99,
+			};
+			purchase.expirationDate.setFullYear(purchase.expirationDate.getFullYear() + 1); // purchase expires next year
+			const purchase2 = {
+				userId: userId,
+				productId: product3.id,
+				purchaseDate: new Date('2018/09/25 00:00 UTC'),
+				expirationDate: new Date(),
+				paymentMethod: 'promotion',
+				value: 14.99,
+			};
+			purchase2.expirationDate.setFullYear(purchase.expirationDate.getFullYear() + 1); // purchase expires next year
+			return productStore.upsert(product1)
+				.then(res => {
+					console.log("Product 1 upsert ", res);
+					return productStore.upsert(product2);
+				})
+				.then(res => {
+					console.log("Product 2 upsert ", res);
+					return productStore.upsert(product3);
+				})
+				.then(res => {
+					console.log("Product 3 upsert ", res);
+					return purchaseStore.upsert(purchase);
+				})
+				.then(res => {
+					console.log("purchase 1 upsert ", res);
+					return purchaseStore.upsert(purchase2);
+				})
+				.then(res => {
+					console.log("purchase 2 upsert ", res);
+					return billingCtrl.giveProductFreeTrialToUser(product2.id, user);
+				})
+				.then(res => {
+					console.log("res giving free trial ", res);
+					sinon.assert.notCalled(featureControllerSpy.setPlanDefaultsToUser);
 				});
 		});
 
