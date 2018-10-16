@@ -66,11 +66,15 @@ function giveProductFreeTrialToUser(productId, user) {
 	return purchaseCtrl.query( { purchase: { paymentMethod: 'free-trial' } })
 		.then(retrievedPurchases => {
 			if (retrievedPurchases.length > 0) {
-				return Promise.reject("free trial already used!");
+				return Promise.reject( { status: 500, message: "free trial already used!" } );
 			}
 			return purchaseCtrl.add(purchase);
 		})
-		.then(() => upgradeUserFeatures(user, productId));
+		.then(res => {
+			createdPurchase = res;
+			return upgradeUserFeatures(user, productId);
+		})
+		.then(() => createdPurchase);
 }
 
 function getActiveUserPuchasesByProductValueOrder(user) {

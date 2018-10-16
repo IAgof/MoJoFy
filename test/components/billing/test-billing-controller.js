@@ -361,6 +361,22 @@ describe('Billing controller', () => {
 				});
 		});
 
+		it('should return created purchase', () => {
+			const user = { _id: 'userId' };
+			let productId = 'hero';
+			return billingCtrl.giveProductFreeTrialToUser(productId, user)
+				.then(trialDetails => {
+					console.log("res giving user hero free trial ", trialDetails);
+					trialDetails.userId.should.equal(user._id);
+					trialDetails.productId.should.equal(productId);
+					trialDetails.should.have.property('purchaseDate');
+					trialDetails.should.have.property('expirationDate');
+					const purchaseDate = new Date(trialDetails.purchaseDate);
+					const expirationDate = new Date(trialDetails.expirationDate);
+					expirationDate.getMonth().should.equal(purchaseDate.getMonth() + 1);
+				});
+		});
+
 		it('should thow an error if already used free-trial promotion', () => {
 			const user = { _id: 'userId' };
 			let productId = 'hero';

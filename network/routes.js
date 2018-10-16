@@ -15,7 +15,8 @@ const routes = function (server) {
 	server.use('/project', require(component('project')));
 	server.use('/asset', require(component('asset')));
   server.use('/media', require(component('project/media')));
-  server.use('/track', require(component('project/track')));
+	server.use('/track', require(component('project/track')));
+	server.use('/billing', require(component('billing')));
 	// server.use('/resource', require('../components/resource/network'));
 
 	// nested routes
