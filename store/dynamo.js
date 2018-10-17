@@ -344,22 +344,12 @@ function removeMulti(table, keys) {
 	return new Promise((resolve, reject) => {
 		let deleteRequestItems = [];
 		if (keys && keys.length > 0) {
-			deleteRequestItems = keys.map(id => { return {
-				DeleteRequest: {
-					Key: {
-						"_id": id
-					}
-				}
-			}});
-
+			deleteRequestItems = keys.map(id => {
+				return { DeleteRequest: { Key: { "_id": { S: id } } } }
+			});
 			const tableName = config.db_table_prefix + table;
-			const params = {
-				RequestItems: {
-					tableName: deleteRequestItems,
-				},
-				// ReturnConsumedCapacity: INDEXES | TOTAL | NONE,
-				// ReturnItemCollectionMetrics: SIZE | NONE
-			};
+			const params = { RequestItems: {} };
+			params.RequestItems[tableName] = deleteRequestItems;
 			dynamodb.batchWriteItem(params, function(err, data) {
 				if (err) {
 					console.log(err, err.stack);
