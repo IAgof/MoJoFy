@@ -340,6 +340,40 @@ function remove(table, key, cb) {
 	});
 }
 
+function removeMulti(table, keys) {
+	return new Promise((resolve, reject) => {
+		let deleteRequestItems = [];
+		if (keys && keys.length > 0) {
+			deleteRequestItems = keys.map(id => { return {
+				DeleteRequest: {
+					Key: {
+						"_id": id
+					}
+				}
+			}});
+
+			const tableName = config.db_table_prefix + table;
+			const params = {
+				RequestItems: {
+					tableName: deleteRequestItems,
+				},
+				// ReturnConsumedCapacity: INDEXES | TOTAL | NONE,
+				// ReturnItemCollectionMetrics: SIZE | NONE
+			};
+			dynamodb.batchWriteItem(params, function(err, data) {
+				if (err) {
+					console.log(err, err.stack);
+					reject(err);
+				} else {
+					console.log(data);
+					resolve(data);
+				}
+			});
+		} else resolve([]); // (jliarte): 16/10/18 no items to delete!
+	});
+}
+
+
 /* --- Internal functions -- */
 
 function list(table, cb) {
@@ -418,7 +452,8 @@ const exposed = {
 	add: upsert,
 	update: upsert,
 	upsert: upsert,
-	remove: remove
+	remove: remove,
+	_removeMulti: removeMulti,
 };
 
 module.exports = exposed;
