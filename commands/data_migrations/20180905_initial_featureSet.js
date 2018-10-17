@@ -2,7 +2,7 @@ const FREE_PRODUCT_NAME = 'free';
 const WITNESS_PRODUCT_NAME = 'witness';
 const JOURNALIST_PRODUCT_NAME = 'journalist';
 const HERO_PRODUCT_NAME = 'hero';
-const SUPER_HERO_PRODUCT_NAME = 'super-hero';
+const SUPER_HERO_PRODUCT_NAME = 'superHero';
 const plans = [FREE_PRODUCT_NAME, WITNESS_PRODUCT_NAME, JOURNALIST_PRODUCT_NAME, HERO_PRODUCT_NAME, SUPER_HERO_PRODUCT_NAME];
 
 const USER_FEATURE_FORCE_WATERMARK = "user-feature-force-watermark";

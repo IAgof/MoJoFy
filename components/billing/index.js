@@ -63,7 +63,7 @@ function giveProductFreeTrialToUser(productId, user) {
 		value: 0,
 	};
 	let createdPurchase;
-	return purchaseCtrl.query( { purchase: { paymentMethod: 'free-trial' } })
+	return purchaseCtrl.query( { purchase: { paymentMethod: 'free-trial', userId: user._id } })
 		.then(retrievedPurchases => {
 			if (retrievedPurchases.length > 0) {
 				return Promise.reject( { status: 500, message: "free trial already used!" } );

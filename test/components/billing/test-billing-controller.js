@@ -100,7 +100,7 @@ describe('Billing controller', () => {
 				valueOrder: 3,
 			};
 			const productSuperHero = {
-				id: 'super-hero',
+				id: 'superHero',
 				productName: 'Super Hero',
 				description: 'Super Hero saas product',
 				monthlyPrice: 0,
@@ -153,7 +153,7 @@ describe('Billing controller', () => {
 				valueOrder: 3,
 			};
 			const productSuperHero = {
-				id: 'super-hero',
+				id: 'superHero',
 				productName: 'Super Hero',
 				description: 'Super Hero saas product',
 				monthlyPrice: 0,
@@ -425,7 +425,7 @@ describe('Billing controller', () => {
 				valueOrder: 3,
 			};
 			const product3 = {
-				id: 'super-hero',
+				id: 'superHero',
 				productName: 'Super Hero',
 				description: 'Super Hero saas product',
 				monthlyPrice: 180,
@@ -503,7 +503,7 @@ describe('Billing controller', () => {
 				valueOrder: 3,
 			};
 			const product3 = {
-				id: 'super-hero',
+				id: 'superHero',
 				productName: 'Super Hero',
 				description: 'Super Hero saas product',
 				monthlyPrice: 180,
