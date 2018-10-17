@@ -13,7 +13,7 @@ const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierU
 const type = 'purchase';
 
 // TODO(jliarte): 11/07/18 check needed indexes!
-Persistent.index(type, ['userId', 'productId'], logger.debug);
+Persistent.index(type, ['userId', 'productId', 'paymentMethod'], logger.debug);
 
 function upsert(purchaseData) {
   let purchase = Object.assign({}, purchaseData);
