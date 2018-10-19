@@ -38,7 +38,7 @@ const productSet = [
 		valueOrder: 30,
 	},
 	{
-		id: initialFeatureSet.FREE_PLAN_NAME,
+		id: initialFeatureSet.SUPER_HERO_PRODUCT_NAME,
 		productName: 'Super Hero',
 		description: 'Vimojo Super Hero SaaS product',
 		monthlyPrice: 149,
