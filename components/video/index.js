@@ -346,7 +346,6 @@ function getVideoOwner(videos, requestingUser, callback) {
 				video.ownerData = data;
 			}
 			if (++results === videos.length) {
-				logger.debug('returning...');
 				return callback(videos, null, 200);
 			}
 		});
