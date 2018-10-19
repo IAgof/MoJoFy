@@ -1,7 +1,7 @@
 {
   "name": "mojofy",
-  "version": "0.12.2",
-  "description": "Cloud storage for Vimojo files and projects",
+  "version": "0.13.0",
+  "description": "Vimojo platform backend",
   "main": "server.js",
   "scripts": {
     "test": "mocha --recursive src/",
