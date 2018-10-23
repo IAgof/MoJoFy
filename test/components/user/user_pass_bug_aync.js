@@ -43,6 +43,7 @@ describe('Users', () => {
 
 		it('should create a user', () => {
 			const user = {
+				id: 'userId',
 				email: 'email@email.com',
 				username: 'username',
 			};
@@ -56,7 +57,7 @@ describe('Users', () => {
 				.then(users => {
 					console.log("retrieved users are ", users);
 					users.should.have.length(1);
-					delete users[0]._id;
+					testUtil.prepareRetrievedEntityToCompare(users[0]);
 					console.log("expected ", user);
 					console.log("actual", users[0]);
 					users[0].should.deep.equal(user); // _id

@@ -1,19 +1,18 @@
-const Acl = require('./acl');
+// components/user/index.js
+
 const FileUpload = require('../file');
 const merge = require('util-merge');
 const Model = require('./model');
-const Pass = require('../access/password');
 const logger = require('../../logger')(module);
 const config = require('../../config');
 
 const StoreCB = require('./store');
-// const Store = require('./store');
 const Video = require('../video');
 const billingCtrl = require('../billing');
 const emailNotificationsCtrl = require('../email_notifications');
 
 const Bluebird = require('bluebird');
-const PromisifierUtils = require('../../util/promisifier-utils')
+const PromisifierUtils = require('../../util/promisifier-utils');
 const Store = Bluebird.promisifyAll(StoreCB, { promisifier: PromisifierUtils.noErrPromisifier });
 
 // Exposed functions
@@ -24,6 +23,7 @@ exports.getUserByEmail = getUserByEmail;
 exports.list = list;
 exports.add = add;
 exports.exist = exist;
+exports.userExists = userExists;
 exports.update = update;
 exports.query = query;
 exports.updateVideoCounter = updateVideoCounter;
@@ -32,32 +32,19 @@ exports.setPrehistericUser = setPrehistericUser;
 
 // Internal functions
 
-function get(id, requestingUser, includePass, callback) {
-	logger.debug("user.get method " + id + " by  ", requestingUser);
+function get(id, callback) {
+	logger.info("userCtrl.get method " + id);
 	Store.get(id, function (data) {
 		if (data) {
 			data._id = id;
-			if (!includePass) {
-				delete data.password;
-			}
-
-			if (!requestingUser) {
-				requestingUser = {};
-			}
-
-			// TODO(jliarte): 29/06/18 move acl logic to router?
-			Acl.query(requestingUser, 'see_email', function (allowed) {
-				if (!allowed) {
-					delete data.email;
-				}
-				if (!data.videoCount) {
-					setVideoCounter(id, function (data) {
-						return callback(data, null);
-					});
-				} else {
+			if (data.videoCount === undefined) {
+				setVideoCounter(id, function (data) {
 					return callback(data, null);
-				}
-			});
+				});
+			} else {
+				return callback(data, null);
+			}
+
 		} else {
 			callback(null, 'That user does not exist', 404);
 		}
@@ -65,7 +52,7 @@ function get(id, requestingUser, includePass, callback) {
 }
 
 function getUserId(authId, callback) {
-	logger.debug("user.getUserId method " + authId);
+	logger.info("userCtrl.getUserId method " + authId);
 	const params = {
 		filters: [{
 			field: 'authId',
@@ -74,7 +61,7 @@ function getUserId(authId, callback) {
 		}],
 		limit: 1
 	};
-	query(params, null, false, function (users) {
+	query(params, function (users) {
 		if (!users || users.length === 0) {
 			callback(null);
 		} else {
@@ -84,15 +71,15 @@ function getUserId(authId, callback) {
 }
 
 function setPrehistericUser(user, prehisteric) {
-  logger.debug("user.setPrehistericUser [" + prehisteric + "] to user [" + user._id + "]");
+  logger.info("userCtrl.setPrehistericUser [" + prehisteric + "] to user [" + user._id + "]");
   if (prehisteric === true && !user.prehisteric) {
   	user.id = user._id;
   	user.prehisteric = prehisteric;
-  	logger.debug("saving user", user);
-  	return Store.upsertAsync(user)
+	  const userToUpsert = Object.assign({}, user);
+  	return Store.upsertAsync(userToUpsert) // TODO(jliarte): 22/10/18 user may be changed in that upsert, so we need to make a copy to use it later :S
 		  .then((res, id) => {
         // assign hero plan to user (for a year)
-        billingCtrl.givePromotionProductToUserForAYear(user, 'hero')
+        billingCtrl.givePromotionProductToUserForAYear(user, 'hero', 'prehistericUser');
         // send prehisteric thanks welcome to hero email
 			  emailNotificationsCtrl.sendPrehistericPromotionWelcomeEmail(user);
       });
@@ -100,7 +87,7 @@ function setPrehistericUser(user, prehisteric) {
 }
 
 function getUserByEmail(email, callback) {
-	logger.debug("user.getUserByEmail method " + email);
+	logger.info("userCtrl.getUserByEmail method " + email);
 	const params = {
 		filters: [{
 			field: 'email',
@@ -109,7 +96,7 @@ function getUserByEmail(email, callback) {
 		}],
 		limit: 1
 	};
-	query(params, null, false, function (users) {
+	query(params, function (users) {
 		if (!users || users.length === 0) {
 			callback(null);
 		} else {
@@ -119,7 +106,7 @@ function getUserByEmail(email, callback) {
 }
 
 function add(data, requestingUser, callback) {
-	logger.debug("user.add method, data - ", data);
+	logger.info("userCtrl.add method, data - ", data);
 	userExists(data, requestingUser, function (exists) {
 		if (exists === null) {
 			callback(null, 'Unable to register, no user or email provided', 400);
@@ -151,7 +138,7 @@ function add(data, requestingUser, callback) {
 	});
 }
 
-function exist(data, requestingUser, callback) {
+function exist(data, requestingUser, callback) { // TODO(jliarte): 22/10/18 there's no need for an intermediate function as http codes handling should go to router
 	logger.debug("user.exists by ", requestingUser);
 	userExists(data, requestingUser, function (exists) {
 		if (exists === null) {
@@ -184,9 +171,8 @@ function userExists(data, requestingUser, callback) {
 	} else {
 		callback(null);
 	}
-	logger.debug("userExists querying with params ", params);
 
-	query(params, requestingUser, false, function (found, error) {
+	query(params, function (found, error) {
 		if (error) {
 			callback(null);
 		}
@@ -200,7 +186,7 @@ function userExists(data, requestingUser, callback) {
 }
 
 function update(data, requestingUser, file, callback) {
-	logger.debug("user.update by user ", requestingUser);
+	logger.info("userCtrl.update by user ", requestingUser);
 	logger.debug("user.update data", data);
 	if (!data.id && !data._id) {
 		callback(null, 'No user id provided', 400);
@@ -248,47 +234,32 @@ function updateUser(model, callback) {
 	});
 }
 
-function list(requestingUser, callback) {
-	logger.debug("user.list by user ", requestingUser);
-	query({}, requestingUser, false, callback);
+function list(requestingUser, callback) { // TODO(jliarte): 22/10/18 remove requestingUser
+	logger.info("userCtrl.list by user ", requestingUser);
+	query({}, callback);
 }
 
-function query(params, requestingUser, includePass, callback) {
-	if (!requestingUser) {
-		requestingUser = {};
-	}
+function query(params, callback) {
+	logger.info("userCtrl.query method");
+	logger.debug("with params ", params);
 
 	Store.list(params, function (result) {
 		if (result) {
-			// TODO(jliarte): 29/06/18 move acl logic to router?
-			Acl.query(requestingUser, 'see_email', function (allowed) {
-				for (let i = 0; i < result.length; i++) {
-					// result[i]._id = id;
-					if (!includePass) {
-						delete result[i].password;
-					}
-
-					if (!allowed) {
-						delete result[i].email;
-					}
-				}
-				callback(result, null, 201);
-			});
+			callback(result, null, 201); // TODO(jliarte): 22/10/18 move http codes to router!
 		} else {
-			callback(null, 'Unable to list users', 500);
+			callback(null, 'Unable to list users', 500); // TODO(jliarte): 22/10/18 move http codes to router!
 		}
 	});
 }
 
 function updateVideoCounter(userId, callback) {
-	logger.debug("User.updateVideoCounter of user " + userId);
+	logger.info("userCtrl.updateVideoCounter of user " + userId);
 	if (!userId) {
 		typeof callback === 'function' && callback(null);
 		return false;
 	}
 
 	Store.get(userId, function (data) {
-		logger.debug("UserStore got user ", userId, data);
 		if (data && data.videoCount) {
 			data._id = userId;
 			delete data.password;
@@ -358,7 +329,7 @@ function setVideoCounter(data, callback) {
  * @returns {boolean}
  */
 function decreaseVideoCounter(userId, callback) {
-	logger.debug("User.decreaseVideoCounter of ", userId);
+	logger.info("userCtrl.decreaseVideoCounter of ", userId);
 	Store.get(userId, function (data) {
 		if (data) {
 			if (data.videoCount) {
@@ -380,16 +351,4 @@ function prepare(data, next) {
 
 	// TODO(jliarte): 27/06/18 clean auth code
 	// updatePassword(model, next);
-}
-
-function updatePassword(data, next) {
-	// Check if password shall be created
-	if (typeof(data.password) !== 'undefined') {
-		Pass.crypt(data.password, function (err, hash) {
-			data.password = hash;
-			next(data);
-		});
-	} else {
-		next(data);
-	}
 }

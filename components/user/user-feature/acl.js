@@ -15,21 +15,3 @@ exports.middleware = function(req, res, next) {
 	}
 	return false;
 };
-
-const filteredFields = ['modification_date', 'creation_date', 'userId', '_id'];
-
-// TODO(jliarte): 5/09/18 extract these two functions to an acl exported function?
-function filterItem(item, filteredFields) {
-	for (let id in filteredFields) {
-		delete item[filteredFields[id]];
-	}
-	return item;
-}
-
-exports.filter = function(data) {
-	if (data.length != undefined) {
-		return data.map(item => filterItem(item, filteredFields));
-	} else {
-		return filterItem(data, filteredFields);
-	}
-};

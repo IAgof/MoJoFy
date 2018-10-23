@@ -2,6 +2,8 @@ const express = require('express');
 const getUserId = require("../access/acl").getUserId;
 const getUser = require("../access/acl").getUser;
 const Acl = require('./acl').middleware;
+const aclQuery = require('./acl').query;
+const getFilterFunction = require('../access/acl-filter').getFilterFunction;
 const logger = require('../../logger')(module);
 const Response = require('../../network/response');
 const Controller = require('./');
@@ -18,7 +20,6 @@ const Upload = multer({ dest: Config.upload_folder, fileSize: MAX_UPLOAD_SIZE })
 router.use('/:userId/video', require('../video/network'));
 
 router.get('/exist', function(req, res, next) {
-// router.get('/exist?:name&:email', Acl,  function(req, res, next) {
 	Controller.exist(req.query, getUser(req), function(data, err, code) {
 		if (!err) {
 			Response.success(req, res, next, (code || 200), data);
@@ -57,15 +58,20 @@ router.get('/getId', function(req, res, next) {
 router.get('/', function(req, res, next) {
 	Controller.list(getUser(req), function(data, err, code) {
 		if (!err) {
-			data.forEach(item => { delete item.authId; });
-			Response.success(req, res, next, (code || 200), data);
+			const filteredFields = ['modification_date', 'creation_date', 'authId', 'password'];
+			aclQuery(getUser(req), 'see_email', function (allowed) {
+				if (!allowed) {
+					filteredFields.push('email');
+				}
+				const aclFilter = getFilterFunction(filteredFields);
+				Response.success(req, res, next, (code || 200), aclFilter(data));
+			});
 		} else {
 			Response.error(req, res, next, (code || 500), err);
 		}
 	});
 });
 
-// router.post('/', Acl,  function(req, res, next) {
 router.post('/', function(req, res, next) {
 	Controller.add(req.body, getUser(req), function(data, err, code) {
 		if (!err) {
@@ -86,12 +92,17 @@ router.put('/', Acl, Upload.single('pic'), function(req, res, next) {
 	});
 });
 
-// router.get('/:id', Acl,  function(req, res, next) {
 router.get('/:id', function(req, res, next) {
-  Controller.get(req.params.id, getUser(req), false, function(data, err, code) {
+  Controller.get(req.params.id, function(data, err, code) {
 		if (!err) {
-			delete data.authId;
-			Response.success(req, res, next, (code || 200), data);
+			const filteredFields = ['modification_date', 'creation_date', 'authId', 'password'];
+			aclQuery(getUser(req), 'see_email', function (allowed) {
+				if (!allowed) {
+					filteredFields.push('email');
+				}
+				const aclFilter = getFilterFunction(filteredFields);
+				Response.success(req, res, next, (code || 200), aclFilter(data));
+			});
 		} else {
 			Response.error(req, res, next, (code || 500), err);
 		}

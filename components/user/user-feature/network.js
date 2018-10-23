@@ -1,11 +1,11 @@
-// components/asset/network.js
+// components/user/user-feature/network.js
 
 const Controller = require('./');
 const logger = require('../../../logger')(module);
 const express = require('express');
 const router = express.Router({ mergeParams: true });
 const Acl = require('./acl').middleware;
-const aclFilter = require('./acl').filter;
+const getFilterFunction = require('../../access/acl-filter').getFilterFunction;
 const getUser = require("../../access/acl").getUser;
 
 router.get('/', Acl, (req, res, next) => {
@@ -19,6 +19,7 @@ router.get('/', Acl, (req, res, next) => {
 	}
 
 	if (Object.keys(params.userFeature).length === 0) {
+		const aclFilter = getFilterFunction(['modification_date', 'creation_date', 'userId', '_id']);
 		Controller.list()
 			.then((userFeatures) => {
 				res.status(200).json(aclFilter(userFeatures));

@@ -41,7 +41,7 @@ function login(data, token, callback) {
 	}
 
 
-	User.query(params, token, false, function(users) {
+	User.query(params, function(users) {
 		if (!users || users.length === 0) {
 			callback(null, 'Unable to find user', 404);
 			return false;

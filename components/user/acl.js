@@ -18,7 +18,7 @@ exports.middleware = function(req, res, next) {
 
 exports.query = function(user, operation, callback) {
 	let role = 'guest';
-	if (user.role) {
+	if (user && user.role) {
 		role = user.role;
 	}
 

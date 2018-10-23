@@ -35,18 +35,19 @@ function list(params, callback) {
 	// });
 }
 
-function upsert(data, callback) {
-	const id = data.id || data._id || null;
-	delete data.id;
-	delete data._id;
+function upsert(user, callback) {
+	const id = user.id || user._id || null;
+	const userData = Object.assign({}, user);
+	delete userData.id;
+	delete userData._id;
 
-	// Cache.get(type, id, function(data) {
-	// 	if(!data) {
-			Persistent.add(type, data, id, function(result, id) {
+	// Cache.get(type, id, function(user) {
+	// 	if(!userData) {
+			Persistent.add(type, userData, id, function(result, id) {
 				typeof callback === 'function' && callback(result, id);
 			});
 	// 	} else {
-	// 		callback(data);
+	// 		callback(userData);
 	// 	}
 	// });
 }

@@ -7,7 +7,7 @@ const express = require('express');
 const router = express.Router();
 const getUser = require("../access/acl").getUser;
 const Acl = require('./acl').middleware;
-const aclFilter = require('./acl').filter;
+const getFilterFunction = require('../access/acl-filter').getFilterFunction;
 
 router.post('/trial', Acl, (req, res, next) => {
 	const user = getUser(req);
@@ -16,7 +16,9 @@ router.post('/trial', Acl, (req, res, next) => {
 	if (req.body.productId) {
 		Controller.giveProductFreeTrialToUser(req.body.productId, user) // TODO(jliarte): 15/10/18 should we check product exists?
 			.then(freeTrialPurchase => {
-				res.status(200).json(aclFilter(freeTrialPurchase));
+				const aclPurchaseFilter =
+					getFilterFunction(['modification_date', 'creation_date', 'userId', '_id', 'paymentMethod', 'value']);
+				res.status(200).json(aclPurchaseFilter(freeTrialPurchase));
 			})
 			.catch(next);
 	} else {

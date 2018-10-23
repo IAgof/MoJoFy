@@ -9,7 +9,7 @@ const Bluebird = require('bluebird');
 const PromisifierUtils = require('../../../util/promisifier-utils')
 
 const userStoreCB = require('../../../components/user/store');
-const userStore = Bluebird.promisifyAll(userStoreCB, { promisifier: PromisifierUtils.noErrPromisifier });
+	const userStore = Bluebird.promisifyAll(userStoreCB, { promisifier: PromisifierUtils.noErrPromisifier });
 
 const userStoreSpy = {
 	faked: true,
@@ -48,6 +48,39 @@ function removeAllUsers() {
 }
 
 describe('User Controller', () => {
+
+	describe('get', () => {
+		beforeEach(removeAllUsers);
+
+		it('should return user with corresponding id', () => {
+			const userId = 'userId';
+			const user = {
+				id: userId,
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("res updating user ", res);
+					return userCtrl.getAsync(userId); // TODO(jliarte): 22/10/18 cleanup signature!!!
+				})
+				.then(retrievedUser => {
+					console.log('retrieved user is ', retrievedUser);
+					testUtil.prepareRetrievedEntityToCompare(retrievedUser);
+					retrievedUser.should.deep.equal(user);
+				});
+		});
+
+	});
+
 	describe('decreaseVideoCounterAsync', () => {
 		beforeEach(removeAllUsers);
     afterEach(() => { userStoreSpy.upsert.resetHistory(); });
@@ -174,6 +207,218 @@ describe('User Controller', () => {
     });
 
   });
+
+	describe('getUserId', () => {
+		beforeEach(removeAllUsers);
+
+		it('should return user with specified authId', () => {
+			const user = {
+				id: 'userId',
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("user created ", res);
+					return userCtrl.getUserIdAsync(user.authId);
+				})
+				.then(retrievedUser => {
+					console.log("retrieved user is ", retrievedUser);
+					testUtil.prepareRetrievedEntityToCompare(retrievedUser);
+					retrievedUser.should.deep.equal(user);
+				});
+		});
+
+	});
+
+	describe('getUserByEmail', () => {
+		beforeEach(removeAllUsers);
+
+		it('should return user with specified email', () => {
+			const user = {
+				id: 'userId',
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("user created ", res);
+					return userCtrl.getUserByEmailAsync(user.email);
+				})
+				.then(retrievedUser => {
+					console.log("retrieved user is ", retrievedUser);
+					testUtil.prepareRetrievedEntityToCompare(retrievedUser);
+					retrievedUser.should.deep.equal(user);
+				});
+		});
+
+	});
+
+	describe('userExists', () => {
+		beforeEach(removeAllUsers);
+
+		it('should return true when a user with same email exists', () => {
+			const user = {
+				id: 'userId',
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("user created ", res);
+					return userCtrl.userExistsAsync({ email: user.email }, null);
+				})
+				.then(exists => {
+				exists.should.equal(true);
+			});
+		});
+
+		it('should return true when a user with same username exists', () => {
+			const user = {
+				id: 'userId',
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("user created ", res);
+					return userCtrl.userExistsAsync({ name: user.username }, null);
+				})
+				.then(exists => {
+					exists.should.equal(true);
+				});
+		});
+
+		it('should return true when a user with same email and username exists', () => {
+			const user = {
+				id: 'userId',
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("user created ", res);
+					return userCtrl.userExistsAsync({ name: user.username, email: user.email }, null);
+				})
+				.then(exists => {
+					exists.should.equal(true);
+				});
+		});
+
+		it('should return false when no user with same email and username exists', () => {
+			const user = {
+				id: 'userId',
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("user created ", res);
+					return userCtrl.userExistsAsync({ name: "a name", email: "an@email" }, null);
+				})
+				.then(exists => {
+					exists.should.equal(false);
+				});
+		});
+
+		it('should return false when no user with same email exists', () => {
+			const user = {
+				id: 'userId',
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("user created ", res);
+					return userCtrl.userExistsAsync({ email: "an@email" }, null);
+				})
+				.then(exists => {
+					exists.should.equal(false);
+				});
+		});
+
+		it('should return false when no user with same username exists', () => {
+			const user = {
+				id: 'userId',
+				authId: 'authId',
+				name: 'user name',
+				username: 'user username',
+				email: 'user@email.co',
+				password: 'qwerty',
+				verified: false,
+				videoCount: 0,
+				role: 'guest',
+				pic: 'http://user.pic',
+				updated_at: new Date()
+			};
+			return userStore.upsertAsync(user)
+				.then(res => {
+					console.log("user created ", res);
+					return userCtrl.userExistsAsync({ name: "a name" }, null);
+				})
+				.then(exists => {
+					exists.should.equal(false);
+				});
+		});
+
+
+	});
 
 
 });

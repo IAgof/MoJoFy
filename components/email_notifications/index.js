@@ -20,8 +20,10 @@ function getTemplate(path, mapObj) {
 
 function sendNotificationVideoUploadedMail(user, video) {
 	if (!config.emailNotificationsRecipient) {
-		return;
+		logger.info("No emailNotificationsRecipient configured, nobody to send notifications!");
+		return Promise.resolve();
 	}
+
 	// TODO: Keep an eye on i18n
   let subject = 'Se ha subido un nuevo vídeo a Vimojo.';
   if (user) {
@@ -33,7 +35,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 		subject: subject,
 		html: '',
 	};
-	getTemplate(templatePath + '/notify-video-uploaded.hbs', {
+	return getTemplate(templatePath + '/notify-video-uploaded.hbs', {
 		title: video.title,
 		description: video.description,
 		date: video.date,
@@ -45,7 +47,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 	}).then(data => {
 		logger.debug("Sending notification of uploaded video ", video);
 		msg.html = data;
-		sendgridMail.send(msg);
+		return sendgridMail.send(msg);
 	}).catch(e => {
 		logger.error(e);
 		throw new Error('Unable to get a piece of email');
@@ -53,8 +55,17 @@ function sendNotificationVideoUploadedMail(user, video) {
 }
 
 function notifyVideoUploaded(video) {
-	user.get(video.owner, null, false, function (user) {
-		sendNotificationVideoUploadedMail(user, video);
+	logger.debug("notifyVideoUploaded for video ", video._id);
+	return new Promise((resolve, reject) => {
+		user.get(video.owner, function (user) {
+			sendNotificationVideoUploadedMail(user, video)
+				.then(res => {
+					resolve(res);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
 	});
 }
 
@@ -111,8 +122,8 @@ function sendPrehistericPromotionWelcomeEmail(user) {
 
   return getTemplate(templatePath + '/notify-video-codes-generated.hbs', templateVars)
 	  .then(data => {
-      logger.info("Sending prehistoric promo notification to user ", user._id);
-      msg.html = data;
+	  	logger.info("Sending prehistoric promo notification to user ", user._id);
+		  msg.html = data;
 	  	return sendgridMail.send(msg);
 	  });
 }

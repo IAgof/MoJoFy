@@ -42,10 +42,7 @@ describe('Asset store', () => {
 				.then(assets => {
 					console.log("retrieved assets are ", assets);
 					assets.should.have.length(1);
-					assets[0].id = assets[0]._id;
-					delete assets[0]._id;
-					delete assets[0].creation_date;
-					delete assets[0].modification_date;
+					testUtil.prepareRetrievedEntityToCompare(assets[0]);
 					console.log("expected ", asset);
 					console.log("actual", assets[0]);
 					assets[0].should.deep.equal(asset); // _id
