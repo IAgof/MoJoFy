@@ -47,6 +47,7 @@
     "fs": "0.0.1-security",
     "google-cloud": "0.56.0",
     "handlebars": "^4.0.10",
+    "i18n": "^0.8.3",
     "jwks-rsa": "^1.2.1",
     "migrate": "^1.6.1",
     "mime": "^2.2.0",

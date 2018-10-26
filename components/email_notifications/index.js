@@ -5,11 +5,27 @@ const videoRepository = require('../video');
 const Handlebars = require('handlebars');
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
+const i18n = require('i18n');
 
 const templatePath = './src/templates/' + config.flavour;
 
 const sendgridMail = require('@sendgrid/mail');
 sendgridMail.setApiKey(config.sendgridApiKey);
+
+i18n.configure({
+	locales: config.supportedLocales,
+	directory: __dirname + '/locales',
+	register: global,
+	updateFiles: config.updateLocaleFiles || false,
+});
+
+Handlebars.registerHelper('__', function () {
+	return i18n.__.apply(i18n, arguments);
+});
+
+Handlebars.registerHelper('__n', function () {
+	return i18n.__n.apply(i18n, arguments);
+});
 
 function getTemplate(path, mapObj) {
 	return fs.readFileAsync(path, 'utf-8')
@@ -24,10 +40,10 @@ function sendNotificationVideoUploadedMail(user, video) {
 		return Promise.resolve();
 	}
 
-	// TODO: Keep an eye on i18n
-  let subject = 'Se ha subido un nuevo vídeo a Vimojo.';
-  if (user) {
-		subject = (user.username || 'Se') + ' ha subido un nuevo vídeo a Vimojo.';
+	i18n.setLocale(user.lang || config.defaultLocale);
+  let subject = i18n.__('New video uploaded to Vimojo');
+  if (user && user.username) {
+	  subject = i18n.__('{{username}} uploaded a new video to Vimojo', { username: user.username });
 	}
 	const msg = {
 		to: config.emailNotificationsRecipient,
@@ -35,7 +51,7 @@ function sendNotificationVideoUploadedMail(user, video) {
 		subject: subject,
 		html: '',
 	};
-	return getTemplate(templatePath + '/notify-video-uploaded.hbs', {
+	return getTemplate(templatePath + '/notify-video-uploaded.hbs', { // TODO(jliarte): 23/10/18 translate template
 		title: video.title,
 		description: video.description,
 		date: video.date,
@@ -103,16 +119,19 @@ function notifyVideoCodesGenerated(videoId, codes) {
 }
 
 function sendPrehistericPromotionWelcomeEmail(user) {
-	const prehistoricPromoText = ""; // TODO(jliarte): 28/09/18 put in template or include i18n setup!!!
-  const templateVars = {
-    title: "¡Gracias por confiar en nosotros!",
-    description: prehistoricPromoText,
-    // url: config.frontend_url + '/download/' + videoId,
+	i18n.setLocale(user.lang || config.defaultLocale);
+	const username = user.name || 'user';
+	const templateVars = {
+    title: i18n.__('Thank you for trusting in us'),
     vimojo_logo: 'http://vimojo.co/wp-content/uploads/2017/11/Vimojo.png',
-    platform_url: 'http://vimojo.co',
+    platform_url: 'http://vimojo.co', // TODO(jliarte): 24/10/18 make maintenable URLs
     poster: '',
+		userGreeting: i18n.__('userMailGreeting', { username: username }),
+		username: username,
+	  cta_url: 'http://platform.vimojo.co/pricing'
   };
-  const subject = "¡Enhorabuena " + user.username + "! Le regalamos una subscricpción anual a hero gratis!"; // TODO(jliarte): 28/09/18 i18n
+  const subject = i18n.__('Congratulations {{username}}! We give you a free subscription to Hero plan!',
+	  { username: username });
   const msg = {
     to: user.email,
     from: config.emailNotificationsSender,
@@ -120,7 +139,7 @@ function sendPrehistericPromotionWelcomeEmail(user) {
     html: '',
   };
 
-  return getTemplate(templatePath + '/notify-video-codes-generated.hbs', templateVars)
+  return getTemplate(templatePath + '/notify-prehisteric-user-promotion.hbs', templateVars)
 	  .then(data => {
 	  	logger.info("Sending prehistoric promo notification to user ", user._id);
 		  msg.html = data;
@@ -131,5 +150,5 @@ function sendPrehistericPromotionWelcomeEmail(user) {
 module.exports = {
 	notifyVideoUploaded,
 	notifyVideoCodesGenerated,
-	sendPrehistericPromotionWelcomeEmail
+	sendPrehistericPromotionWelcomeEmail,
 };
