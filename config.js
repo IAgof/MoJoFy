@@ -81,6 +81,9 @@ const config = {
 	supportedLocales: ['en', 'es'], // TODO(jliarte): 23/10/18 extract to env var?
 	defaultLocale: process.env.DEFAULT_LOCALE || 'en',
 	updateLocaleFiles: process.env.UPDATE_LOCALE_FILES || false,
+
+	// Logs
+	LOGGLY_TOKEN: process.env.LOGGLY_TOKEN,
 };
 
 module.exports = config;
