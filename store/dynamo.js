@@ -391,14 +391,16 @@ function search(table, params, cb) {
 	const expressionNames = {};
 	const expressionValues = {};
 
-	for (let i = 0; i < params.filters.length; i++) {
-		const filter = params.filters[i];
-		if (i > 0) {
-			conditionExpression += ' and ';
+	if (params && params.filters) {
+		for (let i = 0; i < params.filters.length; i++) {
+			const filter = params.filters[i];
+			if (i > 0) {
+				conditionExpression += ' and ';
+			}
+			conditionExpression += '#field'+ i +' '+ filter.operator +' :field'+ i;
+			expressionNames['#field'+i] = filter.field;
+			expressionValues[':field'+i] = filter.value;
 		}
-		conditionExpression += '#field'+ i +' '+ filter.operator +' :field'+ i;
-		expressionNames['#field'+i] = filter.field;
-		expressionValues[':field'+i] = filter.value;
 	}
 
 	// ToDo: Limit
