@@ -5,7 +5,7 @@
 	"userMailGreeting": "Hola {{username}},",
 	"prehistoricPromoText_l1": "Llevamos ya casi 2 años trabajando para hacer de Vimojo la mejor solución para facilitar la creación y publicación móvil a creativos audiovisuales y storytellers.",
 	"prehistoricPromoText_l2": "Ahora estamos orgullosos de lanzar una suite completa para la producción audiovisual móvil con nuevos precios para adaptarse a las necesidades de cada usuario.",
-	"prehistoricPromoText_l3": "Queremos agradecerte tu apoyo antes de este lanzamiento con un regalo especial de <strong>1 año</strong> de subscripción a nuestro plan Journalist <strong>totalmente gratuita</strong> y un <u>20% de descuento en la próxima renovación de plan</u>.",
+	"prehistoricPromoText_l3": "Queremos agradecerte tu apoyo antes de este lanzamiento con un regalo especial de <strong>1 año</strong> de subscripción a nuestro plan Hero <strong>totalmente gratuita</strong> y un <u>20% de descuento en la próxima renovación de plan</u>.",
 	"prehistoricPromoText_ps": "Gracias de nuevo por tu confianza y disfruta creando tus historias!",
 	"CEOSignature": "Iago Fernández-Cedrón - CEO",
 	"pricing_cta": "Saber más de los nuevos precios",
