@@ -9,8 +9,9 @@ const getFilterFunction = require('../../access/acl-filter').getFilterFunction;
 const getUser = require("../../access/acl").getUser;
 
 router.get('/', Acl, (req, res, next) => {
-	let user = getUser(req);
 	logger.info("GET user feature list by user " + (user ? user._id : user));
+	const aclFilter = getFilterFunction(['modification_date', 'creation_date', 'userId', '_id']);
+	let user = getUser(req);
 	let params = {};
 	if (req.query && typeof req.query === 'object') {
 		params.userFeature = {};
@@ -19,7 +20,6 @@ router.get('/', Acl, (req, res, next) => {
 	}
 
 	if (Object.keys(params.userFeature).length === 0) {
-		const aclFilter = getFilterFunction(['modification_date', 'creation_date', 'userId', '_id']);
 		Controller.list()
 			.then((userFeatures) => {
 				res.status(200).json(aclFilter(userFeatures));
