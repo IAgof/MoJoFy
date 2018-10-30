@@ -6,7 +6,8 @@ const productTypes = [
 	Model.set({productType: 'NAT_VO'}),
 	Model.set({productType: 'INTERVIEW'}),
 	Model.set({productType: 'GRAPHICS'}),
-	Model.set({productType: 'PIECE'})
+	Model.set({productType: 'PIECE'}),
+	Model.set({productType: 'MOJOMASTERS_COMPETITION'})
 ];
 
 function list() {
