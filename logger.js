@@ -3,6 +3,8 @@ const path = require('path');
 const PROJECT_ROOT = path.join(__dirname, '..');
 
 const winston = require('winston');
+require('winston-loggly-bulk');
+
 const Config = require('./config');
 // Logger
 
@@ -55,7 +57,7 @@ function getStackInfo (stackIndex) {
 }
 
 function logger(callingModule) {
-	return new winston.Logger({
+	const winstonLogger = new winston.Logger({
 		level: logLevel,
 		transports: [
 			//
@@ -67,9 +69,18 @@ function logger(callingModule) {
 				label: getCalleeStr() || getLabel(callingModule),
 				colorize: true,
 			}),
-			// new (winston.transports.File)({ filename: 'winston.log' })
+			new (winston.transports.File)({ filename: '/var/log/winston.log' }),
 		]
 	});
+	if (Config.LOGGLY_TOKEN) {
+		winstonLogger.add(winston.transports.Loggly, {
+			token: Config.LOGGLY_TOKEN,
+			subdomain: 'videona',
+			tags: ['Winston-NodeJS'],
+			json: true
+		});
+	}
+	return winstonLogger;
 }
 
 logger.logLevel = logLevel;

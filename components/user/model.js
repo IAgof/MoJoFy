@@ -31,17 +31,8 @@ const model = {
 		type: 'string',
 		typeStrict: true	// Avoid type parsing
 	},
-	following: {
-		type: 'number'
-	},
-	followers: {
-		type: 'number'
-	},
 	verified: {
 		type: 'boolean'
-	},
-	theme_options: {
-		type: 'object'
 	},
 	videoCount: {
 		type: 'number'
@@ -53,9 +44,15 @@ const model = {
 		type: 'string',
 		typeStrict: true
 	},
+	prehisteric: {
+		type: 'boolean'
+	},
 	updated_at: {
 		type: 'object',
 		date: true
+	},
+	lang: {
+		type: 'string',
 	}
 };
 

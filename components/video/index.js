@@ -330,7 +330,7 @@ function insertFilter(fieldName, operator, value, params) {
 // 	Like.add(entity, callback);
 // }
 
-function getVideoOwner(videos, requestingUser, callback) {
+function getVideoOwner(videos, callback) {
 	logger.debug("Video.getVideoOwner");
 	if (videos.length === 0) {
 		return callback(videos, null, 200);
@@ -339,26 +339,25 @@ function getVideoOwner(videos, requestingUser, callback) {
 	let results = 0;
 	
 	for (let i = 0; i < videos.length; i++) {
-		delete videos[i].original; // TODO(jliarte): this should be in another place
+		delete videos[i].original; // TODO(jliarte): this should be in another place - router with acl filter!
 		const video = videos[i];
-		userCtrl.get(video.owner, requestingUser, false, function (data) {
+		userCtrl.get(video.owner, function (data) {
 			if (data) {
 				video.ownerData = data;
 			}
 			if (++results === videos.length) {
-				logger.debug('returning...');
 				return callback(videos, null, 200);
 			}
 		});
 	}
 }
 
-function query(params, requestingUser, callback) {
+function query(params, requestingUser, callback) { // TODO(jliarte): 22/10/18 remove requestingUser
 	Store.list(params, function(videos) {
 		if (videos) {
-			getVideoOwner(videos, requestingUser, callback);
+			getVideoOwner(videos, callback);
 		} else {
-			callback(null, 'Unable to list videos', 500);
+			callback(null, 'Unable to list videos', 500); // TODO(jliarte): 22/10/18 http status codes should be set in router
 		}
 	});
 }
@@ -425,7 +424,7 @@ function setMetadata(data, metadata) {
 	}
 
 	let videoStream = -1;
-	for (var i = 0; i < metadata.streams.length; i++) {
+	for (let i = 0; i < metadata.streams.length; i++) {
 		if (metadata.streams[i].codec_type === 'video') {
 			videoStream = i;
 			break;

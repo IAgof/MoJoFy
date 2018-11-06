@@ -22,12 +22,6 @@ server.use(function(req, res, next) {
 server.use(bodyParser.urlencoded({ extended: true }));
 server.use(bodyParser.json());
 
-// server.use(jwt({
-// 	secret: Config.jwt_secret,
-// 	issuer: Config.jwt_issuer,
-// 	credentialsRequired: false
-// }));
-
 const port = Config.port;
 
 server.use(checkJwt, function (err, req, res, next) {
@@ -40,13 +34,12 @@ server.use(auth0User);
 
 // Router
 Routes(server);
-// server = Routes(server);
 
 // TODO(jliarte): 28/06/18 generic error catcher, maybe extract/improve this middleware
 server.use(function (err, req, res, next) {
 	logger.error(`Error in method ${req.method}: ${err.message}`);
 	logger.debug(err);
-	res.status(err.status || 500).json({ error: err.message });
+	res.status(err.status || 500).json({ error: err.message || err });
 });
 
 server.listen(port);

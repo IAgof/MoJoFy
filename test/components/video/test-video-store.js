@@ -8,6 +8,8 @@ const sinon = require('sinon');
 const Bluebird = require('bluebird');
 const PromisifierUtils = require('../../../util/promisifier-utils');
 
+const testUtil = require('../../test-util');
+
 const elasticSpy = {
 	faked: true,
 	get: sinon.spy(),
@@ -21,7 +23,8 @@ const elasticSpy = {
 
 // TODO(jliarte): 16/07/18 setup in beforeEach?
 const videoStoreCB = proxyquire('../../../components/video/store', {
-	'../../store/elasticsearch': elasticSpy
+  '../../store/elasticsearch': elasticSpy,
+  '../../store/fakelasticsearch': elasticSpy
 });
 const videoStore = Bluebird.promisifyAll(videoStoreCB, { promisifier: PromisifierUtils.noErrPromisifier });
 
@@ -33,15 +36,12 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 function removeAllVideos() {
-	return videoStore.listDataStoreAsync({})
-		.then((videos) => {
-			if (videos.length == 0) {
-				return Promise.resolve();
-			}
-			console.log("removing existing videos ", videos.length, videos);
-			return Promise.all(videos.map(video => videoStore.removeAsync(video._id))).then(console.log);
-		});
+  return testUtil.removeAllEntities('video');
 }
+
+before(() => {
+  return new Promise(resolve => setTimeout(() => resolve(), 1000)); // TODO(jliarte): 21/09/18 seems that proxyquire or other setup is preventing tests passing when running all together
+});
 
 describe('Video Store', () => {
 	// describe('upsert', () => {
@@ -103,6 +103,7 @@ describe('Video Store', () => {
 				})
 				.then(videos => {
 					videos.should.have.length(0);
+          sinon.assert.called(elasticSpy.remove);
 					sinon.assert.calledWith(elasticSpy.remove, 'video', createdVideoId, sinon.match.any);
 				});
 		});

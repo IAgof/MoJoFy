@@ -30,6 +30,7 @@ const config = {
 	ds_namespace: process.env.BACKEND_DATASTORE_NAMESPACE,
 	ds_projectId: process.env.BACKEND_GOOGLE_CLOUD_PROJECT_ID,
 	ds_keyFilename: 'datastore-key.json',
+	ds_string_index: true,
 
 	// 'Elsasticsearch'
 	elastic_index: process.env.ELASTIC_INDEX || 'test',
@@ -48,7 +49,8 @@ const config = {
 		image: 'image',
 		video: 'video',
 		poster: 'poster',
-		user: 'user'
+		user: 'user',
+		asset: 'assets'
 	},
 	
 	frontend_url: process.env.FRONTEND_URL,
@@ -73,7 +75,15 @@ const config = {
 	aws_secretKey: process.env.AWS_SECRET || 'YOUR-SECRET-KEY',
 	aws_accessKey: process.env.AWS_ACCESS_KEY || 'YOUR-ACCESS-KEY',
 	aws_region: process.env.AWS_REGION || 'YOUR-REGION',
-	cdn_path: process.env.CDN_PATH || 'YOUR-CLOUDFRONT-URL'
+	cdn_path: process.env.CDN_PATH || 'YOUR-CLOUDFRONT-URL',
+
+	// locales
+	supportedLocales: ['en', 'es'], // TODO(jliarte): 23/10/18 extract to env var?
+	defaultLocale: process.env.DEFAULT_LOCALE || 'en',
+	updateLocaleFiles: process.env.UPDATE_LOCALE_FILES || false,
+
+	// Logs
+	LOGGLY_TOKEN: process.env.LOGGLY_TOKEN,
 };
 
 module.exports = config;

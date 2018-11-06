@@ -340,6 +340,30 @@ function remove(table, key, cb) {
 	});
 }
 
+function removeMulti(table, keys) {
+	return new Promise((resolve, reject) => {
+		let deleteRequestItems = [];
+		if (keys && keys.length > 0) {
+			deleteRequestItems = keys.map(id => {
+				return { DeleteRequest: { Key: { "_id": { S: id } } } }
+			});
+			const tableName = config.db_table_prefix + table;
+			const params = { RequestItems: {} };
+			params.RequestItems[tableName] = deleteRequestItems;
+			dynamodb.batchWriteItem(params, function(err, data) {
+				if (err) {
+					console.log(err, err.stack);
+					reject(err);
+				} else {
+					console.log(data);
+					resolve(data);
+				}
+			});
+		} else resolve([]); // (jliarte): 16/10/18 no items to delete!
+	});
+}
+
+
 /* --- Internal functions -- */
 
 function list(table, cb) {
@@ -367,14 +391,16 @@ function search(table, params, cb) {
 	const expressionNames = {};
 	const expressionValues = {};
 
-	for (let i = 0; i < params.filters.length; i++) {
-		const filter = params.filters[i];
-		if (i > 0) {
-			conditionExpression += ' and ';
+	if (params && params.filters) {
+		for (let i = 0; i < params.filters.length; i++) {
+			const filter = params.filters[i];
+			if (i > 0) {
+				conditionExpression += ' and ';
+			}
+			conditionExpression += '#field'+ i +' '+ filter.operator +' :field'+ i;
+			expressionNames['#field'+i] = filter.field;
+			expressionValues[':field'+i] = filter.value;
 		}
-		conditionExpression += '#field'+ i +' '+ filter.operator +' :field'+ i;
-		expressionNames['#field'+i] = filter.field;
-		expressionValues[':field'+i] = filter.value;
 	}
 
 	// ToDo: Limit
@@ -418,7 +444,8 @@ const exposed = {
 	add: upsert,
 	update: upsert,
 	upsert: upsert,
-	remove: remove
+	remove: remove,
+	_removeMulti: removeMulti,
 };
 
 module.exports = exposed;

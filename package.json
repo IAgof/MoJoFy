@@ -1,7 +1,7 @@
 {
   "name": "mojofy",
-  "version": "0.12.4",
-  "description": "Cloud storage for Vimojo files and projects",
+  "version": "0.13.0",
+  "description": "Vimojo platform backend",
   "main": "server.js",
   "scripts": {
     "test": "mocha --recursive src/",
@@ -18,7 +18,13 @@
     "type": "git",
     "url": "git+https://github.com/IAgof/MoJoFy.git"
   },
-  "author": "Carlos Hernandez Martin (@CodingCarlos)",
+  "contributors": [
+    "Carlos Hernandez Martin (@CodingCarlos)",
+    "Jesús Huerta @DevStarLight",
+    "Javier Liarte @javierLiarte <jliarte@videona.com>",
+    "Álvaro Martínez <a.martinez@videona.com>",
+    "Ruth del Toro <r.toro@videona.com>"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/IAgof/MoJoFy/issues"
@@ -41,24 +47,31 @@
     "fs": "0.0.1-security",
     "google-cloud": "0.56.0",
     "handlebars": "^4.0.10",
+    "i18n": "^0.8.3",
     "jwks-rsa": "^1.2.1",
+    "migrate": "^1.6.1",
     "mime": "^2.2.0",
     "modelate": "0.2.8",
     "multer": "1.3.0",
     "nanoid": "1.0.2",
     "aws-sdk": "2.213.1",
     "util-merge": "^1.0.0",
+    "uuid": "^3.3.2",
     "virgen-acl": "0.0.22",
-    "winston": "^2.4.1"
+    "winston": "^2.4.1",
+    "winston-loggly-bulk": "^2.0.3"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-http": "^4.0.0",
+    "chai-string": "^1.5.0",
     "mocha": "^5.1.0",
     "mocha-junit-reporter": "^1.17.0",
     "nodemon": "^1.14.12",
     "proxyquire": "^2.0.1",
-    "sinon": "^6.1.3"
+    "rewire": "^4.0.1",
+    "sinon": "^6.1.3",
+    "supertest": "^3.1.0"
   }
 }

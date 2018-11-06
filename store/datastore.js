@@ -4,6 +4,7 @@ const gcloud = require('google-cloud');
 const config = require('../config');
 const logger = require('../logger')(module);
 const merge = require('util-merge');
+const uuidv4 = require('uuid/v4');
 
 const namespace = config.ds_namespace;
 const dataset = gcloud.datastore({
@@ -19,6 +20,8 @@ function Key(kind, id) {
 		path.push(Number(id));
 	} else if (id) {
 		path.push(id);
+	} else if (config.ds_string_index) {
+			path.push(uuidv4());
 	}
 
 	return dataset.key({
@@ -77,19 +80,27 @@ function upsert(kind, data, id, cb) {
 
 	const key = Key(kind, id);
 
-	// CHECK IF IS UPSERT. IF SO, GET THE ENTITY AND MERGE CHANGES.
+	// CHECK IF IT IS UPSERT. IF SO, GET THE ENTITY AND MERGE CHANGES.
 	if (id) {
 		get(kind, id, function(storedData) {
+			
 			if (!storedData) {
-				storedData = {};
+				// TODO: check for all models, and implement in dynamo
+				logger.debug("Non existing object, setting creation date");
+				storedData = { creation_date: new Date() };
 			}
 
 			// const merged = Util.merge(storedData, data);
 			const merged = merge(storedData, data);
+			merged.modification_date = new Date();
+			logger.debug("updating modification date");
 
 			save(key, merged, cb);
 		});
 	} else {
+		// TODO: check for all models, and implement in dynamo
+		data.creation_date = new Date();
+		data.modification_date = data.creation_date;
 		save(key, data, cb);
 	}
 }
@@ -146,12 +157,20 @@ function remove(kind, id, cb) {
 
 }
 
+function removeMulti(kind, ids) {
+	let keys = [];
+	if (ids && ids.length > 0) {
+		keys = ids.map(id => Key(kind, id));
+	}
+	return dataset.delete(keys)
+}
+
+
 /**
  *	 
  */
 function query(kind, options, cb) {
-
-	if (!kind) {
+    if (!kind) {
 		cb(false);
 		return false;
 	}
@@ -195,24 +214,24 @@ function query(kind, options, cb) {
 		});
 	}
 
-	query.run(function(err, entities, info) {
+    query.run(function(err, entities, info) {
 		// We shall do this with this info, to enable cursors...
 		logger.debug(info);
 		if (err) {
 			logger.error("Error querying datastore ", err);
 		}
-		cb(entities.map(fromDatastore));
+		cb(entities.map(setEntityId));
 	});
 
 }
 
-/** fromDatastore
+/** setEntityId
  *	Translates from Datastore's entity format to
  *	the format expected by the application.
  *
  *	Datastore format:
  *	{
- *		key: [kind, id],
+ *		key: [kind, id|name],
  *		data: {
  *			property: value
  *		}
@@ -220,12 +239,12 @@ function query(kind, options, cb) {
  *
  *	Application format:
  *	{
- *		_id: id,
+ *		_id: id|name,
  *		property: value
  *	}
  */
-function fromDatastore (obj) {
-  obj._id = obj[gcloud.datastore.KEY].id;
+function setEntityId (obj) {
+    obj._id = obj[gcloud.datastore.KEY].id || obj[gcloud.datastore.KEY].name;
   return obj;
 }
 
@@ -242,5 +261,6 @@ module.exports = {
 	add: upsert,
 	update: upsert,
 	upsert: upsert,
-	remove: remove
+	remove: remove,
+	_removeMulti: removeMulti
 };
