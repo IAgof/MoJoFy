@@ -50,6 +50,9 @@ const model = {
 	updated_at: {
 		type: 'object',
 		date: true
+	},
+	lang: {
+		type: 'string',
 	}
 };
 

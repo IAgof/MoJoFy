@@ -155,7 +155,7 @@ describe('Users', () => {
 					storedUser = retrievedUser;
 					storedUser.id = userId;
 					storedUser.username = 'new_username';
-					return userComponent.updateAsync(storedUser, user);
+					return userComponent.updateAsync(storedUser, undefined, undefined);
 				})
 				// TODO(jliarte): explore multiArgs (& filter)
 				.then((res, msg, status) => {
@@ -188,7 +188,7 @@ describe('Users', () => {
 					storedUser = retrievedUser;
 					storedUser.id = userId;
 					storedUser.username = 'new_username';
-					return userComponent.update(storedUser, user);
+					return userComponent.updateAsync(storedUser, user);
 				})
 				.then((res, msg, status) => {
 					// check user fields

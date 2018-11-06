@@ -78,7 +78,7 @@ module.exports = function (req, res, next) {
 					logger.debug("User with authId " + authId + " not found, querying by email...");
 					// (jliarte): 5/07/18 only call userInfo if we need email for searching!
 					// TODO(jliarte): 28/06/18 handle user grouping when same email is received
-					return getUserInfo(req.headers.authorization, req.user.sub)
+						return getUserInfo(req.headers.authorization, req.user.sub)
 						.then(data => {
 							userInfo = data;
 							return userController.getUserByEmailAsync(userInfo.email);
@@ -93,11 +93,11 @@ module.exports = function (req, res, next) {
 			.then(user => req.user.userProfile = user)
 			.then(() => next())
 			.catch(err => {
-				logger.debug("Error on auth0 user middleware ", err);
+				logger.error("Error on auth0 user middleware ", err);
 				next();
 			});
 	} else {
-		logger.debug("exiting");
+		logger.debug("no req.user, exiting");
 		return next();
 	}
 };

@@ -16,6 +16,11 @@ const mockedUserCtrl = {
   get: sinon.stub().callsArgWith(1, true)
 };
 
+const mockedI18n = {
+	setLocale: sinon.stub().returns('en'),
+	__: sinon.stub().returns('translated!')
+};
+
 let templateResult = "processed template";
 const mockedGetTemplate = sinon.stub().returns(Promise.resolve(templateResult));
 const emailNotificationsCtrl = rewire('../../../components/email_notifications');
@@ -24,6 +29,7 @@ emailNotificationsCtrl.__set__("getTemplate", mockedGetTemplate);
 const mockedConfig = { emailNotificationsRecipient: 'email@receiver', emailNotificationsSender: 'email@sender' };
 emailNotificationsCtrl.__set__("config", mockedConfig);
 emailNotificationsCtrl.__set__("user", mockedUserCtrl);
+emailNotificationsCtrl.__set__("i18n", mockedI18n);
 
 const testUtil = require('../../test-util');
 
@@ -41,18 +47,21 @@ describe('EmailNotifications controller', () => {
     it('should get prehistoric template with right params', () => {
       const user = {
         _id: 'user.id',
-        username: 'User Name',
+	      username: 'User Name',
+	      name: 'Name',
         email: 'user@email'
       };
-      const templateName = 'notify-video-codes-generated.hbs';
+      const templateName = 'notify-prehisteric-user-promotion.hbs';
       const prehistoricPromoText = "";
       const templateVars = {
-        title: "¡Gracias por confiar en nosotros!",
-        description: prehistoricPromoText,
+      	cta_url: "http://platform.vimojo.co/pricing",
+	      title: "translated!", // TODO(jliarte): 6/11/18 rewire this?
         // url: mockedConfig.frontend_url + '/download/' + videoId,
         vimojo_logo: 'http://vimojo.co/wp-content/uploads/2017/11/Vimojo.png',
         platform_url: 'http://vimojo.co',
-        poster: '',
+        userGreeting: "translated!", // TODO(jliarte): 6/11/18 rewire this?
+	      username: user.name,
+	      poster: '',
       };
       return emailNotificationsCtrl.sendPrehistericPromotionWelcomeEmail(user)
         .then(result => {
@@ -73,7 +82,8 @@ describe('EmailNotifications controller', () => {
         username: 'User Name',
         email: 'user@email'
       };
-      const subject =  "¡Enhorabuena " + user.username + "! Le regalamos una subscricpción anual a hero gratis!";
+	    // const subject =  "¡Enhorabuena " + user.username + "! Le regalamos una subscricpción anual a hero gratis!";
+	    const subject =  "translated!"; // TODO(jliarte): 6/11/18 rewire this?
       const msg = {
         to: user.email,
         from: mockedConfig.emailNotificationsSender,
