@@ -9,3 +9,7 @@ v0.13.0
 - Create model-util with helper functions for models
 - Create store-util with helper functions for store queries
 - Several bug fixes, improved logging and stability
+- Add i18n support for emails
+- Add new product type MOJOMASTERS_COMPETITION
+- Set up remote logger using Loggly service
+- Update user model with new lang field
