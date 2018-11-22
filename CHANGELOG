@@ -1,3 +1,19 @@
+v0.13.0
+- Add migration support with first two migrations for initial product and user feature set
+- Create billing component to support product and purchases, promotions and free trials
+- Add support for prehisteric user promotion
+- Create user features backend for feature toggles in apps depending on product purchases
+- Add support for project and composition models in backend to enable cloud backup, multi device and co creation services in apps
+- Add testing support for backend
+- Add support for auto creation_date and modification_date fields and multi remove to datastore and dynamoDB drivers
+- Create model-util with helper functions for models
+- Create store-util with helper functions for store queries
+- Several bug fixes, improved logging and stability
+- Add i18n support for emails
+- Add new product type MOJOMASTERS_COMPETITION
+- Set up remote logger using Loggly service
+- Update user model with new lang field
+
 v0.12.4
 - Add new product type MOJOMASTERS_COMPETITION
 
