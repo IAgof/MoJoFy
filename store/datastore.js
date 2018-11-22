@@ -98,7 +98,6 @@ function upsert(kind, data, id, cb) {
 			save(key, merged, cb);
 		});
 	} else {
-		// TODO: check for all models, and implement in dynamo
 		data.creation_date = new Date();
 		data.modification_date = data.creation_date;
 		save(key, data, cb);

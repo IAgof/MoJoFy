@@ -75,6 +75,27 @@ function prepareSecondaryIndexes(table, indexes) {
 	}
 }
 
+function functionInLocalTableList(table) {
+	return tables.indexOf(config.db_table_prefix + table) > -1 || tables.indexOf(table) > -1;
+}
+
+function getTableSchema(tableName) {
+	// ToDo: Check if we can get more complex structures based on future querys
+	return {
+		TableName: tableName,
+		KeySchema: [
+			{AttributeName: "_id", KeyType: "HASH"},  // Partition key
+		],
+		AttributeDefinitions: [
+			{AttributeName: "_id", AttributeType: "S"}
+		],
+		ProvisionedThroughput: {
+			ReadCapacityUnits: DEFAULT_READ_CAPACITY_UNITS,
+			WriteCapacityUnits: DEFAULT_WRITE_CAPACITY_UNITS
+		}
+	};
+}
+
 /**
  * Callback for DynamoDB createTable function.
  * 
@@ -95,48 +116,67 @@ function createTable(table, indexes, cb) {
 		indexes = [];
 	}
 
-	if (tables.indexOf(config.db_table_prefix + table) > -1 || tables.indexOf(config.table) > -1) {
-		if (cb) {
-			cb(null, table);
-		}
-		return false;
-	}
-
-	// ToDo: Check if we can get more complex structures based on future querys
-	const tableSchema = {
-		TableName: config.db_table_prefix + table,
-		KeySchema: [
-			{ AttributeName: "_id", KeyType: "HASH"},  // Partition key
-		],
-		AttributeDefinitions: [       
-			{ AttributeName: "_id", AttributeType: "S" }
-		],
-		ProvisionedThroughput: {       
-			ReadCapacityUnits: DEFAULT_READ_CAPACITY_UNITS, 
-			WriteCapacityUnits: DEFAULT_WRITE_CAPACITY_UNITS
-		}
-	};
-
-	// SET INDEXES!!
-	if (indexes && indexes.length > 0) {
-		prepareSecondaryIndexes(tableSchema, indexes);
-	}
-
-	dynamodb.createTable(tableSchema, function(err, data) {
-		if (err) {
-			logger.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
-			typeof cb === 'function' && cb(err, null);
+	checkIfTableExists(table, function(exists) {
+		if (exists) {
+			if (cb) {
+				cb(null, table);
+			}
+			return false;
 		} else {
-			// logger.debug("Created table. Table description JSON:", JSON.stringify(data, null, 2));
-			tables.push(table);
-			typeof cb === 'function' && cb(null, table);
+			const tableSchema = getTableSchema(config.db_table_prefix + table);
+			if (indexes && indexes.length > 0) {
+				prepareSecondaryIndexes(tableSchema, indexes);
+			}
+
+			dynamodb.createTable(tableSchema, function(err, data) {
+				if (err) {
+					logger.error("Unable to create table. Error JSON:", JSON.stringify(err, null, 2));
+					typeof cb === 'function' && cb(err, null);
+				} else {
+					// logger.debug("Created table. Table description JSON:", JSON.stringify(data, null, 2));
+					tables.push(table);
+					typeof cb === 'function' && cb(null, table);
+				}
+			});
 		}
+	});
+
+}
+
+function checkIfTableExists(tableName, cb) {
+	dynamodb.listTables({}, function(err, data) {
+		// TODO(jliarte): 19/11/18 search for prefix config.db_table_prefix
+		if (err) logger.error(err, err.stack); // an error occurred
+		else {
+			if (data.TableNames) {
+				data.TableNames.filter(t=> t.startsWith(config.db_table_prefix)).forEach(t => {
+					if (tables.indexOf(t) === -1) {
+						tables.push(t);
+					}
+				});
+			}
+		}
+		if (functionInLocalTableList(tableName)) {
+			return cb(true);
+		} else {
+			return cb(false);
+		}
+		/*
+		data = {
+		 TableNames: [
+				"Forum",
+				"ProductCatalog",
+				"Reply",
+				"Thread"
+		 ]
+		}
+		*/
 	});
 }
 
 /**
  * Callback for DynamoDB upsert function.
- * 
+ *
  * @callback dynamoUpsertCallback
  * @param {boolean} success True if upserted, false on error
  * @param {string} id Id of the upserted element
@@ -165,18 +205,21 @@ function upsert(table, rawData, key, cb) {
 
 	if (typeof data._id !== 'undefined' || key !== null) {
 		data._id = key || data._id;
-		// Probably there was something. To do a good upsert, we shall get the 
+		// Probably there was something. To do a good upsert, we shall get the
 		// row, and merge it with given data (to patch instead of put).
-		get(table, data._id, function (err, gottenData) {
+		get(table, data._id, function (gottenData) {
 			let mergedData = data;
 			if (typeof gottenData !== 'undefined' && gottenData !== null) {
 				mergedData = merge(gottenData, data);
 			}
+			mergedData.modification_date = new Date().toString();
 			save(table, mergedData, cb);
 		});
 	} else if (typeof data._id === 'undefined' && key === null) {
 		// generate a new id, and set it to _id
 		data._id = Nanoid();
+		data.creation_date = new Date().toString();
+		data.modification_date = data.creation_date;
 		save(table, data, cb);
 	}
 }
@@ -281,7 +324,7 @@ function get(table, key, cb) {
  * @param {dynamoSearchCallback} cb Callback on query results (or error)
  */
 function query(table, params, cb) {
-	logger.debug('[dynamo] querying ', table, " with params ", params);
+	logger.debug('[dynamo] querying ' + table + " with params " + params);
 	if (typeof params === 'function') {
 		cb = params;
 		params = undefined;
