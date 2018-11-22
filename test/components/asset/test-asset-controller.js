@@ -42,6 +42,7 @@ describe('Asset controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset/uuri',
+				thumbnail: 'asset/thumbnail',
 				projectId: 'projectId',
 				date: new Date(),
 				created_by: 'userId'
@@ -114,8 +115,9 @@ describe('Asset controller', () => {
 					assets.should.have.length(1);
 					delete assets[0].creation_date;
 					delete assets[0].modification_date;
-					console.log("expected ", createdAsset);
-					console.log("actual", assets[0]);
+					delete createdAsset.metadata; // (jliarte): 22/11/18 metadata is set with FileUpload.processUploadedAsset response.metadata to undefined
+					console.log("expected ", assets[0]);
+					console.log("actual", createdAsset);
 					assets[0].should.deep.equal(createdAsset);
 				});
 		});
@@ -196,6 +198,7 @@ describe('Asset controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset/uuri',
+				thumbnail: 'asset/thumb',
 				projectId: 'projectId',
 				date: new Date(),
 				created_by: 'userId'
@@ -226,6 +229,7 @@ describe('Asset controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset/uuri',
+				thumbnail: 'asset1/thumb',
 				projectId: 'projectId',
 				date: new Date(),
 				created_by: 'userId'
@@ -238,6 +242,7 @@ describe('Asset controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset2/uuri',
+				thumbnail: 'asset2/thumb',
 				projectId: 'projectId',
 				date: new Date(),
 				created_by: 'user2Id'
@@ -268,6 +273,7 @@ describe('Asset controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset/uuri',
+				thumbnail: 'asset1/thumb',
 				projectId: 'projectId',
 				date: new Date(),
 				created_by: 'userId'
@@ -280,6 +286,7 @@ describe('Asset controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset2/uuri',
+				thumbnail: 'asset2/thumb',
 				projectId: 'projectId',
 				date: new Date(),
 				created_by: 'user2Id'
@@ -310,6 +317,7 @@ describe('Asset controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset/uuri',
+				thumbnail: 'asset/thumb',
 				projectId: 'projectId',
 				date: new Date(),
 				created_by: 'userId'
@@ -360,6 +368,5 @@ describe('Asset controller', () => {
 		});
 
 	});
-
 
 });

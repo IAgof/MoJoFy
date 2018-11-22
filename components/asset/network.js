@@ -20,6 +20,9 @@ router.post('/', Acl, Upload.single('file'), (req, res, next) => {
 	req.body.file = req.file;
 	req.body.project = req.params.projectId || undefined;
 	req.body.created_by = user._id;
+	if (req.body.project) {
+		req.body.projectId = req.body.project; // TODO(jliarte): 22/11/18 workarround until we fix app projectId field
+	}
 	Controller.add(req.body, user)
 		.then(createdAsset => {
 			res.status(201).json(createdAsset);
@@ -52,7 +55,7 @@ router.get('/', Acl, (req, res, next) => {
 
 router.use((err, req, res, next) => {
 	logger.error(`Error in method ${req.method}: ${err.message}`);
-	res.status(err.status).json({ error: err.message });
+	res.status(err.status || 500).json({ error: err.message });
 });
 
 module.exports = router;

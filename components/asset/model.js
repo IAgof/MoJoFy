@@ -22,6 +22,12 @@ const model = {
 	mimetype: {
 		type: 'string'
 	},
+	metadata: {
+		type: 'object'
+	},
+	thumbnail: {
+		type: 'string'
+	},
 	uri: {
 		type: 'string'
 	},
@@ -50,7 +56,8 @@ const defaults = {
     projectId: '',
 };
 
-const noDefaultsFields = ['uri', 'path', 'filename', 'mimetype', 'type', 'hash', 'date', 'created_by'];
+const noDefaultsFields = ['uri', 'thumbnail', 'path', 'filename', 'mimetype', 'metadata', 'type', 'hash', 'date',
+	'created_by'];
 
 const Model = new Modelate('Asset').set(model);
 

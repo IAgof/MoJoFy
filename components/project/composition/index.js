@@ -89,7 +89,7 @@ function query(params) {
 
 
 function get(id, cascade, user) {
-	logger.info("compositionCtrl.get id [" + id + "] by User ", user);
+	logger.info("compositionCtrl.get id [" + id + "] by User ", user && user._id ? user._id : '');
 	let composition;
 	return store.get(id)
 		.then(retrievedComposition => {

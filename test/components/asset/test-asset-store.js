@@ -22,19 +22,20 @@ describe('Asset store', () => {
 		beforeEach(removeAllAssets);
 
 		it('should create an asset', () => {
-            const asset = {
-                id: 'assetId',
-                name: 'asset name',
-                type: 'video',
-                hash: 'sahflkdsagflkjdsafglkudsafdsa',
-                filename: 'file.name',
-                mimetype: 'mime/type',
-                uri: 'asset/uuri',
-                projectId: 'projectId',
-                date: new Date(),
-                created_by: 'userId'
-            };
-            return assetStore.upsert(asset)
+			const asset = {
+				id: 'assetId',
+				name: 'asset name',
+				type: 'video',
+				hash: 'sahflkdsagflkjdsafglkudsafdsa',
+				filename: 'file.name',
+        mimetype: 'mime/type',
+        uri: 'asset/uuri',
+        thumbnail: 'asset/thumbnail',
+        projectId: 'projectId',
+        date: new Date(),
+        created_by: 'userId'
+      };
+			return assetStore.upsert(asset)
 				.then(createdAsset => {
 					console.log("asset created ", createdAsset);
 					return assetStore.list();

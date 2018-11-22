@@ -471,6 +471,7 @@ describe('Composition controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset/uuri',
+				thumbnail: 'asset1/thumb',
 				projectId: 'projectId',
 				created_by: 'userId',
 				// mediaId: media1Id // FIXME(jliarte): 27/07/18 assetCtrl is failing: TypeError: mediaCtrl.updateMediaAsset is not a function
@@ -482,6 +483,7 @@ describe('Composition controller', () => {
 				filename: 'file.name',
 				mimetype: 'mime/type',
 				uri: 'asset/uuri',
+				thumbnail: 'asset2/thumb',
 				projectId: 'projectId',
 				created_by: 'userId',
 				// mediaId: media2Id // FIXME(jliarte): 27/07/18 assetCtrl is failing: TypeError: mediaCtrl.updateMediaAsset is not a function

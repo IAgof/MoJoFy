@@ -26,7 +26,7 @@ function updateMediaAsset(newAssetData, assetId) {
 
 function add(newAssetData, user) {
 	logger.info("assetCtrl.add by user ", user);
-	logger.debug("...created new asset ", newAssetData);
+	logger.debug("...create new asset with data ", newAssetData);
 	let newAsset = Object.assign({}, newAssetData);
 
 	if (!newAssetData.date) {
@@ -34,18 +34,26 @@ function add(newAssetData, user) {
 	}
 	// TODO: all mimetypes
 	logger.debug("Asset file is ", newAsset.file);
-	return FileUpload.moveUploadedFile(newAsset.file, Config.storage_folder.asset)
-		.then(url => {
-			logger.debug("New asset processed with results", url);
+	return FileUpload.processUploadedAsset(newAsset.file, Config.storage_folder.asset)
+		.then(response => {
+			logger.debug("New asset processed with results", response);
+			let url = response.video;
+			let thumbnail = response.img;
 			if (url) {
 				newAsset.uri = url;
 				newAsset.filename = newAsset.file.originalname;
 				newAsset.mimetype = newAsset.file.mimetype;
 			}
 
+			if (thumbnail) {
+				newAsset.thumbnail = thumbnail;
+			}
+
 			const assetModel = Model.set(newAsset);
 			logger.debug("asset model after modelate: ", assetModel);
 			assetModel.id = newAssetData.id || newAssetData._id || null; // TODO(jliarte): 20/07/18 manage id collisions
+			assetModel.metadata = response.metadata;
+			delete newAsset.file; // TODO(jliarte): 20/11/18 test for this
 			return store.add(assetModel)
 				.then((assetId) => {
 					updateMediaAsset(newAssetData, assetId);

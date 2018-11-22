@@ -1,6 +1,9 @@
 const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
 
+const mime = require('mime-types');
+const path = require('path');
+
 const config = require('../../config');
 const logger = require('../../logger')(module);
 const Integrity = require('./integrity');
@@ -21,68 +24,100 @@ if (config.cloud_storage == 'aws') {
 /* Exposed functions */
 
 exports.processUploadedVideo = processUploadedVideo;
+exports.processUploadedAsset = processUploadedAsset;
 exports.moveUploadedFile = moveUploadedFile;
+exports.moveLocalFilePath = moveLocalFilePath;
 exports.removeFromCloudStorage = removeFromCloudStorage;
+exports.createFileThumbnails = createFileThumbnails;
 
 /* Internal functions */
 
-function processUploadedVideo(file, callback) {
-	if (typeof(file) === 'undefined') {
-		logger.error('Undefined file');
-		callback('error, unrecognized file type.');
-		return false;
-	}
+function processUploadedAsset(file) {
+	// TODO(jliarte): 20/11/18 handle undefined file?
+	logger.debug("processUploadedAsset");
+	return processUploadedVideoAsync(file, config.storage_folder.asset, config.storage_folder.asset);
+}
 
-	
+function processUploadedVideoAsync(file, thumbnailStorageFolder, videoStorageFolder) {
+	logger.debug("processUploadedVideoAsync");
+	if (typeof file === 'undefined') {
+		return Promise.resolve("no file");
+	}
 	const originalFileData = getFileData(file);
 	const response = {
 		originalname: file.originalname,
 		type: originalFileData.type,
 		hash: null,
 		img: null,
-		video: null
+		video: null,
+		metadata: null
 	};
 
-	Promise.all([
-			makeScreenshots(originalFileData),
-			generateHash(originalFileData),
-			getMetadata(originalFileData)
-		])
+	logger.debug("calling promise all");
+	return Promise.all([
+		makeScreenshots(originalFileData),
+		generateHash(originalFileData),
+		getMetadata(originalFileData)
+	])
 		.then(values => {
+			logger.debug("promise all res ", values);
 			let [screenShotFileData, hash, metadata] = values;
 			if (hash) {
 				response.hash = hash;
 			}
-			Promise.all([
-				moveToCloudStorage(screenShotFileData, config.storage_folder.poster).then(screenShotURL => {
+			response.metadata = metadata;
+			return Promise.all([
+				moveToCloudStorage(screenShotFileData, thumbnailStorageFolder).then(screenShotURL => {
 					if (screenShotURL) {
 						response.img = screenShotURL;
 					}
+					return screenShotURL;
 				}),
-				moveToCloudStorage(originalFileData, config.storage_folder.video).then(url => {
+				moveToCloudStorage(originalFileData, videoStorageFolder).then(url => {
 					if (originalFileData.type === 'video') {
 						response.video = url;
 					} else {
 						response.img = url;
 					}
+					return url;
 				})])
-				.then(values => {
-					callback(response, metadata);
-				})
-				.catch(reason => {
-					logger.error("Error moving to cloud storage", reason);
-				})
+				.then(() => response);
+		});
+}
+
+function processUploadedVideo(file, callback, thumbnailStorageFolder = config.storage_folder.poster,
+                              videoStorageFolder = config.storage_folder.video) {
+	if (typeof(file) === 'undefined') {
+		logger.error('Undefined file');
+		callback('error, unrecognized file type.');
+		return false;
+	}
+
+	processUploadedVideoAsync(file, thumbnailStorageFolder, videoStorageFolder)
+		.then(response => callback(response, response.metadata))
+		.catch(reason => {
+			logger.error("Error moving to cloud storage", reason);
+			callback();
 		});
 }
 
 function moveUploadedFile(fileUpload, folder) {
 	if (fileUpload) {
-    logger.debug("Move uploaded file filedata ", fileUpload);
     let fileData = getFileData(fileUpload);
 		return moveToCloudStorage(fileData, folder);
 	}
 	return Promise.resolve();
 }
+
+function moveLocalFilePath(filePath, folder) {
+	if (filePath) {
+		logger.debug("Move local file path", filePath);
+		let fileData = getFileDataFromPath(filePath);
+		return moveToCloudStorage(fileData, folder);
+	}
+	return Promise.resolve();
+}
+
 
 function removeFromCloudStorage(url) {
 	if (config.cloud_storage === 'local_cloud') {
@@ -91,6 +126,23 @@ function removeFromCloudStorage(url) {
 	} else {
 		cloudStorage.removeFromStorage(url);
 	}
+}
+
+function getFileDataFromPath(filePath) {
+	const filename = filePath.substr(filePath.lastIndexOf('/') + 1, filePath.length);
+	const extension = filename.substr(filename.lastIndexOf('.') + 1, filename.length);
+	const contentType = mime.contentType(path.extname(filePath));
+	let type;
+	if (contentType) {
+		type = contentType.split('/')[0];
+	}
+	let fileData = new FileData(filename, filePath.replace('/app/', ''), extension, type);
+	return fileData;
+}
+
+function createFileThumbnails(filePath) {
+	let fileData = getFileDataFromPath(filePath);
+	return makeScreenshots(fileData);
 }
 
 class FileData {
@@ -134,9 +186,9 @@ function moveToCloudStorage(fileData, storageFolder) {
 	});
 }
 
-function makeScreenshots(fileData, callback) {
+function makeScreenshots(fileData) {
 	return new Promise(resolve => {
-		if (fileData.type == 'video') {
+		if (fileData.type === 'video') {
 			let thumbFileName = fileData.filename + '.' + thumbType;
 			new ffmpeg('./' + fileData.path)
 				.screenshots({
@@ -147,8 +199,10 @@ function makeScreenshots(fileData, callback) {
 				})
 				.on('end', function () {
 					logger.info('screenshots taken');
-					resolve(new FileData(thumbFileName, fileData.path + '.' + thumbType, thumbType, fileData.type));
+					resolve(new FileData(thumbFileName, fileData.path + '.' + thumbType, thumbType, fileData.type)); // TODO(jliarte): 19/11/18 type should be image png
 				});
+		} else {
+			resolve(); // TODO(jliarte): 19/11/18 or reject?
 		}
 	});
 }
@@ -162,7 +216,7 @@ function generateHash(fileData) {
 	});
 }
 
-function getMetadata(fileData, callback) {
+function getMetadata(fileData) {
 	return new Promise((resolve, reject) => {
 		if (fileData.type == 'video') {
 			new ffmpeg.ffprobe('./' + fileData.path, function(err, metadata) {
@@ -170,7 +224,6 @@ function getMetadata(fileData, callback) {
 					reject(err);
 				}
 				logger.info('Metadata gotten');
-				logger.info(metadata);
 				resolve(metadata);
 			});
 		}

@@ -40,10 +40,10 @@ exports.middleware = function(req, res, next) {
 function getActionForEntity(entityId, userId, baseAction) {
   return Store.get(entityId)
     .then(asset => {
-      if (asset && (asset.created_by === userId)) {
-      	return baseAction += '_own';
+      if (asset && (asset.created_by !== userId)) {
+	      return baseAction += '_any';
       } else {
-      	return baseAction += '_any';
+	      return baseAction += '_own';
       }
     });
 }

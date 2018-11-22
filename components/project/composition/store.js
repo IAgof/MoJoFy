@@ -13,7 +13,7 @@ const Repository = Bluebird.promisifyAll(Persistent, { promisifier: PromisifierU
 const type = 'composition';
 
 // TODO(jliarte): 11/07/18 check needed indexes!
-Persistent.index(type, [], logger.debug);
+Persistent.index(type, ['created_by'], logger.debug);
 
 function upsert(newCompositionData) {
 	let newComposition = Object.assign({}, newCompositionData);

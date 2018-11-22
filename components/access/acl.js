@@ -40,7 +40,7 @@ roles.distribute = {
 
 // TODO(jliarte): 31/08/18 define project actions for roles
 roles.project = {};
-roles.project.guest = ['read'];
+roles.project.guest = ['add', 'read', 'update'];
 roles.project.editor = roles.project.guest.concat();
 roles.project.admin = roles.project.guest.concat();
 
@@ -56,13 +56,13 @@ roles.media.admin = roles.media.guest.concat('read_any', 'list_any');
 
 roles.track = {};
 roles.track.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
-roles.track.editor = roles.media.guest.concat();
-roles.track.admin = roles.media.guest.concat('read_any', 'list_any');
+roles.track.editor = roles.track.guest.concat();
+roles.track.admin = roles.track.guest.concat('read_any', 'list_any');
 
 roles.asset = {};
 roles.asset.guest = ['read', 'read_own', 'add_own', 'list_own', 'update', 'update_own', 'delete', 'delete_own'];
-roles.asset.editor = roles.media.guest.concat();
-roles.asset.admin = roles.media.guest.concat('read_any', 'list_any');
+roles.asset.editor = roles.asset.guest.concat();
+roles.asset.admin = roles.asset.guest.concat('read_any', 'list_any');
 
 roles.userFeature = {};
 roles.userFeature.guest = ['read_own'];
